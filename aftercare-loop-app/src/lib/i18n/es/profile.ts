@@ -66,4 +66,52 @@ export const profile = {
   "profile.list.add": "Agregar",
   "profile.list.remove": "Quitar {item}",
   "profile.list.empty": "Todavía no ha agregado nada.",
+  // --- profile-editor additions ---
+  "profile.loading": "Cargando su perfil…",
+  "profile.error.title": "No pudimos cargar este perfil.",
+  "profile.error.detail": "Intente elegir de nuevo a una paciente ficticia o reinicie la demostración.",
+  "profile.form.label": "Editar perfil de salud",
+  "profile.save": "Guardar cambios",
+  "profile.saving": "Guardando…",
+  "profile.discard": "Descartar cambios",
+  "profile.discarded": "Se descartaron los cambios.",
+  "profile.unsaved": "Tiene cambios sin guardar.",
+  "profile.upToDate": "Todos los cambios están guardados.",
+  "profile.savedDetail": "A partir de ahora, Kat usará sus preferencias actualizadas.",
+  "profile.scenario": "Escenario de demostración: {summary}",
+
+  "profile.field.ageRangePlaceholder": "Prefiero no decirlo",
+  "profile.field.languageHint": "La aplicación y las respuestas de Kat usarán este idioma después de guardar.",
+  "profile.field.accessibilityHint":
+    "El tamaño del texto, el contraste y el movimiento cambian de inmediato para que pueda verlos. Guarde para conservarlos.",
+
+  "profile.conditions.options": "Condiciones o inquietudes para elegir",
+  "profile.conditions.addLabel": "Agregar su propia condición o inquietud",
+  "profile.conditions.add": "Agregar condición",
+  "profile.conditions.empty": "No ha elegido ninguna condición o inquietud.",
+  "profile.conditions.selectedCount": "{count} seleccionadas",
+
+  "profile.medication.doseNote":
+    "Cambiar una dosis o un horario aquí no cambia sus indicaciones médicas. Solo su equipo de atención médica puede cambiar un medicamento.",
+  "profile.medication.item": "Medicamento {number}",
+  "profile.medication.removeNamed": "Quitar el medicamento {name}",
+  "profile.medication.unnamed": "Medicamento nuevo",
+
+  "profile.careInstructions.hint":
+    "Tomado de su registro de visita ficticio. Editar esta lista no cambia lo que le indicó su equipo de atención médica.",
+  "profile.careInstructions.placeholder": "Escriba una indicación de cuidado",
+  "profile.careInstructions.addLabel": "Agregar una indicación de cuidado",
+  "profile.careInstructions.empty": "No hay indicaciones de cuidado en la lista.",
+  "profile.healthGoals.addLabel": "Agregar una meta de salud",
+  "profile.healthGoals.empty": "Todavía no ha agregado metas.",
+  "profile.list.item": "{label}, elemento {number}",
+
+  "profile.origin.fromRecord": "De su registro de visita ficticio.",
+  "profile.origin.enteredByYou": "Ingresado por usted",
+  "profile.origin.enteredByYouHint": "Agregado o cambiado en este perfil. Su equipo de atención médica no lo ha confirmado.",
+
+  "profile.pregnancy.add": "Agregar contexto de embarazo o posparto",
+  "profile.pregnancy.remove": "Quitar el contexto de embarazo o posparto",
+  "profile.pregnancy.placeholder": "Por ejemplo, lo que su equipo de atención médica ha documentado",
+  // --- end profile-editor additions ---
 } satisfies FeatureTranslation<typeof en>;

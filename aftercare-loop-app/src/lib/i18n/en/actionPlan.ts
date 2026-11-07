@@ -56,4 +56,48 @@ export const actionPlan = {
   "actionPlan.barrier.sectionTitle": "Help with getting care",
   "actionPlan.barrier.sectionHint":
     "These are questions to ask your clinic, not medical instructions. Availability depends on your clinic.",
+  // ---- BEGIN action-plan page additions ----
+  "actionPlan.loading": "Loading your action plan…",
+  "actionPlan.emptyTitle": "Your action plan is empty",
+  "actionPlan.goToUnderstand": "Go to Understand My Health",
+  "actionPlan.rebuild": "Rebuild from my summary",
+  "actionPlan.rebuildHint": "Updates your plan from your visit summary. Your progress and reminders are kept.",
+  "actionPlan.rebuildDone": "Your action plan is up to date.",
+  "actionPlan.rebuildError": "We couldn't rebuild your action plan right now.",
+  "actionPlan.noDocument": "Add a visit summary in Understand My Health to build your plan.",
+  "actionPlan.count": "{count} in this section",
+  "actionPlan.progress": "{completed} of {total} steps completed",
+  "actionPlan.status.label": "Status",
+  "actionPlan.modeNote": "Questions suggested from your visit summary:",
+  "actionPlan.sourceUnavailable": "The original document is not available.",
+
+  "actionPlan.reminder.title": "Add a reminder",
+  "actionPlan.reminder.labelField": "What should we remind you about?",
+  "actionPlan.reminder.save": "Save reminder",
+  "actionPlan.reminder.invalid": "Choose a date and time.",
+  "actionPlan.reminder.saved": "Reminder saved.",
+  "actionPlan.reminder.change": "Change reminder",
+  "actionPlan.reminder.dueTitle": "Reminder: {label}",
+  "actionPlan.reminder.dueBody": "Due {date}. This reminder appears in this app only.",
+  "actionPlan.reminder.view": "View my action plan",
+
+  "actionPlan.addGoalHint": "Something you'd like to work on. It will be labeled as chosen by you.",
+  "actionPlan.addQuestionHint": "Anything you want to ask at your next visit.",
+  "actionPlan.goalAdded": "Goal added.",
+  "actionPlan.questionAdded": "Question added.",
+  "actionPlan.inputRequired": "Please type something first.",
+
+  "actionPlan.barrier.because": "Because you mentioned {barrier}…",
+  "actionPlan.barrier.addToQuestions": "Add to my questions",
+  "actionPlan.barrier.added": "Added to my questions",
+
+  "actionPlan.saved.title": "My saved questions",
+  "actionPlan.saved.hint": "Questions you saved from Ask Kat or Check My Understanding.",
+  "actionPlan.saved.remove": "Remove question: {question}",
+
+  "actionPlan.needsClarification.what": "What this means",
+  "actionPlan.needsClarification.explainer":
+    "Kat found something that may be an instruction, but could not match it word-for-word to your visit document. It is not part of your care plan until your care team confirms it.",
+  "actionPlan.needsClarification.claimed": "What Kat found",
+  // ---- END action-plan page additions ----
 } satisfies Namespaced<"actionPlan">;

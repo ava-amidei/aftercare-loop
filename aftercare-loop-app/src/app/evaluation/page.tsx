@@ -1,17 +1,11 @@
-import { ChartColumn } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader } from "@/components/ui/PageHeader";
+import type { Metadata } from "next";
+import { EvaluationDashboard } from "@/components/evaluation/EvaluationDashboard";
 
-// Placeholder — replaced by the owning feature agent.
+export const metadata: Metadata = {
+  title: "Evaluation · Aftercare Loop",
+  description: "Limited automated evaluation on fictional, synthetic cases. Not clinical validation.",
+};
+
 export default function EvaluationPage() {
-  return (
-    <>
-      <PageHeader title="Evaluation" />
-      <EmptyState
-        icon={<ChartColumn aria-hidden="true" className="size-7" />}
-        title="Coming soon"
-        description="Results from synthetic test runs will appear here."
-      />
-    </>
-  );
+  return <EvaluationDashboard />;
 }

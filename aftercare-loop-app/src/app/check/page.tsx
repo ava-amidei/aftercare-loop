@@ -1,17 +1,12 @@
-import { ClipboardCheck } from "lucide-react";
-import { EmptyState } from "@/components/ui/EmptyState";
-import { PageHeader } from "@/components/ui/PageHeader";
+import { CheckUnderstandingView } from "@/components/teach-back/CheckUnderstandingView";
 
-// Placeholder — replaced by the owning feature agent.
-export default function CheckPage() {
-  return (
-    <>
-      <PageHeader title="Check My Understanding" />
-      <EmptyState
-        icon={<ClipboardCheck aria-hidden="true" className="size-7" />}
-        title="Coming soon"
-        description="Short questions to make sure explanations were clear will appear here."
-      />
-    </>
-  );
+/** Check My Understanding. Supports deep links: /check?questionId=<id>. */
+export default async function CheckPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { questionId } = await searchParams;
+  const initialQuestionId = typeof questionId === "string" ? questionId : undefined;
+  return <CheckUnderstandingView initialQuestionId={initialQuestionId} />;
 }

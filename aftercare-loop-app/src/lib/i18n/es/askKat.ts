@@ -57,4 +57,22 @@ export const askKat = {
   "askKat.action.add_question": "Agregar la pregunta a mi lista",
   "askKat.action.view_action_plan": "Ver mi plan de acción",
   "askKat.action.prepare_appointment": "Prepararme para mi cita",
+  // ---- BEGIN ask-kat-ui additions ----
+  "askKat.conversationActive": "Conversación en curso",
+  "askKat.messagesLabel": "Conversación con Kat",
+  "askKat.fromYourDocument": "De su resumen de la visita",
+  "askKat.viewSource": "Ver la fuente",
+  "askKat.sourceUnavailable": "El documento original de este pasaje no está disponible.",
+  "askKat.deterministicNote": "Elaborado a partir de su expediente ficticio sin un modelo de IA.",
+  "askKat.suggestedQuestion": "Pregunta sugerida",
+  "askKat.questionAlreadySaved": "Ya está en sus preguntas",
+  "askKat.planCreated": "Se creó su plan de acción a partir de su resumen de la visita.",
+  "askKat.planError":
+    "Kat no pudo crear su plan de acción en este momento. Puede intentarlo de nuevo desde Mi plan de acción.",
+  "askKat.empty.title": "Todavía no hay mensajes",
+  "askKat.empty.body": "Hágale una pregunta a Kat o elija una sugerencia.",
+  "askKat.hydrating": "Cargando su conversación…",
+  "askKat.moreSuggestions": "Más sugerencias",
+  "askKat.concerningNote": "Kat no puede evaluar síntomas. Comuníquese pronto con su equipo de atención.",
+  // ---- END ask-kat-ui additions ----
 } satisfies FeatureTranslation<typeof en>;

@@ -65,4 +65,49 @@ export const actionPlan = {
   "actionPlan.barrier.sectionTitle": "Ayuda para recibir atención médica",
   "actionPlan.barrier.sectionHint":
     "Son preguntas para su clínica, no indicaciones médicas. La disponibilidad depende de cada clínica.",
+  // ---- BEGIN action-plan page additions ----
+  "actionPlan.loading": "Cargando su plan de acción…",
+  "actionPlan.emptyTitle": "Su plan de acción está vacío",
+  "actionPlan.goToUnderstand": "Ir a «Entender mi salud»",
+  "actionPlan.rebuild": "Actualizar desde mi resumen",
+  "actionPlan.rebuildHint":
+    "Actualiza su plan a partir del resumen de su consulta. Se conservan su progreso y sus recordatorios.",
+  "actionPlan.rebuildDone": "Su plan de acción está al día.",
+  "actionPlan.rebuildError": "No pudimos actualizar su plan de acción en este momento.",
+  "actionPlan.noDocument": "Agregue el resumen de una consulta en «Entender mi salud» para crear su plan.",
+  "actionPlan.count": "{count} en esta sección",
+  "actionPlan.progress": "{completed} de {total} pasos completados",
+  "actionPlan.status.label": "Estado",
+  "actionPlan.modeNote": "Preguntas sugeridas a partir del resumen de su consulta:",
+  "actionPlan.sourceUnavailable": "El documento original no está disponible.",
+
+  "actionPlan.reminder.title": "Agregar un recordatorio",
+  "actionPlan.reminder.labelField": "¿Qué quiere que le recordemos?",
+  "actionPlan.reminder.save": "Guardar recordatorio",
+  "actionPlan.reminder.invalid": "Elija una fecha y una hora.",
+  "actionPlan.reminder.saved": "Se guardó el recordatorio.",
+  "actionPlan.reminder.change": "Cambiar recordatorio",
+  "actionPlan.reminder.dueTitle": "Recordatorio: {label}",
+  "actionPlan.reminder.dueBody": "Para el {date}. Este recordatorio aparece solo en esta aplicación.",
+  "actionPlan.reminder.view": "Ver mi plan de acción",
+
+  "actionPlan.addGoalHint": "Algo en lo que le gustaría trabajar. Se marcará como elegido por usted.",
+  "actionPlan.addQuestionHint": "Cualquier cosa que quiera preguntar en su próxima consulta.",
+  "actionPlan.goalAdded": "Se agregó la meta.",
+  "actionPlan.questionAdded": "Se agregó la pregunta.",
+  "actionPlan.inputRequired": "Primero escriba algo, por favor.",
+
+  "actionPlan.barrier.because": "Como usted mencionó {barrier}…",
+  "actionPlan.barrier.addToQuestions": "Agregar a mis preguntas",
+  "actionPlan.barrier.added": "Agregada a mis preguntas",
+
+  "actionPlan.saved.title": "Mis preguntas guardadas",
+  "actionPlan.saved.hint": "Preguntas que guardó desde «Ask Kat» o «Repasar lo que entendí».",
+  "actionPlan.saved.remove": "Quitar pregunta: {question}",
+
+  "actionPlan.needsClarification.what": "Qué significa esto",
+  "actionPlan.needsClarification.explainer":
+    "Kat encontró algo que podría ser una indicación, pero no pudo encontrar esas mismas palabras en el documento de su consulta. No forma parte de su plan de cuidado hasta que su equipo de atención médica lo confirme.",
+  "actionPlan.needsClarification.claimed": "Lo que encontró Kat",
+  // ---- END action-plan page additions ----
 } satisfies FeatureTranslation<typeof en>;

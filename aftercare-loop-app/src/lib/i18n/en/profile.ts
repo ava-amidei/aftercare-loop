@@ -57,4 +57,51 @@ export const profile = {
   "profile.list.add": "Add",
   "profile.list.remove": "Remove {item}",
   "profile.list.empty": "Nothing added yet.",
+  // --- profile-editor additions ---
+  "profile.loading": "Loading your profile…",
+  "profile.error.title": "We couldn't load this profile.",
+  "profile.error.detail": "Try choosing a fictional patient again, or reset the demo.",
+  "profile.form.label": "Edit health profile",
+  "profile.save": "Save changes",
+  "profile.saving": "Saving…",
+  "profile.discard": "Discard changes",
+  "profile.discarded": "Changes discarded.",
+  "profile.unsaved": "You have unsaved changes.",
+  "profile.upToDate": "All changes saved.",
+  "profile.savedDetail": "Kat will use your updated preferences from now on.",
+  "profile.scenario": "Demo scenario: {summary}",
+
+  "profile.field.ageRangePlaceholder": "Prefer not to say",
+  "profile.field.languageHint": "The app and Kat's answers will use this language after you save.",
+  "profile.field.accessibilityHint": "Text size, contrast and motion change right away so you can preview them. Save to keep them.",
+
+  "profile.conditions.options": "Conditions or concerns to choose from",
+  "profile.conditions.addLabel": "Add your own condition or concern",
+  "profile.conditions.add": "Add condition",
+  "profile.conditions.empty": "No conditions or concerns selected.",
+  "profile.conditions.selectedCount": "{count} selected",
+
+  "profile.medication.doseNote":
+    "Changing a dose or schedule here does not change your medical instructions. Only your care team can change a medication.",
+  "profile.medication.item": "Medication {number}",
+  "profile.medication.removeNamed": "Remove medication {name}",
+  "profile.medication.unnamed": "New medication",
+
+  "profile.careInstructions.hint":
+    "From your fictional visit record. Editing this list does not change what your care team told you.",
+  "profile.careInstructions.placeholder": "Type a care instruction",
+  "profile.careInstructions.addLabel": "Add a care instruction",
+  "profile.careInstructions.empty": "No care instructions listed.",
+  "profile.healthGoals.addLabel": "Add a health goal",
+  "profile.healthGoals.empty": "No goals added yet.",
+  "profile.list.item": "{label}, item {number}",
+
+  "profile.origin.fromRecord": "From your fictional visit record.",
+  "profile.origin.enteredByYou": "Entered by you",
+  "profile.origin.enteredByYouHint": "Added or changed in this profile. Not confirmed by your care team.",
+
+  "profile.pregnancy.add": "Add pregnancy or postpartum context",
+  "profile.pregnancy.remove": "Remove pregnancy or postpartum context",
+  "profile.pregnancy.placeholder": "For example, what your care team has documented",
+  // --- end profile-editor additions ---
 } satisfies Namespaced<"profile">;

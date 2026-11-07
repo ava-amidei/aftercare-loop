@@ -49,4 +49,21 @@ export const askKat = {
   "askKat.action.add_question": "Add question to my list",
   "askKat.action.view_action_plan": "View my action plan",
   "askKat.action.prepare_appointment": "Prepare for my appointment",
+  // ---- BEGIN ask-kat-ui additions ----
+  "askKat.conversationActive": "Conversation in progress",
+  "askKat.messagesLabel": "Conversation with Kat",
+  "askKat.fromYourDocument": "From your visit document",
+  "askKat.viewSource": "View source",
+  "askKat.sourceUnavailable": "The original document for this passage isn't available.",
+  "askKat.deterministicNote": "Assembled from your fictional record without an AI model.",
+  "askKat.suggestedQuestion": "Suggested question",
+  "askKat.questionAlreadySaved": "In your questions",
+  "askKat.planCreated": "Your action plan was created from your visit document.",
+  "askKat.planError": "Kat couldn't build your action plan just now. You can try again from My Action Plan.",
+  "askKat.empty.title": "No messages yet",
+  "askKat.empty.body": "Ask Kat a question or choose a suggestion below.",
+  "askKat.hydrating": "Loading your conversation…",
+  "askKat.moreSuggestions": "More suggestions",
+  "askKat.concerningNote": "Kat can't assess symptoms. Please contact your care team promptly.",
+  // ---- END ask-kat-ui additions ----
 } satisfies Namespaced<"askKat">;
