@@ -1,0 +1,13 @@
+# Root ignores for the Aftercare Loop monorepo
+.DS_Store
+aftercare-loop-assets/
+.env
+.env.*
+!.env.example
+aftercare-loop-app/node_modules/
+aftercare-loop-app/.next/
+aftercare-loop-app/out/
+aftercare-loop-app/test-results/
+aftercare-loop-app/playwright-report/
+aftercare-loop-app/*.tsbuildinfo
+aftercare-loop-app/next-env.d.ts
