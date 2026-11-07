@@ -91,6 +91,11 @@ const TYPO_MAP: Record<string, string> = {
   temprature: "temperature",
   postpartem: "postpartum",
   postpardum: "postpartum",
+  postpartm: "postpartum",
+  postpartun: "postpartum",
+  pospartum: "postpartum",
+  shortnes: "shortness",
+  shortnss: "shortness",
   siezure: "seizure",
   seizur: "seizure",
   cannt: "cant",
@@ -160,7 +165,15 @@ function hasNegationCue(clause: string): boolean {
 function segmentClauses(text: string): Clause[] {
   const out: Clause[] = [];
   for (const sentence of baseNormalize(text).split(SENTENCE_SPLIT)) {
+    const sentenceStart = out.length;
+    /** End index (exclusive) of clauses covered by a "…but it's gone" segment. */
+    let resolvedUpTo = -1;
     for (const segment of sentence.split(SEGMENT_SPLIT)) {
+      const cleanSegment = cleanClause(segment);
+      const segmentResolved = RESOLVED_MARKERS.test(cleanSegment) && !ONGOING_MARKERS.test(cleanSegment);
+      if (!segmentResolved && resolvedUpTo >= 0 && ONGOING_MARKERS.test(cleanSegment)) {
+        resolvedUpTo = -1; // "…it went away but came back today"
+      }
       let hypothetical = false;
       let past = false;
       let listNegation = false;
@@ -193,6 +206,12 @@ function segmentClauses(text: string): Clause[] {
         const last = subClauses[subClauses.length - 1]!;
         if (!(subClauses.length === 1 && listNegation)) listNegation = hasNegationCue(last);
       });
+      if (segmentResolved) resolvedUpTo = out.length;
+    }
+    for (let i = sentenceStart; i < resolvedUpTo; i++) {
+      const c = out[i]!;
+      // A clause that itself says the symptom is ongoing ("my chest still hurts") is not resolved.
+      if (!ONGOING_MARKERS.test(c.text) && !PRESENT_OVERRIDE.test(c.text)) c.dampened = true;
     }
   }
   return out;
@@ -257,7 +276,7 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
   ],
   chest_severe: [
     /\b(?:crushing|severe|intense|terrible|unbearable|excruciating|really bad|very bad|worst|horrible|sharp severe) (?:chest pain|chest pressure|pain in (?:my |the )?chest|pressure in (?:my |the )?chest)\b/,
-    /\belephant (?:on|sitting on|standing on) (?:my )?chest\b/,
+    /\belephant (?:is |was )?(?:sitting |standing )?on (?:my )?chest\b/,
     /\b(?:having|havin|think (?:im|i am) having|might be having|is this|could this be|feels like|maybe) (?:a )?heart attack\b/,
     /\bdolor (?:muy fuerte|fuerte|intenso|severo|insoportable|aplastante|terrible) (?:en el|en mi|de|del) pecho\b/,
     /\b(?:estoy teniendo|me esta dando|creo que (?:es|tengo|estoy teniendo)|tengo) (?:un )?(?:infarto|ataque al corazon|ataque cardiaco)\b/,
@@ -286,6 +305,10 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\bturning blue\b/,
     /\b(?:severe|extreme|serious|really bad|very bad|terrible) (?:shortness of breath|trouble breathing|difficulty breathing|breathing (?:problems?|trouble|difficulty))\b/,
     /\b(?:cant|cannot) (?:talk|speak) (?:because|in full sentences|without gasping)\b/,
+    /\b(?:cant|cannot|couldnt|unable to) (?:finish|complete|get through|get out) (?:a |my |one |full |whole )?sentences?\b/,
+    /\b(?:can|could) only (?:get out|say|speak|manage) (?:a )?(?:few|couple of|couple|one or two|two|2) words\b/,
+    /\b(?:every|each) breath is (?:a )?(?:struggle|fight|battle)\b/,
+    /\b(?:cant|cannot|couldnt) catch my breath (?:even )?(?:at rest|while resting|sitting still|sitting down|lying down|resting)\b/,
     /\bno (?:puedo|podia|puede|podemos) respirar\b/,
     /\bme (?:estoy )?ahog\w*\b/,
     /\bno me entra (?:el )?aire\b/,
@@ -455,7 +478,17 @@ const PAST_MARKERS =
   /\b(?:last (?:year|month|summer|winter|spring|fall|autumn|pregnancy)|(?:\d+|a|one|two|three|four|five|few|a few|several|many|couple of|a couple of) (?:years?|months?) (?:ago|back)|years ago|months ago|a while ago|long time ago|long ago|in the past|used to|back in \d{4}|back when|as a (?:kid|child|teen|teenager)|when i was (?:a kid|a child|younger|a teen|a teenager|little)|history of|previous pregnancy|el ano pasado|el mes pasado|hace (?:\d+|un|una|unos|unas|dos|tres|varios|varias|muchos|muchas) (?:anos?|meses?)|de nina|cuando era (?:nina|joven|pequena|chica)|antes (?:tenia|sentia)|solia|historial de|antecedentes? de)\b/;
 /** Conditional framing that a present-time word cancels ("if I get chest pain" vs "…right now"). */
 const SOFT_HYPOTHETICAL =
-  /\b(?:(?:what|when) (?:should|do|would) i do if|should i (?:go|call) (?:to the er |911 )?if|if i (?:get|have|start|feel|notice|develop)|si (?:me da|tengo|siento|empiezo))\b/;
+  /\b(?:(?:what|when) (?:should|do|would) i do if|should i (?:go|call) (?:to the er |911 )?if|if i (?:get|have|start|feel|notice|develop)|si (?:me da|tengo|siento|empiezo)|(?:explain|define|tell me) what\b(?: \w+){1,6} means?|what (?:does|do)\b(?: \w+){1,6} mean|what is the meaning of|(?:que|lo que) (?:significa|quiere decir))\b/;
+/**
+ * A sentence segment saying the symptom has resolved ("…but it's gone",
+ * "…pero ya estoy mejor") dampens the whole sentence by one level, unless a
+ * present-time word ("now", "again", "still") says it is ongoing.
+ */
+const RESOLVED_MARKERS =
+  /^(?:(?:it|its|that|the \w+) )?(?:is |has |was )?(?:gone|went away|go away|resolved|stopped|passed|over|better now|fine now)$|\b(?:its gone|it went away|its gone away|it stopped|it passed|its better now|it resolved|ya (?:paso|se fue|se quito|estoy mejor|me siento mejor)|ya no (?:me duele|tengo))\b/;
+/** Words saying a symptom is ongoing or recurring; they cancel a resolution marker. */
+const ONGOING_MARKERS =
+  /\b(?:again|still|keeps?|came back|comes back|coming back|returned|worse|tonight|otra vez|de nuevo|todavia|sigo|aun|regreso|volvio)\b/;
 const PRESENT_OVERRIDE =
   /\b(?:now|right now|today|tonight|currently|again|this morning|this afternoon|this evening|still|since|keeps?|ahora|hoy|esta noche|otra vez|de nuevo|todavia|sigo|aun|desde)\b/;
 const HYPOTHETICAL_MARKERS =

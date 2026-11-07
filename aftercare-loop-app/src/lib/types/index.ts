@@ -531,3 +531,70 @@ export interface EvidenceReference {
 // ---------------------------------------------------------------------------
 // END evidence-index additions
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// BEGIN teach-back-service additions (owner: teach-back-service)
+// ---------------------------------------------------------------------------
+
+// Interface declaration merging: adds an OPTIONAL field to TeachBackQuestion.
+export interface TeachBackQuestion {
+  /**
+   * Optional synonyms per key concept, keyed by the concept string exactly as it
+   * appears in `keyConcepts` (or its first "|" segment). Equivalent to writing
+   * "concept|synonym|synonym" inside `keyConcepts`. Used only by deterministic
+   * scoring; the model never decides correctness.
+   */
+  conceptSynonyms?: Record<string, string[]>;
+}
+
+/** Deterministic teach-back score (pure; see src/lib/services/teach-back-scoring.ts). */
+export interface TeachBackScore {
+  correct: boolean;
+  /** Canonical key concepts found in the response (deduplicated). */
+  matchedConcepts: string[];
+  /** Gentle clarification for a detected misconception; only set when not correct. */
+  misunderstanding?: string;
+  /** How the decision was reached (for transparency / evaluation). */
+  matchedBy: "choice" | "accepted_variation" | "key_concepts" | "none";
+  /** Set when the response selected (or exactly restated) a multiple-choice option. */
+  choiceId?: string;
+}
+
+// ---------------------------------------------------------------------------
+// END teach-back-service additions
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// BEGIN document-interpreter additions (owner: document-interpreter module)
+// ---------------------------------------------------------------------------
+
+// Interface declaration merging: adds OPTIONAL fields only.
+export interface ExtractedInstruction {
+  /**
+   * Set only when sourceVerification is "unverified": the quote the extractor
+   * claimed, which could NOT be matched to the document text. Display it as
+   * "needs clarification", never as a verified source passage.
+   */
+  unverifiedQuote?: string;
+}
+
+// ---------------------------------------------------------------------------
+// END document-interpreter additions
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// BEGIN ask-kat-service additions (owner: ask-kat-service) — optional fields only
+// ---------------------------------------------------------------------------
+
+export interface AiMeta {
+  /**
+   * How the content was produced. "model" = live Claude; "scripted" =
+   * predefined Scripted Demo Mode text; "deterministic" = assembled by rules
+   * from the fictional record (quick prompts, safety guidance) with no model call.
+   */
+  generatedBy?: "model" | "scripted" | "deterministic";
+}
+
+// ---------------------------------------------------------------------------
+// END ask-kat-service additions
+// ---------------------------------------------------------------------------

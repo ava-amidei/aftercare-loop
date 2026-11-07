@@ -122,6 +122,11 @@ export const groundTruthPtC: PatientGroundTruth = {
             clarification: "Your summary says endometriosis is one possible cause being evaluated. It has not been confirmed.",
           },
           {
+            // Matches the "Yes — … confirmed it" multiple-choice distractors.
+            pattern: "confirmed it",
+            clarification: "Your summary says endometriosis is one possible cause being evaluated. It has not been confirmed.",
+          },
+          {
             pattern: "ruled out",
             clarification: "Your summary says a normal ultrasound does not rule endometriosis in or out; the evaluation is still going.",
           },

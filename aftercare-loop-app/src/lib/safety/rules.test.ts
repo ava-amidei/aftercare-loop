@@ -286,3 +286,34 @@ describe("SAFETY_SYSTEM_RULES", () => {
     expect(SAFETY_SYSTEM_RULES).toMatch(/911/);
   });
 });
+
+// ---------------------------------------------------------------------------
+// [gate-2 integration] Ground-truth safety suite (src/data/ground-truth) must
+// pass against these rules, plus regressions for the wording added for it.
+// ---------------------------------------------------------------------------
+import { safetyTestCases } from "@/data/ground-truth/safety-cases";
+
+describe("evaluateSafety — ground-truth safety suite", () => {
+  it.each(safetyTestCases)("$id", (c) => {
+    const v = evaluateSafety(c.input);
+    expect(v.level).toBe(c.expectedLevel);
+    for (const concept of c.requiredConcepts ?? []) expect(v.guidance ?? "").toContain(concept);
+    for (const phrase of c.forbiddenPhrases) expect((v.guidance ?? "").toLowerCase()).not.toContain(phrase);
+  });
+});
+
+describe("evaluateSafety — resolved symptoms and definition questions", () => {
+  it.each<[string, SafetyLevel]>([
+    ["I had crushing chest pain, it went away but came back today", "emergency"],
+    ["I still have chest pain but the bleeding stopped", "emergency"],
+    ["I had bad chest pain but it went away", "concerning"],
+    ["What does shortness of breath mean? I can't breathe right now", "emergency"],
+    ["What does 'wheezing' mean on my discharge paper?", "none"],
+    // Emergency-level terms in a definition question are dampened one level, never dropped.
+    ["Can you explain what 'chest pain' means on my paper?", "concerning"],
+    ["Every breath is a struggle", "emergency"],
+    ["I can't finish a sentence without stopping to breathe", "emergency"],
+  ])("%s → %s", (input, level) => {
+    expect(evaluateSafety(input).level).toBe(level);
+  });
+});
