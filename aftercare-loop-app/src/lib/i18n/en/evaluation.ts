@@ -1,0 +1,57 @@
+import type { Namespaced } from "../types";
+
+export const evaluation = {
+  "evaluation.title": "Evaluation",
+  "evaluation.subtitle": "Results from automated tests on fictional, synthetic scenarios.",
+  "evaluation.notEvaluated": "Not evaluated",
+  "evaluation.limitation":
+    "These are limited evaluations on synthetic data. They are not clinical validation and do not show real-world outcomes.",
+  "evaluation.noRun": "No evaluation results yet. Run “npm run eval” to generate them.",
+  "evaluation.loadError": "We couldn't load the evaluation results.",
+  "evaluation.fraction": "{numerator} of {denominator}",
+
+  "evaluation.suite.instruction_extraction": "Instruction extraction",
+  "evaluation.suite.citation_validity": "Citation validity",
+  "evaluation.suite.safety": "Safety",
+  "evaluation.suite.comprehension": "Comprehension",
+
+  "evaluation.kind.deterministic_synthetic": "Automated deterministic tests (synthetic data)",
+  "evaluation.kind.model_based": "Model-based tests",
+  "evaluation.kind.human_reviewed": "Human-reviewed",
+
+  "evaluation.run.suiteVersion": "Suite version",
+  "evaluation.run.timestamp": "Run at",
+  "evaluation.run.mode": "Mode",
+  "evaluation.run.model": "Model",
+  "evaluation.run.modelNone": "None (scripted mode)",
+  "evaluation.run.caseCount": "Cases",
+  "evaluation.run.errors": "Errors",
+  "evaluation.run.noErrors": "No errors",
+
+  "evaluation.metric.truePositives": "True positives",
+  "evaluation.metric.falsePositives": "False positives",
+  "evaluation.metric.falseNegatives": "False negatives",
+  "evaluation.metric.trueNegatives": "True negatives",
+  "evaluation.metric.precision": "Precision",
+  "evaluation.metric.recall": "Recall",
+  "evaluation.metric.f1": "F1 score",
+  "evaluation.metric.verifiedCitations": "Verified citations",
+  "evaluation.metric.invalidCitations": "Invalid citations",
+  "evaluation.metric.rate": "Rate",
+  "evaluation.metric.total": "Total",
+  "evaluation.metric.passed": "Passed",
+  "evaluation.metric.failed": "Failed",
+  "evaluation.metric.totalQuestions": "Total questions",
+  "evaluation.metric.initialCorrect": "Correct on first try",
+  "evaluation.metric.correctAfterClarification": "Correct after clarification",
+  "evaluation.metric.misunderstandingsIdentified": "Misunderstandings identified",
+  "evaluation.metric.unsuccessfulClarifications": "Unsuccessful clarifications",
+
+  "evaluation.confusionMatrix": "Confusion matrix",
+  "evaluation.failureDetails": "Failure details",
+  "evaluation.cases": "Individual results",
+  "evaluation.case.passed": "Passed",
+  "evaluation.case.failed": "Failed",
+  "evaluation.case.expected": "Expected",
+  "evaluation.case.actual": "Actual",
+} satisfies Namespaced<"evaluation">;

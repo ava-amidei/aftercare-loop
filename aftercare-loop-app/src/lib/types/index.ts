@@ -496,3 +496,38 @@ export interface PatientSessionState {
   /** Questions saved for the next appointment (free text). */
   savedQuestions: string[];
 }
+
+// ---------------------------------------------------------------------------
+// [synthetic-patients additions] — optional fields only (declaration merging).
+// ---------------------------------------------------------------------------
+
+export interface PatientGroundTruth {
+  /**
+   * Other imperative sentences in the document (e.g. "When to seek care"
+   * guidance, "continue X as before") that are NOT core expected instructions.
+   * Extracting one is neither required nor a fabrication, so evaluators may
+   * exclude them from false positives. Each is an exact substring of the text.
+   */
+  optionalInstructionQuotes?: string[];
+}
+
+// ---------------------------------------------------------------------------
+// BEGIN evidence-index additions (owner: evidence-index module)
+// ---------------------------------------------------------------------------
+
+/** Who publishes a reference. Lets the UI avoid labeling non-.gov sources as government. */
+export type EvidencePublisherType =
+  | "government"
+  | "professional_society"
+  | "journal"
+  | "nonprofit";
+
+// Interface declaration merging: adds an OPTIONAL field to EvidenceReference.
+export interface EvidenceReference {
+  /** Optional publisher category; set when `kind` alone would be ambiguous. */
+  publisherType?: EvidencePublisherType;
+}
+
+// ---------------------------------------------------------------------------
+// END evidence-index additions
+// ---------------------------------------------------------------------------

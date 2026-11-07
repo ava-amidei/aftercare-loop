@@ -1,0 +1,60 @@
+import type { Namespaced } from "../types";
+
+export const profile = {
+  "profile.title": "My Health Profile",
+  "profile.subtitle": "Every field is optional. You can change anything at any time.",
+  "profile.privacyNote": "This demo keeps fictional data in this browser only.",
+  "profile.saved": "Profile saved.",
+
+  "profile.section.about": "About me",
+  "profile.section.preferences": "How I like information",
+  "profile.section.health": "My health",
+  "profile.section.access": "Getting care",
+
+  "profile.field.displayName": "Name (fictional)",
+  "profile.field.ageRange": "Age range",
+  "profile.field.language": "Preferred language",
+  "profile.field.explanationLevel": "How much detail would you like?",
+  "profile.field.accessibility": "Accessibility preferences",
+  "profile.field.conditions": "Conditions or concerns",
+  "profile.field.conditionsHint": "Choose from the list or type your own.",
+  "profile.field.conditionsPlaceholder": "Type a condition or concern",
+  "profile.field.medications": "Medications",
+  "profile.field.careInstructions": "Care instructions from my clinician",
+  "profile.field.healthGoals": "My health goals",
+  "profile.field.healthGoalsPlaceholder": "Type a goal",
+  "profile.field.barriers": "Is anything making it harder to get care?",
+  "profile.field.barriersHint": "This helps Kat suggest questions to ask your clinic. It is never used to guess anything about your health.",
+  "profile.field.pregnancy": "Pregnancy or postpartum context",
+  "profile.field.pregnancyHint": "Only add this if it applies to you. Aftercare Loop never guesses it.",
+
+  "profile.level.simple": "Simple",
+  "profile.level.simpleHint": "Short, everyday words",
+  "profile.level.standard": "Standard",
+  "profile.level.standardHint": "Plain language with a bit more detail",
+  "profile.level.detailed": "Detailed",
+  "profile.level.detailedHint": "More background and medical terms explained",
+
+  "profile.accessibility.larger_text": "Larger text",
+  "profile.accessibility.high_contrast": "High contrast",
+  "profile.accessibility.reduced_motion": "Reduced motion",
+  "profile.accessibility.screen_reader": "Screen reader friendly",
+
+  "profile.barrier.transportation": "Transportation",
+  "profile.barrier.cost_or_insurance": "Cost or insurance",
+  "profile.barrier.language": "Language",
+  "profile.barrier.scheduling": "Limited appointment availability",
+  "profile.barrier.caregiving": "Caregiving responsibilities",
+
+  "profile.medication.name": "Medication name",
+  "profile.medication.dose": "Dose",
+  "profile.medication.frequency": "How often",
+  "profile.medication.purpose": "Documented purpose",
+  "profile.medication.add": "Add a medication",
+  "profile.medication.empty": "No medications listed.",
+  "profile.medication.note": "Kat never suggests changing a medication. Ask your care team about any changes.",
+
+  "profile.list.add": "Add",
+  "profile.list.remove": "Remove {item}",
+  "profile.list.empty": "Nothing added yet.",
+} satisfies Namespaced<"profile">;
