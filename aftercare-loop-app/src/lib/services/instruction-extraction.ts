@@ -33,6 +33,7 @@ import type {
   SourceRef,
   VisitDocument,
 } from "@/lib/types";
+import { detectInjectionMarkers } from "@/lib/safety/sanitize";
 import { slugify } from "@/lib/utils/text";
 import { locateQuote, sectionIdFor, verifySourceRef, verifySourceRefs } from "./source-verification";
 
@@ -480,9 +481,19 @@ export function extractInstructionsHeuristic(doc: VisitDocument): ExtractedInstr
 // Post-validation (applies to every source)
 // ---------------------------------------------------------------------------
 
+/** True when any of the instruction's texts contain prompt-injection markers. */
+export function hasInjectionMarkers(item: ExtractedInstruction): boolean {
+  return [item.sourceRef?.quote, item.description, item.unverifiedQuote].some(
+    (t) => typeof t === "string" && detectInjectionMarkers(t).length > 0,
+  );
+}
+
 /**
  * Re-verify every instruction against the document text. Verified only when the
  * final ref slices exactly to its quote; otherwise "unverified" with no ref.
+ * A line containing prompt-injection markers ("…ignore all previous
+ * instructions") is never verified, even if it is quoted exactly: it is marked
+ * `suspectedInjection`, loses its ref and goes to "Needs clarification".
  * Due dates are re-derived from the verified quote (never trusted from the
  * extractor); unverified instructions never carry a due date. Duplicate
  * locations are dropped.
@@ -498,8 +509,15 @@ export function validateInstructions(
   const seen = new Set<string>();
   const out: ExtractedInstruction[] = [];
   for (const item of checked) {
-    const { dueDate: _claimed, ...rest } = item;
+    const { dueDate: _claimed, suspectedInjection: _flag, ...rest } = item;
     void _claimed;
+    void _flag;
+    if (hasInjectionMarkers(item)) {
+      const { sourceRef: _ref, ...noRef } = rest;
+      void _ref;
+      out.push({ ...noRef, sourceVerification: "unverified", suspectedInjection: true });
+      continue;
+    }
     if (item.sourceRef && verifySourceRef(doc, item.sourceRef) === "verified") {
       const key = `${item.sourceRef.start}:${item.sourceRef.end}`;
       if (seen.has(key)) continue;

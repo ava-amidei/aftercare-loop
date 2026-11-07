@@ -142,7 +142,10 @@ describe("ActionPlanView", () => {
     expect(within(care).queryByText(/telehealth/)).toBeNull();
 
     await userEvent.click(within(barrier).getByRole("button", { name: /add to my questions/i }));
-    expect(useDemoStore.getState().patients[patientId].savedQuestions).toContain(barrierItem().description);
+    // Saved in clinic-facing wording, never as the "Would you like to ask…" prompt.
+    const saved = useDemoStore.getState().patients[patientId].savedQuestions;
+    expect(saved).toContain("Can you tell me whether a telehealth appointment is available?");
+    expect(saved.some((q) => /^would you like to/i.test(q))).toBe(false);
     expect(within(barrier).getByRole("button", { name: /added to my questions/i })).toBeDisabled();
   });
 

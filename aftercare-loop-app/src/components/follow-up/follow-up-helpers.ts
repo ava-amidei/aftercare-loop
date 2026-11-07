@@ -11,6 +11,7 @@ import type {
   CommunicationSummary,
   PatientId,
 } from "@/lib/types";
+import { isBarrierSuggestionText, toClinicQuestion } from "@/lib/services/barriers";
 import { createCareTeamRequest } from "@/lib/services/care-team";
 import { normalizeWhitespace } from "@/lib/utils/text";
 
@@ -44,15 +45,25 @@ export function findActionForLine(line: string, actions: ActionItem[]): ActionIt
   return best;
 }
 
-/** Saved questions were saved by the patient; others come from action items. */
+/**
+ * Origin of a summary question. Barrier-aware suggestions stay "Suggested by
+ * Kat" even after the patient saves them; other saved questions were chosen by
+ * the patient; the rest come from action items (matched in clinic wording too).
+ */
 export function questionOrigin(
   question: string,
   savedQuestions: string[],
   actions: ActionItem[],
 ): ActionOrigin {
   const q = norm(question);
-  if (savedQuestions.some((s) => norm(s) === q)) return "patient_selected";
-  const action = actions.find((a) => a.category === "provider_question" && norm(a.description) === q);
+  if (isBarrierSuggestionText(question)) return "ai_suggested";
+  const action = actions.find(
+    (a) =>
+      a.category === "provider_question" &&
+      (norm(a.description) === q || norm(toClinicQuestion(a.description)) === q),
+  );
+  if (action?.origin === "ai_suggested" && action.addressesBarrier) return "ai_suggested";
+  if (savedQuestions.some((s) => norm(s) === q || norm(toClinicQuestion(s)) === q)) return "patient_selected";
   return action?.origin ?? "patient_selected";
 }
 

@@ -30,7 +30,7 @@ import {
   retrieveEvidence as defaultRetrieveEvidence,
   type RetrieveEvidenceInput,
 } from "@/lib/evidence";
-import { containsFalseReassurance, evaluateSafety } from "@/lib/safety";
+import { containsFalseReassurance, evaluateSafety, safetyContextOf } from "@/lib/safety";
 import type {
   AiMeta,
   ChatMessage,
@@ -101,14 +101,6 @@ const defaultDeps: AskKatDeps = {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-
-/** Postpartum context for the safety rules, from the documented profile field only. */
-function hasPostpartumContext(text: string | undefined): boolean {
-  if (!text) return false;
-  return /\b(postpartum|post-partum|delivery|gave birth|given birth|breastfeed\w*|posparto|parto|lactancia|amamant\w*)\b/i.test(
-    text,
-  );
-}
 
 export function trimHistory<T extends { role: string; content: string }>(history: readonly T[] | undefined): T[] {
   return (history ?? []).filter((m) => m.content.trim().length > 0).slice(-MAX_HISTORY_TURNS);
@@ -322,7 +314,7 @@ export async function askKat(
   // (1) Safety first — deterministic, before any lookup or model call.
   const safety = evaluateSafety(req.message, {
     language,
-    postpartumContext: hasPostpartumContext(ctx.profile.pregnancyOrPostpartumContext),
+    ...safetyContextOf(ctx.profile),
     source: "message",
   });
 

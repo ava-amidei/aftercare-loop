@@ -65,4 +65,9 @@ export const common = {
   "common.verification.verified": "Matches your document",
   "common.verification.unverified": "Could not be matched to your document",
   "common.verification.not_applicable": "No document source",
+
+  // [ui-fix-1] AppShell chrome
+  "common.footerDisclaimer": "Educational information, not medical advice. Fictional data.",
+  "common.patientSwitcher.fallback": "Fictional demo patient",
+  // [/ui-fix-1]
 } satisfies Namespaced<"common">;

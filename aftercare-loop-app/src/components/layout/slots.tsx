@@ -7,7 +7,14 @@ import { UserRound } from "lucide-react";
  * components render the provided node or a sensible fallback.
  */
 
-export function PatientSwitcherSlot({ children }: { children?: ReactNode }) {
+export function PatientSwitcherSlot({
+  children,
+  fallbackLabel = "Fictional demo patient",
+}: {
+  children?: ReactNode;
+  /** Translated fallback label (AppShell passes it from the i18n dictionary). */
+  fallbackLabel?: string;
+}) {
   if (children) return <>{children}</>;
   // Fallback: a static, non-interactive label (no fake controls).
   return (
@@ -16,7 +23,7 @@ export function PatientSwitcherSlot({ children }: { children?: ReactNode }) {
       className="inline-flex min-h-11 items-center gap-1.5 rounded-control px-2 text-sm font-medium text-ink-muted"
     >
       <UserRound aria-hidden="true" className="size-4" />
-      Fictional demo patient
+      {fallbackLabel}
     </span>
   );
 }

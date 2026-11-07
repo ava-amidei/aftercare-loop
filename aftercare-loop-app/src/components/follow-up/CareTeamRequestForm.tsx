@@ -16,6 +16,7 @@ import {
 } from "@/components/ui";
 import { careTeamTypeKey, useT } from "@/lib/i18n";
 import { evaluateSafety } from "@/lib/safety/rules";
+import { safetyContextOf } from "@/lib/safety/context";
 import { useDemoStore } from "@/lib/store";
 import { normalizeWhitespace, truncate } from "@/lib/utils/text";
 import { PATIENT_REQUEST_TYPES, buildFormRequest } from "./follow-up-helpers";
@@ -50,7 +51,7 @@ export function CareTeamRequestForm({ profile, actions }: CareTeamRequestFormPro
     setVerdict(
       evaluateSafety(summary, {
         language: profile.language,
-        postpartumContext: Boolean(profile.pregnancyOrPostpartumContext),
+        ...safetyContextOf(profile),
       }),
     );
     addCareTeamRequest(profile.id, req);

@@ -31,4 +31,10 @@ export const nav = {
   "nav.loop.verify": "Confirmar",
   "nav.loop.act": "Actuar",
   "nav.loop.followUp": "Dar seguimiento",
+
+  // [ui-fix-1] AppShell landmark labels
+  "nav.primaryLabel": "Principal",
+  "nav.secondaryLabel": "Más",
+  "nav.footerLabel": "Más (pie de página)",
+  // [/ui-fix-1]
 } satisfies FeatureTranslation<typeof en>;

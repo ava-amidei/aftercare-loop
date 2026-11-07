@@ -17,6 +17,7 @@ import {
   useToast,
 } from "@/components/ui";
 import { actionCategoryHintKey, actionCategoryKey, useT } from "@/lib/i18n";
+import { toClinicQuestion } from "@/lib/services/barriers";
 import { actionProgress, useActiveSession, useDemoStore, useHasHydrated } from "@/lib/store";
 import { AddItemForm } from "./AddItemForm";
 import { ActionItemCard } from "./ActionItemCard";
@@ -259,14 +260,12 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
             title={t("actionPlan.emptyTitle")}
             description={t("actionPlan.empty")}
             action={
+              // With a document, "Build my action plan" is the primary CTA and
+              // comes first so it sits higher on mobile, clear of the Ask Kat FAB.
               <>
-                <Link href="/understand" className={buttonVariants({ variant: "primary" })}>
-                  <BookOpen aria-hidden="true" className="size-5" />
-                  {t("actionPlan.goToUnderstand")}
-                </Link>
                 {activeDoc && (
                   <Button
-                    variant="secondary"
+                    variant="primary"
                     onClick={rebuild}
                     loading={rebuilding}
                     loadingLabel={t("actionPlan.generating")}
@@ -274,6 +273,10 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
                     {t("actionPlan.generate")}
                   </Button>
                 )}
+                <Link href="/understand" className={buttonVariants({ variant: activeDoc ? "secondary" : "primary" })}>
+                  <BookOpen aria-hidden="true" className="size-5" />
+                  {t("actionPlan.goToUnderstand")}
+                </Link>
               </>
             }
           />
@@ -368,7 +371,8 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
           items={grouped.barrierSuggestions}
           savedQuestions={savedQuestions}
           onAddToQuestions={(item) => {
-            addSavedQuestion(patientId, item.description);
+            // Save the clinic-facing wording, not the "Would you like to ask…" prompt.
+            addSavedQuestion(patientId, toClinicQuestion(item.description));
             toast({ title: t("actionPlan.barrier.added"), variant: "success" });
           }}
         />

@@ -31,7 +31,9 @@ export function KatIcon({ className }: { className?: string }) {
 /**
  * Floating "Ask Kat" button, bottom-right. Uses the shell's --kat-fab-bottom /
  * --kat-fab-right variables so it sits above the mobile bottom nav and the
- * safe-area inset, and at 1.5rem from the corner on desktop.
+ * safe-area inset, and at 1.5rem from the corner on desktop. Icon-only below
+ * md (label kept for assistive tech); globals.css pads <main> so content can
+ * always scroll clear of it.
  */
 export function KatFab({ label, ariaLabel, onClick, indicator, reducedMotion, ref }: KatFabProps) {
   return (
@@ -43,7 +45,10 @@ export function KatFab({ label, ariaLabel, onClick, indicator, reducedMotion, re
       data-testid="kat-fab"
       style={{ bottom: "var(--kat-fab-bottom)", right: "var(--kat-fab-right)" }}
       className={cn(
-        "fixed z-[45] inline-flex min-h-14 items-center gap-2 rounded-full bg-accent-700 py-3 pr-5 pl-4",
+        // Icon-only 56px circle below md so it covers as little content as possible
+        // (SPEC §12.1); the labelled pill from md up. aria-label names it either way.
+        "fixed z-[45] inline-flex size-14 items-center justify-center rounded-full bg-accent-700",
+        "md:size-auto md:min-h-14 md:justify-start md:gap-2 md:py-3 md:pr-5 md:pl-4",
         "text-base font-semibold text-white shadow-lg ring-1 ring-black/5",
         "hover:bg-accent-800 hover:shadow-xl active:bg-accent-900",
         "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
@@ -52,7 +57,9 @@ export function KatFab({ label, ariaLabel, onClick, indicator, reducedMotion, re
       )}
     >
       <KatIcon />
-      <span>{label}</span>
+      <span data-testid="kat-fab-label" className="sr-only md:not-sr-only">
+        {label}
+      </span>
       {indicator && (
         <span
           aria-hidden="true"

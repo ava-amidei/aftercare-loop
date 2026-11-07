@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { render, screen, within } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
+import { ensureDemoStoreHydrated, useDemoStore } from "@/lib/store";
 import { AppShell } from "./AppShell";
 import { isNavActive } from "./nav-config";
 
@@ -63,6 +64,24 @@ describe("AppShell", () => {
     expect(screen.queryByText("Fictional demo patient")).not.toBeInTheDocument();
   });
 
+  it("applies the active patient's saved accessibility prefs on any route", async () => {
+    ensureDemoStoreHydrated();
+    await useDemoStore.persist.rehydrate();
+    const store = useDemoStore.getState;
+    act(() => store().resetDemo());
+    const withLarge = Object.values(store().patients).find((p) => p.profile.accessibility.includes("larger_text"));
+    expect(withLarge).toBeDefined();
+    act(() => store().switchPatient(withLarge!.profile.id));
+    render(
+      <AppShell withKat={false}>
+        <p>x</p>
+      </AppShell>,
+    );
+    expect(document.documentElement).toHaveAttribute("data-text-size", "large");
+    act(() => store().resetDemo());
+    document.documentElement.removeAttribute("data-text-size");
+  });
+
   it("does not double the chrome when nested", () => {
     render(
       <AppShell withKat={false}>
@@ -73,5 +92,53 @@ describe("AppShell", () => {
     );
     expect(screen.getAllByTestId("demo-banner")).toHaveLength(1);
     expect(screen.getAllByRole("main")).toHaveLength(1);
+  });
+});
+
+describe("AppShell i18n", () => {
+  const setLanguage = (language: "en" | "es") =>
+    act(() => {
+      const { activePatientId, updateProfile } = useDemoStore.getState();
+      updateProfile(activePatientId, { language });
+    });
+
+  it("translates the chrome and syncs <html lang> with the UI language", () => {
+    setLanguage("es");
+    try {
+      render(
+        <AppShell withKat={false}>
+          <p>x</p>
+        </AppShell>,
+      );
+      expect(screen.getByText("Demostración con datos de pacientes ficticios.")).toBeInTheDocument();
+      expect(screen.getByText("Información educativa, no es consejo médico. Datos ficticios.")).toBeInTheDocument();
+      expect(screen.getByText("Ir al contenido principal")).toBeInTheDocument();
+      expect(screen.getByText("Paciente de demostración (datos ficticios)")).toBeInTheDocument();
+      const navs = screen.getAllByRole("navigation", { name: "Principal" });
+      expect(navs).toHaveLength(2);
+      for (const nav of navs) {
+        for (const label of ["Inicio", "Entender", "Plan", "Repasar", "Seguimiento"]) {
+          expect(within(nav).getByRole("link", { name: label })).toBeInTheDocument();
+        }
+      }
+      expect(screen.getAllByRole("link", { name: "Mi perfil de salud" }).length).toBeGreaterThan(0);
+      expect(screen.queryByText("Home")).not.toBeInTheDocument();
+      expect(document.documentElement.lang).toBe("es");
+      setLanguage("en");
+      expect(document.documentElement.lang).toBe("en");
+      expect(screen.getAllByRole("navigation", { name: "Main" })).toHaveLength(2);
+    } finally {
+      setLanguage("en");
+    }
+  });
+
+  it("still honors explicit string overrides", () => {
+    render(
+      <AppShell withKat={false} strings={{ demoBanner: "Custom banner", navLabels: { "nav.home": "Start" } }}>
+        <p>x</p>
+      </AppShell>,
+    );
+    expect(screen.getByText("Custom banner")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Start" })).toHaveLength(2);
   });
 });

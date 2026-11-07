@@ -251,6 +251,7 @@ type Signal =
   | "pad_soaking"
   | "large_clots"
   | "suicidal"
+  | "hopeless"
   | "harm_baby"
   | "seizure_or_unresponsive"
   | "calf"
@@ -429,12 +430,26 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\b(?:i )?(?:want|wanna|wish) (?:to )?die\b/,
     /\bwish i (?:was|were) dead\b/,
     /\bwish i (?:could )?(?:just )?(?:disappear forever|not wake up|wouldnt wake up|didnt wake up)\b/,
-    /\bbetter off (?:dead|without me)\b/,
+    /\bbetter off (?:dead|without me|if i (?:wasnt|werent|was not|were not) (?:around|here|alive)|if i (?:was|were) (?:gone|dead)|if i (?:disappeared|died|didnt exist|never existed))\b/,
+    /\bwish i (?:wasnt|werent|was not|were not) (?:here|around|alive)\b/,
     /\b(?:dont|do not) want to (?:live|be alive|be here anymore|wake up|exist|go on)\b/,
     /\bno (?:reason|point) (?:to|in) (?:live|living|going on)\b/,
+    /\b(?:dont|do not|cant|cannot|no longer) (?:really )?see (?:the|any) point (?:of|in) (?:living|being alive|being here|going on|carrying on|life)(?: anymore| any more)?$/,
     /\bself harm\w*\b/,
     /\b(?:take|taking|swallow) (?:all|a bunch|a lot|the whole bottle) (?:of )?(?:my )?(?:pills|meds|medication|medicine)\b/,
-    /\boverdose on purpose\b/,
+    // Completed / in-progress overdose. "I took all my pills" alone is an
+    // ordinary adherence report, so a quantity needs an intent or method cue.
+    /\b(?:swallowed|downed) (?:all|the (?:whole|entire|rest of the)|a (?:whole|full)|a (?:bunch|handful|lot)|handfuls)\b(?: \w+){0,5}? (?:pills|meds|medications?|medicine|tablets|bottle)\b/,
+    /\b(?:took|taken|swallowed|downed) (?:the|a) (?:whole|entire|full) (?:bottle|pack|packet|box)\b(?! (?:of antibiotics|as (?:prescribed|directed)|like (?:i was told|prescribed)))/,
+    /\b(?:took|taken|take|taking|swallowed|swallow|downed)\b(?: \w+){0,6}? (?:pills|meds|medications?|medicine|tablets|bottle|insulin)\b(?: \w+){0,4}? on purpose\b/,
+    /(?<!accidentally )\b(?:overdosed|overdosing|took an overdose|taken an overdose|tried to overdose|(?:going|gonna|want|wanna|planning) to overdose|overdose on purpose)\b(?! (?:by accident|accidentally|on accident))/,
+    /\b(?:dont|do not) want (?:anyone|anybody|them|you|people|my family|him|her) to (?:find|save|stop) me\b/,
+    /\bme (?:tome|trague) (?:el|un|todo el) (?:frasco|bote) (?:entero|completo)\b/,
+    /\bme (?:tome|trague)\b(?: \w+){0,5}? (?:pastillas|pildoras|medicinas|medicamentos)\b(?: \w+){0,3}? a proposito\b/,
+    /\b(?:me (?:tome|provoque|hice)|tome) una sobredosis\b(?! (?:sin querer|por accidente))/,
+    /\bno quiero que (?:nadie|me) (?:me )?encuentre\w*\b/,
+    /\b(?:estarian|estaria|estarias|estaran|estan) mejor sin mi\b/,
+    /\bno (?:le )?veo (?:el )?sentido (?:a|de) (?:vivir|la vida|seguir viviendo)\b/,
     /\b(?:thoughts?|thinking) (?:of|about) (?:ending it|dying|death|not being here)\b/,
     /\b(?:quiero|quisiera|queria) morir(?:me)?\b/,
     /\bme quiero morir\b/,
@@ -444,6 +459,15 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\bmejor (?:muerta|muerto)\b/,
     /\bno vale la pena vivir\b/,
     /\bterminar con (?:todo|mi vida)\b/,
+  ],
+  // Hopelessness without an explicit reference to death: "concerning" with the
+  // crisis line (see evaluateHits), never silently "none".
+  hopeless: [
+    /\b(?:dont|do not|cant|cannot|no longer) (?:really )?see (?:the|any) point (?:of|in) (?:any of (?:this|it)|anything|it all|trying)(?: anymore| any more)?$/,
+    /\b(?:dont|do not|cant|cannot|no longer) (?:really )?see (?:the|any) point (?:anymore|any more)$/,
+    /\bnothing matters(?: anymore| any more| to me(?: anymore)?)?$/,
+    /\b(?:ya )?nada (?:me )?importa(?: ya)?$/,
+    /\bno (?:le )?veo (?:el )?sentido a nada\b/,
   ],
   harm_baby: [
     /\b(?:hurt|hurting|harm|harming|kill|killing|shake|shaking|smother\w*|drown\w*) (?:my|the) (?:baby|newborn|infant|son|daughter|child|kids?)\b/,
@@ -496,6 +520,45 @@ const HYPOTHETICAL_MARKERS =
 const POSTPARTUM_CONTEXT =
   /\b(?:postpartum|post partum|postnatal|after (?:giving )?birth|gave birth|given birth|after (?:my |the )?delivery|delivered (?:my|the|a) baby|since (?:my |the )?(?:birth|delivery|c section|cesarean)|c section|cesarean|caesarean|newborn|my baby|the baby|had (?:my|a|the) baby|breastfeed\w*|posparto|post parto|despues del parto|di a luz|dar a luz|cesarea|recien nacid[oa]|mi bebe|el bebe|tuve (?:a )?(?:mi|un) bebe|lactancia|amamant\w*)\b/;
 const FEVER_WORD = /\b(?:fever|temp|temperature|febrile|fiebre|temperatura|calentura)\b/;
+
+/**
+ * Pad/tampon count over a stated time ("gone through four pads in the last two
+ * hours", "cambie tres toallas en una hora"). A hit needs ≥2 pads at a rate of
+ * at least one per hour — the same threshold as "soaking a pad every hour".
+ */
+const COUNT_WORDS: Record<string, number> = {
+  a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10,
+  eleven: 11, twelve: 12, several: 3, multiple: 2, many: 4, "a few": 3, "a couple of": 2, "a couple": 2,
+  un: 1, uno: 1, una: 1, media: 0.5, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8,
+  nueve: 9, diez: 10, varias: 3, varios: 3, muchas: 4, "half an": 0.5, half: 0.5,
+};
+const PAD_COUNT = "(\\d{1,2}|a couple of|a couple|a few|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|several|multiple|many|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|varias|varios|muchas)";
+const PAD_DURATION = "(\\d{1,3}(?:\\.\\d)?|half an|half|an|a|one|two|three|four|five|six|un|una|media|dos|tres|cuatro|cinco|seis)";
+const PAD_RATE = new RegExp(
+  "\\b(?:gone through|went through|been through|go through|going through|got through|gotten through|used|using|changed|changing|change|filled|filling|soaked|soaking|bled through|needed|cambie|cambiado|cambiando|llene|llenado|llenando|use|usado|empape|empapado|traspase)\\b(?: \\w+){0,2}? " +
+    PAD_COUNT +
+    " (?:\\w+ ){0,2}?(?:pads?|tampons?|toallas?|compresas?)\\b(?: \\w+){0,5}? (?:" +
+    PAD_DURATION +
+    " )?(hours?|hrs?|horas?|minutes?|mins?|minutos?)\\b",
+);
+
+function countValue(token: string | undefined, fallback: number): number {
+  if (token === undefined) return fallback;
+  if (/^\d/.test(token)) return parseFloat(token);
+  return COUNT_WORDS[token] ?? fallback;
+}
+
+/** Matched phrase when the clause reports ≥2 pads at ≥1 per hour; else null. */
+function padRatePhrase(clause: string): { phrase: string; index: number } | null {
+  const m = PAD_RATE.exec(clause);
+  if (!m) return null;
+  const pads = countValue(m[1], 0);
+  const unit = m[3] ?? "";
+  const amount = countValue(m[2], 1);
+  const hours = /^min/.test(unit) ? amount / 60 : amount;
+  if (pads < 2 || hours <= 0 || pads / hours < 1) return null;
+  return { phrase: m[0], index: m.index };
+}
 
 const NEG_CUES = new Set([
   "no", "not", "never", "without", "denies", "deny", "denied", "dont", "doesnt", "didnt",
@@ -567,6 +630,16 @@ function collectHits(clauses: Clause[], documentMode: boolean): Hit[] {
         }
       }
     });
+    const padRate = padRatePhrase(clause);
+    if (padRate) {
+      hits.push({
+        signal: "pad_soaking",
+        phrase: padRate.phrase,
+        negated: inheritedNegation || isNegated(clause, padRate.index, padRate.phrase),
+        dampened,
+        mild: false,
+      });
+    }
     // Numeric fever ≥ 100.4 °F / ≥ 38.0 °C, only when a fever/temperature word is in the clause.
     if (FEVER_WORD.test(clause)) {
       const nums = clause.match(/\b\d{2,3}(?:\.\d{1,2})?\b/g) ?? [];
@@ -656,6 +729,8 @@ function evaluateHits(hits: Hit[], postpartum: boolean): Candidate[] {
   // Suicidal ideation / self-harm — always emergency when active.
   const suicidal = of("suicidal");
   add("emergency", stateOf(suicidal), "suicidal_ideation_or_self_harm", suicidal, true);
+  const hopeless = of("hopeless");
+  add("concerning", stateOf(hopeless), "suicidal_ideation_or_self_harm", hopeless, true);
 
   // Thoughts of harming the baby (postpartum warning sign) — include crisis line.
   const harmBaby = of("harm_baby");

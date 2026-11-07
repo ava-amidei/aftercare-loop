@@ -149,6 +149,8 @@ export interface BarrierQuestion {
   barrier: AccessBarrier;
   /** Phrased "Would you like to ask your clinic whether…" — never assumes availability. */
   question: string;
+  /** Clinic-facing wording (patient's voice) — what Kat offers to save as a provider question. */
+  clinicQuestion: string;
 }
 
 /** Administrative, barrier-aware questions in the requested language (SPEC §12.7). */
@@ -162,7 +164,7 @@ export function suggestBarrierQuestions(
   for (const barrier of barriers ?? []) {
     if (seen.has(barrier)) continue;
     seen.add(barrier);
-    for (const sug of BARRIER_SUGGESTIONS[barrier] ?? []) out.push({ barrier, question: sug[lang] });
+    for (const sug of BARRIER_SUGGESTIONS[barrier] ?? []) out.push({ barrier, question: sug[lang], clinicQuestion: sug.question[lang] });
   }
   return out;
 }
@@ -272,8 +274,8 @@ export function buildWhatShouldIAsk(ctx: KatContext): KatDraft {
   const limitedDocQuestions = docQuestions.slice(0, MAX_DOC_QUESTIONS);
 
   const barrierQuestions = suggestBarrierQuestions(ctx.profile.barriers, lang).filter((b) => {
-    const key = normalizeKey(b.question);
-    if (seen.has(key) || saved.has(key)) return false;
+    const key = normalizeKey(b.clinicQuestion);
+    if (seen.has(key) || saved.has(key) || saved.has(normalizeKey(b.question))) return false;
     seen.add(key);
     return true;
   });
@@ -287,21 +289,21 @@ export function buildWhatShouldIAsk(ctx: KatContext): KatDraft {
     parts.push(s(lang, "askNoInterpretation"));
   }
   if (barrierQuestions.length > 0) {
-    parts.push(`${s(lang, "askBarrierIntro")}\n${bullets(barrierQuestions.map((b) => b.question))}`);
+    parts.push(`${s(lang, "askBarrierIntro")}\n${bullets(barrierQuestions.map((b) => b.clinicQuestion))}`);
   }
   if (parts.length === 0) parts.push(s(lang, "askNothing"));
   if (ctx.savedQuestions.length > 0) parts.push(s(lang, "askSavedNote", { count: ctx.savedQuestions.length }));
 
   const actions = [
     ...limitedDocQuestions.map((q) => addQuestionAction(lang, q)),
-    ...barrierQuestions.map((b) => addQuestionAction(lang, b.question, b.barrier)),
+    ...barrierQuestions.map((b) => addQuestionAction(lang, b.clinicQuestion, b.barrier)),
   ];
   return {
     content: parts.join("\n\n"),
     sourceRefs: [],
     referenceIds: [],
     actions,
-    suggestedQuestions: [...limitedDocQuestions, ...barrierQuestions.map((b) => b.question)],
+    suggestedQuestions: [...limitedDocQuestions, ...barrierQuestions.map((b) => b.clinicQuestion)],
   };
 }
 
@@ -310,10 +312,15 @@ export function buildExplainMyDiagnosis(ctx: KatContext): KatDraft {
   const lang = profileLanguage(ctx.profile);
   const interp = ctx.interpretation;
   const terms = (interp?.terms ?? []).filter((term) => term.term.trim() && term.definition.trim());
+  // A heuristic (no-narrative) interpretation carries a service note in
+  // whatThisMeans ("…the next steps below…"), not an explanation — never present
+  // it as one; fall through to the documented Assessment quotes instead.
+  const heuristic = interp?.meta?.generatedBy === "deterministic";
+  const overview = heuristic ? "" : (interp?.whatThisMeans.trim() ?? "");
 
-  if (interp && (interp.whatThisMeans.trim() || terms.length > 0)) {
+  if (interp && (overview || terms.length > 0)) {
     const parts: string[] = [];
-    if (interp.whatThisMeans.trim()) parts.push(`${s(lang, "diagIntro")}\n${interp.whatThisMeans.trim()}`);
+    if (overview) parts.push(`${s(lang, "diagIntro")}\n${overview}`);
     const shown = terms.slice(0, MAX_TERMS);
     if (shown.length > 0) {
       parts.push(`${s(lang, "diagTerms")}\n${bullets(shown.map((term) => `${term.term} — ${term.definition}`))}`);
@@ -337,7 +344,9 @@ export function buildExplainMyDiagnosis(ctx: KatContext): KatDraft {
     const shown = documented.slice(0, MAX_RESULT_SENTENCES);
     const content = [
       `${s(lang, "diagFromDocument")}\n${bullets(shown.map((r) => `“${r.quote}”`))}`,
-      s(lang, "diagUnderstandHint"),
+      // Pointing back to Understand only helps if it hasn't already produced a
+      // no-narrative (heuristic) result for this document.
+      ...(heuristic ? [] : [s(lang, "diagUnderstandHint")]),
       s(lang, "diagNotDiagnosis"),
     ].join("\n\n");
     return {

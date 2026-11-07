@@ -53,8 +53,10 @@ describe("buildCommunicationSummary", () => {
     // Saved first, de-duplicated against the pending AI question.
     expect(s.questions[0]).toBe("Can my baby come to the visit?");
     expect(s.questions.filter((q) => q === "What should I bring to my next visit?")).toHaveLength(1);
-    // Barrier suggestions are pending provider questions.
-    expect(s.questions.some((q) => q.startsWith("Would you like to ask your clinic"))).toBe(true);
+    // Barrier suggestions are pending provider questions, in clinic-facing wording.
+    expect(s.questions).toContain("Is transportation assistance or a telehealth appointment available for my follow-up care?");
+    expect(s.questions.some((q) => /^would you like to/i.test(q))).toBe(false);
+    expect(s.text).not.toMatch(/Would you like to ask/);
     expect(s.barriers).toEqual(state.profile.barriers);
     expect(s.unresolvedItems.some((u) => u.startsWith("Clarify: Unmatched instruction") && u.includes("needs clarification"))).toBe(true);
     const gt = groundTruthByPatient["pt-b-postpartum"]!;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useDemoStore } from "@/lib/store";
+import { ensureDemoStoreHydrated, useDemoStore } from "@/lib/store";
 import type { AccessibilityPreference } from "@/lib/types";
 import { applyAccessibilityPrefs } from "./profile-draft";
 
@@ -22,10 +22,14 @@ export function useSavedAccessibilityPrefs(): AccessibilityPreference[] {
 
 /**
  * Keeps <html> in sync with the ACTIVE patient's SAVED accessibility
- * preferences. Intended to be mounted once app-wide (e.g. in the layout) so
+ * preferences. Mounted once app-wide in AppShell's ShellFrame so
  * prefs persist across pages and patient switches. Renders nothing.
  */
 export function AccessibilityPrefsSync(): null {
+  // Make sure persisted prefs load even on pages with no other store reader.
+  useEffect(() => {
+    ensureDemoStoreHydrated();
+  }, []);
   useApplyAccessibilityPrefs(useSavedAccessibilityPrefs());
   return null;
 }

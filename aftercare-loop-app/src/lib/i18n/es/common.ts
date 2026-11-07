@@ -73,4 +73,9 @@ export const common = {
   "common.verification.verified": "Coincide con su documento",
   "common.verification.unverified": "No se encontró en su documento",
   "common.verification.not_applicable": "Sin fuente en el documento",
+
+  // [ui-fix-1] AppShell chrome
+  "common.footerDisclaimer": "Información educativa, no es consejo médico. Datos ficticios.",
+  "common.patientSwitcher.fallback": "Paciente de demostración (datos ficticios)",
+  // [/ui-fix-1]
 } satisfies FeatureTranslation<typeof en>;

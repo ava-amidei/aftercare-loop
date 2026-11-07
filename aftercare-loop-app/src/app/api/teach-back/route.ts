@@ -13,7 +13,7 @@ import { z } from "zod";
 import { RouteError, withJsonBody } from "@/app/api/_lib/handler";
 import { getGroundTruth } from "@/data/ground-truth";
 import { getDocument, getPatient } from "@/data/patients";
-import { evaluateSafety } from "@/lib/safety";
+import { evaluateSafety, safetyContextOf } from "@/lib/safety";
 import { runTeachBackAttempt } from "@/lib/services/teach-back";
 import type { SafetyVerdict, TeachBackSession } from "@/lib/types";
 
@@ -83,7 +83,7 @@ export const POST = withJsonBody(
 
     const safety = evaluateSafety(body.response, {
       language: profile.language,
-      postpartumContext: Boolean(profile.pregnancyOrPostpartumContext),
+      ...safetyContextOf(profile),
     });
     const fallbackSession: TeachBackSession = body.session ?? {
       questionId: question.id,

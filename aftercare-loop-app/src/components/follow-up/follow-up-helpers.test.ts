@@ -51,6 +51,22 @@ describe("questionOrigin", () => {
     expect(questionOrigin("my own question", ["My own question"], actions)).toBe("patient_selected");
     expect(questionOrigin("Is telehealth available?", [], actions)).toBe("ai_suggested");
   });
+
+  it("keeps saved barrier suggestions labeled as suggested by Kat", () => {
+    const prompt =
+      "Would you like to ask your clinic whether transportation assistance or a telehealth appointment is available?";
+    const clinic = "Is transportation assistance or a telehealth appointment available for my follow-up care?";
+    const barrierAction = action({
+      id: "b1",
+      description: prompt,
+      category: "provider_question",
+      origin: "ai_suggested",
+      addressesBarrier: "transportation",
+    });
+    expect(questionOrigin(clinic, [clinic], [barrierAction])).toBe("ai_suggested");
+    expect(questionOrigin(clinic, [], [barrierAction])).toBe("ai_suggested");
+    expect(questionOrigin("my own question", ["my own question"], [barrierAction])).toBe("patient_selected");
+  });
 });
 
 describe("isSummaryEmpty", () => {

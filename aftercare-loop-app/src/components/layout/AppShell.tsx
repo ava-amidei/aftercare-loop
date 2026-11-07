@@ -1,15 +1,17 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { KatMount } from "@/components/ask-kat/KatMount";
+import { AccessibilityPrefsSync } from "@/components/profile/use-accessibility-prefs";
 import { DemoBanner } from "@/components/ui/DemoBanner";
 import { ToastProvider } from "@/components/ui/Toast";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils/cn";
 import { Logo } from "./Logo";
 import { PRIMARY_NAV, SECONDARY_NAV, isNavActive, type NavItem } from "./nav-config";
-import { SHELL_STRINGS_EN, type ShellStrings } from "./shell-strings";
+import { shellStringsFor, type ShellStrings } from "./shell-strings";
 import { LanguageToggleSlot, PatientSwitcherSlot, ResetDemoSlot } from "./slots";
 
 export interface AppShellProps {
@@ -20,7 +22,7 @@ export interface AppShellProps {
   languageToggle?: ReactNode;
   /** Real Reset Demo button. Fallback: nothing. */
   resetDemo?: ReactNode;
-  /** Partial string overrides (i18n). */
+  /** Partial string overrides. Defaults come from the i18n dictionary for the current language. */
   strings?: Partial<ShellStrings>;
   /** Render <KatMount/> (default true). Tests may disable it. */
   withKat?: boolean;
@@ -85,7 +87,8 @@ function NavLink({
 
 /**
  * App chrome: demo banner, top bar (logo + slots), desktop side nav, mobile
- * bottom nav, footer disclaimer, toasts and a single <KatMount/>.
+ * bottom nav, footer disclaimer, toasts, saved accessibility prefs sync and a
+ * single <KatMount/>.
  *
  * Mounted once in src/app/layout.tsx. A nested <AppShell> (e.g. a page that
  * wraps itself) renders only its children, so the chrome never doubles.
@@ -101,13 +104,27 @@ export function AppShell(props: AppShellProps) {
 
 function ShellFrame({ children, patientSwitcher, languageToggle, resetDemo, strings, withKat = true }: AppShellProps) {
   const pathname = usePathname();
-  const s: ShellStrings = { ...SHELL_STRINGS_EN, ...strings, navLabels: { ...strings?.navLabels } };
+  const t = useT();
+  const lang = t.lang;
+  const base = shellStringsFor(t);
+  const s: ShellStrings = { ...base, ...strings, navLabels: { ...base.navLabels, ...strings?.navLabels } };
   const labelFor = (item: NavItem) => s.navLabels[item.key] ?? item.label;
+
+  // <html lang> is static in the root layout; keep it in sync with the UI language.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   return (
     <ShellContext.Provider value={true}>
       <ToastProvider>
         <div className="flex min-h-dvh flex-col bg-canvas pb-[calc(var(--bottom-nav-height)+env(safe-area-inset-bottom))] md:pb-0">
+          {/*
+            Applies the active patient's SAVED accessibility prefs to <html> on
+            every route and patient switch. Kept before <main> so a page's own
+            effects (e.g. ProfileEditor's live preview) run after it and win.
+          */}
+          <AccessibilityPrefsSync />
           <a
             href="#main-content"
             className="sr-only z-[70] rounded-control bg-surface px-4 py-3 font-semibold text-brand-800 shadow-lg focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
@@ -117,11 +134,22 @@ function ShellFrame({ children, patientSwitcher, languageToggle, resetDemo, stri
 
           <DemoBanner text={s.demoBanner} />
 
-          <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85">
-            <div className="mx-auto flex min-h-[var(--header-height)] max-w-7xl flex-wrap items-center gap-x-3 gap-y-1 px-safe py-2">
-              <Logo name={s.appName} />
-              <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
-                <PatientSwitcherSlot>{patientSwitcher}</PatientSwitcherSlot>
+          {/*
+            Mobile: two compact rows (logo + EN/ES + icon-only Reset, then the
+            full-width patient switcher) and NOT sticky, so it never eats the
+            viewport while scrolling (the bottom nav stays fixed). md+: one
+            sticky row.
+          */}
+          <header className="z-40 border-b border-border bg-surface/95 backdrop-blur supports-[backdrop-filter]:bg-surface/85 md:sticky md:top-0">
+            <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-2 gap-y-1.5 px-safe py-1.5 md:min-h-[var(--header-height)] md:flex-nowrap md:gap-x-3 md:py-2">
+              <Logo name={s.appName} className="mr-auto" />
+              <div
+                data-slot="header-switcher"
+                className="order-last flex w-full min-w-0 md:order-none md:w-auto md:justify-end [&>*]:w-full md:[&>*]:w-auto"
+              >
+                <PatientSwitcherSlot fallbackLabel={s.patientFallback}>{patientSwitcher}</PatientSwitcherSlot>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5 md:gap-2">
                 <LanguageToggleSlot>{languageToggle}</LanguageToggleSlot>
                 <ResetDemoSlot>{resetDemo}</ResetDemoSlot>
               </div>
@@ -161,7 +189,7 @@ function ShellFrame({ children, patientSwitcher, languageToggle, resetDemo, stri
           <footer className="border-t border-border bg-surface px-safe pt-5 pb-24 md:pb-8">
             <div className="mx-auto flex max-w-7xl flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <p className="text-sm text-ink-muted">{s.footerDisclaimer}</p>
-              <nav aria-label={`${s.secondaryNav} (footer)`} className="md:hidden">
+              <nav aria-label={s.footerNav} className="md:hidden">
                 <ul className="flex flex-wrap gap-x-4">
                   {SECONDARY_NAV.map((item) => (
                     <li key={item.href}>

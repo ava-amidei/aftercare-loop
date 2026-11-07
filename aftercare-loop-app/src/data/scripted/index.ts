@@ -9,6 +9,8 @@ import { scriptedPtB } from "./pt-b-postpartum";
 import { scriptedPtC } from "./pt-c-endometriosis";
 import { scriptedPtD } from "./pt-d-pots";
 import { scriptedPtE } from "./pt-e-multi";
+import { scriptedPtF } from "./pt-f-gdm-es";
+import { scriptedPtI } from "./pt-i-anemia-es";
 import type { ScriptedPatientContent } from "./types";
 
 export type {
@@ -34,6 +36,9 @@ export const scriptedContent: ScriptedPatientContent[] = [
   scriptedPtC,
   scriptedPtD,
   scriptedPtE,
+  // Spanish-language (es) scripted scenarios.
+  scriptedPtF,
+  scriptedPtI,
 ];
 
 const byPatient: ReadonlyMap<PatientId, ScriptedPatientContent> = new Map(

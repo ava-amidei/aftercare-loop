@@ -21,3 +21,8 @@ export {
   detectInjectionMarkers,
   type SanitizedDocument,
 } from "./sanitize";
+export {
+  safetyContextOf,
+  hasDocumentedPregnancyOrPostpartumContext,
+  type ProfileSafetyContext,
+} from "./context";

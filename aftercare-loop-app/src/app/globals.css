@@ -237,3 +237,21 @@ html[data-motion="reduce"] *::after {
 }
 
 /* ==== Additions by other agents go below this line (delimited blocks) ==== */
+
+/* ---- BEGIN ask-kat additions: FAB clearance (SPEC §12.1 "never obscuring primary actions") ----
+   The fixed Ask Kat FAB covers the bottom-right of the viewport. Give <main>
+   enough bottom padding that its last row (e.g. empty-state CTAs, textareas)
+   can always be scrolled clear of the FAB. Unlayered, so it wins over the
+   shell's py-* utility. Math: FAB top edge = --kat-fab-bottom + 3.5rem (FAB
+   height); the shell already pads the bottom nav + safe area on mobile.
+     mobile:  5rem + 3.5rem - 4.25rem (nav) + ~0.75rem gap ≈ 5rem
+     desktop: 1.5rem + 3.5rem + 1rem gap = 6rem                              */
+#main-content {
+  padding-bottom: 5rem;
+}
+@media (min-width: 768px) {
+  #main-content {
+    padding-bottom: 6rem;
+  }
+}
+/* ---- END ask-kat additions ---- */

@@ -51,6 +51,21 @@ describe("Button", () => {
   });
 });
 
+describe("Button wrapping", () => {
+  it("lets text labels wrap so long labels never widen a mobile column", () => {
+    render(<Button>Save this question for my care team</Button>);
+    const cls = screen.getByRole("button").className;
+    expect(cls).not.toMatch(/whitespace-nowrap/);
+    expect(cls).toMatch(/max-w-full/);
+    expect(cls).toMatch(/text-center/);
+  });
+
+  it("keeps icon buttons on one line", () => {
+    render(<Button size="icon" aria-label="Close">x</Button>);
+    expect(screen.getByRole("button", { name: "Close" }).className).toMatch(/whitespace-nowrap/);
+  });
+});
+
 describe("OriginBadge", () => {
   it.each([
     ["clinician_documented", "Clinician-documented"],

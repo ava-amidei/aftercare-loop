@@ -598,3 +598,21 @@ export interface AiMeta {
 // ---------------------------------------------------------------------------
 // END ask-kat-service additions
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// BEGIN safety fix additions (owner: safety) — optional fields only
+// ---------------------------------------------------------------------------
+
+export interface ExtractedInstruction {
+  /**
+   * True when the instruction's text contains prompt-injection markers
+   * ("ignore all previous instructions", "you are now…"). Such an item is
+   * always "unverified" with no SourceRef, so it lands in "Needs
+   * clarification", never in My Care Plan.
+   */
+  suspectedInjection?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// END safety fix additions
+// ---------------------------------------------------------------------------

@@ -61,11 +61,55 @@ function allStrings(patientId: string): string[] {
 }
 
 const ALL_IDS = scriptedContent.map((c) => c.patientId);
+const ES_IDS = ["pt-f-gdm-es", "pt-i-anemia-es"];
+
+/** Language-specific phrasing the scripted content must follow. */
+const LANG = {
+  en: {
+    limitationPrefix: "Your summary does not",
+    generalPrefix: /^(In general|Generally)\b/,
+    secondPerson: /\byou(r|rs)?\b/i,
+    stopQuestion: "Can I stop my medication?",
+    cantStop: /can't tell you to stop/i,
+    careTeam: /care team/i,
+    advisesStopping: /\byou (can|may|should) stop\b/i,
+    seriousQuestion: "Is this serious?",
+    cantTell: /I can't tell you/,
+  },
+  es: {
+    limitationPrefix: "Su resumen no",
+    generalPrefix: /^(En general|Por lo general)\b/,
+    secondPerson: /\b(usted|su|sus)\b/i,
+    stopQuestion: "¿Puedo dejar de tomar mi medicina?",
+    cantStop: /no puedo decirle que deje/i,
+    careTeam: /equipo de atención/i,
+    advisesStopping: /\bpuede (dejar|suspender)\b/i,
+    seriousQuestion: "¿Esto es grave?",
+    cantTell: /No puedo decirle/,
+  },
+} as const;
+
+function langFor(patientId: string) {
+  return LANG[getScriptedContent(patientId)!.language];
+}
 
 describe("scripted content wiring", () => {
-  it("covers the three primary demo patients and the two lighter ones", () => {
+  it("covers the three primary demo patients, the two lighter ones and the two Spanish ones", () => {
     expect(SCRIPTED_PRIMARY_PATIENT_IDS).toEqual(["pt-a-pcos", "pt-b-postpartum", "pt-c-endometriosis"]);
-    expect(ALL_IDS).toEqual(["pt-a-pcos", "pt-b-postpartum", "pt-c-endometriosis", "pt-d-pots", "pt-e-multi"]);
+    expect(ALL_IDS).toEqual([
+      "pt-a-pcos",
+      "pt-b-postpartum",
+      "pt-c-endometriosis",
+      "pt-d-pots",
+      "pt-e-multi",
+      "pt-f-gdm-es",
+      "pt-i-anemia-es",
+    ]);
+  });
+
+  it.each(ES_IDS)("%s has Spanish (es) scripted content", (id) => {
+    expect(getScriptedContent(id)!.language).toBe("es");
+    expect(getPatient(id)!.language).toBe("es");
   });
 
   it.each(ALL_IDS)("%s points at its real fixture document and language", (id) => {
@@ -115,7 +159,7 @@ describe("getScriptedInterpretation", () => {
 
     // Limitations phrased as what the summary does not say.
     expect(interp.limitations.length).toBeGreaterThan(0);
-    for (const l of interp.limitations) expect(l.startsWith("Your summary does not")).toBe(true);
+    for (const l of interp.limitations) expect(l.startsWith(langFor(id).limitationPrefix)).toBe(true);
     expect(interp.unansweredQuestions.length).toBeGreaterThan(0);
     expect(interp.safetyFlags.length).toBeGreaterThan(0);
   });
@@ -140,9 +184,10 @@ describe("getScriptedInterpretation", () => {
   it.each(ALL_IDS)("%s whatToKnow is clearly general education, not patient-specific", (id) => {
     const interp = getScriptedInterpretation(id, docFor(id).id)!;
     expect(interp.whatToKnow.length).toBeGreaterThanOrEqual(3);
+    const lang = langFor(id);
     for (const bullet of interp.whatToKnow) {
-      expect(bullet).toMatch(/^(In general|Generally)\b/);
-      expect(bullet).not.toMatch(/\byou(r|rs)?\b/i);
+      expect(bullet).toMatch(lang.generalPrefix);
+      expect(bullet).not.toMatch(lang.secondPerson);
     }
   });
 
@@ -177,11 +222,11 @@ describe("getScriptedKatReply", () => {
     }
   });
 
-  it.each(["pt-d-pots", "pt-e-multi"])("%s (lighter coverage) also covers all quick prompts", (id) => {
+  it.each(["pt-d-pots", "pt-e-multi", ...ES_IDS])("%s (lighter coverage) also covers all quick prompts", (id) => {
     for (const qp of QUICK_PROMPTS) expect(getScriptedKatReply(id, "", qp), qp).not.toBeNull();
   });
 
-  it.each(SCRIPTED_PRIMARY_PATIENT_IDS)("%s has 8–12 free-text entries that resolve to themselves", (id) => {
+  it.each([...SCRIPTED_PRIMARY_PATIENT_IDS, ...ES_IDS])("%s has 8–12 free-text entries that resolve to themselves", (id) => {
     const c = getScriptedContent(id)!;
     expect(c.freeText.length).toBeGreaterThanOrEqual(8);
     expect(c.freeText.length).toBeLessThanOrEqual(12);
@@ -201,7 +246,7 @@ describe("getScriptedKatReply", () => {
     expect(getScriptedKatReply(id, "", "free_text")).toBe(c.quickPrompts.free_text);
   });
 
-  it.each(SCRIPTED_PRIMARY_PATIENT_IDS)("%s answers the core demo questions (incl. wording variants)", (id) => {
+  it.each([...SCRIPTED_PRIMARY_PATIENT_IDS, ...ES_IDS])("%s answers the core demo questions (incl. wording variants)", (id) => {
     const c = getScriptedContent(id)!;
     const idFor = (q: string) => c.freeText.find((e) => e.reply === getScriptedKatReply(id, q))?.id;
     expect(idFor("Can I stop my medication?")).toMatch(/stop-medication|medicines/);
@@ -213,6 +258,44 @@ describe("getScriptedKatReply", () => {
     expect(idFor("Can you explain this in simpler terms?")).toBe("simpler");
     expect(idFor("What information should I clarify?")).toBe("clarify");
     expect(idFor("What does my follow-up plan say?")).toBe("follow-up");
+  });
+
+  it.each(ES_IDS)("%s answers the core demo questions in Spanish (incl. wording variants)", (id) => {
+    const c = getScriptedContent(id)!;
+    const idFor = (q: string) => c.freeText.find((e) => e.reply === getScriptedKatReply(id, q))?.id;
+    expect(idFor("¿Puedo dejar de tomar mi medicina?")).toBe("stop-medication");
+    expect(idFor("puedo dejar la medicina")).toBe("stop-medication");
+    expect(idFor("¿Qué dice mi plan de seguimiento?")).toBe("follow-up");
+    expect(idFor("cuando es mi proxima cita")).toBe("follow-up");
+    expect(idFor("¿Qué debo traer a mi próxima cita?")).toBe("what-to-bring");
+    expect(idFor("¿Esto es grave?")).toBe("is-this-serious");
+    expect(idFor("¿Debo preocuparme?")).toBe("is-this-serious");
+    expect(idFor("¿Me lo puedes explicar de forma más sencilla?")).toBe("simpler");
+    expect(idFor("no entiendo nada")).toBe("simpler");
+    expect(idFor("¿Qué significa este término médico?")).toBe("medical-term");
+    expect(idFor("¿Qué información debería aclarar?")).toBe("clarify");
+  });
+
+  it("answers Spanish patient-specific examples in Spanish", () => {
+    const f = getScriptedContent("pt-f-gdm-es")!;
+    const fId = (q: string) => f.freeText.find((e) => e.reply === getScriptedKatReply("pt-f-gdm-es", q))?.id;
+    expect(fId("¿Puedo tomar café antes de la prueba?")).toBe("fasting");
+    expect(fId("¿Qué significa en ayunas?")).toBe("fasting");
+    expect(fId("¿Cuándo es mi prueba de glucosa?")).toBe("follow-up");
+    expect(fId("mi azucar salio normal, por que necesito la prueba de glucosa")).toBe("glucose-test");
+    expect(fId("¿Tengo que volver a usar insulina?")).toBe("insulin");
+    expect(fId("trabajo en turnos, el laboratorio abre los sabados?")).toBe("schedule");
+    const i = getScriptedContent("pt-i-anemia-es")!;
+    const iId = (q: string) => i.freeText.find((e) => e.reply === getScriptedKatReply("pt-i-anemia-es", q))?.id;
+    expect(iId("¿Puedo tomar el hierro con leche?")).toBe("how-to-take");
+    expect(iId("¿Puedo dejar de tomar el hierro?")).toBe("stop-medication");
+    expect(iId("tengo las heces negras")).toBe("side-effects");
+    expect(iId("¿Cuándo voy a tener más energía?")).toBe("feel-better");
+    expect(iId("¿Para qué es el ultrasonido?")).toBe("ultrasound");
+    expect(iId("¿Qué tengo que anotar?")).toBe("what-to-bring");
+    expect(iId("Dependo del autobús para ir a la clínica")).toBe("transport");
+    // English-typed questions still get the profile-language (Spanish) reply.
+    expect(getScriptedKatReply("pt-i-anemia-es", "What does my follow-up plan say?")!.content).toMatch(/^Su resumen dice/);
   });
 
   it("answers patient-specific examples", () => {
@@ -244,21 +327,29 @@ describe("getScriptedKatReply", () => {
     expect(getScriptedKatReply("pt-a-pcos", "What is the capital of France?")).toBeNull();
     expect(getScriptedKatReply("pt-a-pcos", "")).toBeNull();
     expect(getScriptedKatReply("pt-unknown", "", "what_should_i_ask")).toBeNull();
-    expect(getScriptedKatReply("pt-f-gdm-es", "When is my follow-up?")).toBeNull();
+    expect(getScriptedKatReply("pt-g-hypothyroid", "When is my follow-up?")).toBeNull();
+    expect(getScriptedKatReply("pt-f-gdm-es", "¿Puedo comer plátanos?")).toBeNull();
+    expect(getScriptedKatReply("pt-i-anemia-es", "¿Cuál es la capital de Francia?")).toBeNull();
   });
 
   it.each(ALL_IDS)("%s medication questions redirect to the clinician and never advise stopping", (id) => {
-    const reply = getScriptedKatReply(id, "Can I stop my medication?")!;
-    expect(reply).not.toBeNull();
-    expect(reply.content).toMatch(/can't tell you to stop/i);
-    expect(reply.content).toMatch(/care team/i);
-    expect(reply.content).not.toMatch(/\byou (can|may|should) stop\b/i);
+    const lang = langFor(id);
+    for (const q of ["Can I stop my medication?", lang.stopQuestion]) {
+      const reply = getScriptedKatReply(id, q)!;
+      expect(reply, q).not.toBeNull();
+      expect(reply.content).toMatch(lang.cantStop);
+      expect(reply.content).toMatch(lang.careTeam);
+      expect(reply.content).not.toMatch(lang.advisesStopping);
+    }
   });
 
   it.each(ALL_IDS)("%s 'is this serious' states limits and does not diagnose", (id) => {
-    const reply = getScriptedKatReply(id, "Is this serious?")!;
-    expect(reply.content).toMatch(/I can't tell you/);
-    expect(reply.content).toMatch(/911/);
+    const lang = langFor(id);
+    for (const q of ["Is this serious?", lang.seriousQuestion]) {
+      const reply = getScriptedKatReply(id, q)!;
+      expect(reply.content).toMatch(lang.cantTell);
+      expect(reply.content).toMatch(/911/);
+    }
   });
 
   it.each(ALL_IDS)("%s replies: exact source quotes, real references, valid actions", (id) => {
@@ -287,7 +378,8 @@ describe("getScriptedKatReply", () => {
 });
 
 describe("getScriptedClarification", () => {
-  const judgmental = /\b(wrong|fail|failed|incorrect|mistake|careless)\b/i;
+  const judgmental =
+    /\b(wrong|fail|failed|incorrect|mistake|careless|incorrect[oa]s?|equivocad[oa]s?|err[oó]neo|errónea|falló|fallaste)\b/i;
 
   it.each(ALL_IDS)("%s has two different, grounded re-explanations per teach-back question", (id) => {
     for (const q of getGroundTruth(id)!.teachBackQuestions) {
@@ -308,6 +400,13 @@ describe("getScriptedClarification", () => {
   it("returns null for unknown questions", () => {
     expect(getScriptedClarification("tb-unknown", 1)).toBeNull();
   });
+
+  it.each(ES_IDS)("%s re-explanations are in Spanish", (id) => {
+    for (const q of getGroundTruth(id)!.teachBackQuestions) {
+      expect(getScriptedClarification(q.id, 1)).toMatch(/^Se lo explico de otra manera\./);
+      expect(getScriptedClarification(q.id, 2)).toMatch(/^Otra forma de verlo/);
+    }
+  });
 });
 
 describe("safety of scripted text", () => {
@@ -320,8 +419,23 @@ describe("safety of scripted text", () => {
   it.each(ALL_IDS)("%s never tells the patient to change medication or claims safety", (id) => {
     const text = allStrings(id).join("\n");
     expect(text).not.toMatch(/\b(increase|decrease|double|halve) (your|the) dose\b/i);
+    expect(text).not.toMatch(/\b(aumente|disminuya|duplique|suba|baje) (su|la) dosis\b/i);
     expect(text).not.toMatch(/\byou are safe\b/i);
     expect(text).not.toMatch(/Ask Aftercare AI/);
+  });
+});
+
+describe("Spanish scripted content stays in Spanish", () => {
+  // Common English function words that should never appear in Spanish patient-facing text.
+  const english = /\b(the|your|you|and|with|summary|should|this)\b/i;
+
+  it.each(ES_IDS)("%s has no English sentences in patient-facing strings", (id) => {
+    for (const s of allStrings(id)) expect(s, s).not.toMatch(english);
+  });
+
+  it.each(ES_IDS)("%s cites at least one Spanish-language reference", (id) => {
+    const interp = getScriptedInterpretation(id, docFor(id).id)!;
+    expect(interp.referenceIds.some((r) => getReferenceById(r)?.language === "es")).toBe(true);
   });
 });
 

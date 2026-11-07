@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { AccessBarrier, Language, PatientProfile } from "@/lib/types";
 import { getPatient } from "@/data/patients";
 import { ACCESS_BARRIERS } from "@/lib/ai/schemas";
-import { BARRIER_LABELS, BARRIER_SUGGESTIONS, suggestBarrierActions } from "./barriers";
+import {
+  BARRIER_LABELS,
+  BARRIER_SUGGESTIONS,
+  isBarrierSuggestionText,
+  suggestBarrierActions,
+  toClinicQuestion,
+} from "./barriers";
 
 const NOW = "2026-11-01T12:00:00.000Z";
 const base = getPatient("pt-a-pcos")!;
@@ -57,6 +63,54 @@ describe("BARRIER_SUGGESTIONS", () => {
     expect(en("scheduling")).toMatch(/early-morning, evening, or telehealth/);
     expect(en("caregiving")).toMatch(/children may come with you/);
     expect(en("caregiving")).toMatch(/telehealth/);
+  });
+});
+
+describe("clinic-facing wording", () => {
+  it("every suggestion has a clinic-facing question that is not a patient prompt", () => {
+    for (const b of ACCESS_BARRIERS) {
+      for (const s of BARRIER_SUGGESTIONS[b]) {
+        expect(s.question.en).toMatch(/^[A-Z][^?]*\?$/);
+        expect(s.question.es).toMatch(/^¿[^?]*\?$/);
+        for (const q of [s.question.en, s.question.es]) {
+          expect(q).not.toMatch(/^(would you like|¿le gustaría)/i);
+          for (const re of ASSERTS_AVAILABILITY) expect(q).not.toMatch(re);
+        }
+      }
+    }
+  });
+
+  it("toClinicQuestion maps prompts (en/es) to the clinic wording and is idempotent", () => {
+    const t = BARRIER_SUGGESTIONS.transportation[0]!;
+    expect(toClinicQuestion(t.en)).toBe(t.question.en);
+    expect(toClinicQuestion(`  ${t.es} `)).toBe(t.question.es);
+    expect(toClinicQuestion(t.question.en)).toBe(t.question.en);
+    expect(isBarrierSuggestionText(t.en)).toBe(true);
+    expect(isBarrierSuggestionText(t.question.es)).toBe(true);
+    expect(isBarrierSuggestionText("What should I bring?")).toBe(false);
+  });
+
+  it("rewrites unknown prompt-phrased suggestions and leaves other questions alone", () => {
+    expect(toClinicQuestion("Would you like to ask your clinic whether a telehealth appointment is available?")).toBe(
+      "Can you tell me whether a telehealth appointment is available?",
+    );
+    expect(
+      toClinicQuestion("Would you like to ask your care team whether your insurance covers the follow-up visit?"),
+    ).toBe("Can you tell me whether my insurance covers the follow-up visit?");
+    expect(toClinicQuestion("¿Le gustaría preguntarle a su clínica si hay citas por la tarde?")).toBe(
+      "¿Me podría decir si hay citas por la tarde?",
+    );
+    expect(toClinicQuestion("What should I bring to my next visit?")).toBe("What should I bring to my next visit?");
+  });
+
+  it("no saved-question wording for any barrier or language starts with 'Would you like to'", () => {
+    for (const b of ACCESS_BARRIERS) {
+      for (const lang of ["en", "es"] as const) {
+        for (const item of suggestBarrierActions(profileWith([b], lang), { now: NOW })) {
+          expect(toClinicQuestion(item.description)).not.toMatch(/^(would you like to|¿le gustaría)/i);
+        }
+      }
+    }
   });
 });
 

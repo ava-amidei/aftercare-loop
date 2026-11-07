@@ -4,6 +4,7 @@ import { Check, HandHelping, Plus } from "lucide-react";
 import type { ActionItem } from "@/lib/types";
 import { Button, Card, OriginBadge } from "@/components/ui";
 import { barrierKey, originKey, useT } from "@/lib/i18n";
+import { toClinicQuestion } from "@/lib/services/barriers";
 
 export interface BarrierSuggestionsProps {
   items: ActionItem[];
@@ -35,7 +36,11 @@ export function BarrierSuggestions({ items, savedQuestions, onAddToQuestions }: 
       </div>
       <ul className="flex flex-col gap-3">
         {items.map((item) => {
-          const added = savedQuestions.includes(item.description.trim());
+          const clinicQuestion = toClinicQuestion(item.description);
+          const added = savedQuestions.some((q) => {
+            const saved = q.trim();
+            return saved === clinicQuestion || saved === item.description.trim();
+          });
           const barrierLabel = item.addressesBarrier
             ? t(barrierKey(item.addressesBarrier)).toLocaleLowerCase(t.lang)
             : "";

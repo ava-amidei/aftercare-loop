@@ -17,6 +17,7 @@ import type {
 } from "@/lib/types";
 import { formatDate, nowIso } from "@/lib/utils/dates";
 import { normalizeWhitespace } from "@/lib/utils/text";
+import { toClinicQuestion } from "./barriers";
 
 const BARRIER_DISPLAY: Record<Language, Record<AccessBarrier, string>> = {
   en: {
@@ -108,12 +109,17 @@ export function buildCommunicationSummary(
   const generatedAt = options.now ?? nowIso();
   const actions = state.actions.filter((a) => a.patientId === profile.id);
 
-  const questions = dedupe([
-    ...state.savedQuestions,
-    ...actions
-      .filter((a) => a.category === "provider_question" && a.status === "pending")
-      .map((a) => a.description),
-  ]);
+  // Barrier suggestions are phrased as prompts to the patient ("Would you like
+  // to ask…?"); the summary is addressed to the clinic, so use the clinic-facing
+  // wording (also for older saved questions stored in prompt form).
+  const questions = dedupe(
+    [
+      ...state.savedQuestions,
+      ...actions
+        .filter((a) => a.category === "provider_question" && a.status === "pending")
+        .map((a) => a.description),
+    ].map(toClinicQuestion),
+  );
 
   const barriers: AccessBarrier[] = Array.from(new Set(profile.barriers ?? []));
 

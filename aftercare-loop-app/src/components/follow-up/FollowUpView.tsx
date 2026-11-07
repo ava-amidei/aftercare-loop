@@ -26,6 +26,7 @@ import {
 } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { evaluateSafety } from "@/lib/safety/rules";
+import { safetyContextOf } from "@/lib/safety/context";
 import { buildCommunicationSummary } from "@/lib/services/communication-summary";
 import { useActiveSession, useDemoStore, useHasHydrated } from "@/lib/store";
 import { CareTeamRequestForm } from "./CareTeamRequestForm";
@@ -159,7 +160,7 @@ function FollowUpContent({ session }: { session: PatientSessionState }) {
     setVerdict(
       evaluateSafety(text, {
         language: profile.language,
-        postpartumContext: Boolean(profile.pregnancyOrPostpartumContext),
+        ...safetyContextOf(profile),
       }),
     );
     addCareTeamRequest(profile.id, req);

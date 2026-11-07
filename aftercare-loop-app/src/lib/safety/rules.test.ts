@@ -317,3 +317,72 @@ describe("evaluateSafety — resolved symptoms and definition questions", () => 
     expect(evaluateSafety(input).level).toBe(level);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Wording variants added after review (completed overdose, pad counts over
+// time, indirect ideation / hopelessness) + controls that must stay "none".
+// ---------------------------------------------------------------------------
+
+describe("evaluateSafety — review wording variants", () => {
+  const SELF_HARM: SafetyScenario = "suicidal_ideation_or_self_harm";
+  const variants: Case[] = [
+    // completed / in-progress overdose
+    { input: "I took all my pills tonight and I don't want anyone to find me.", level: "emergency", scenario: SELF_HARM },
+    { input: "I swallowed the whole bottle of my blood pressure pills on purpose", level: "emergency", scenario: SELF_HARM },
+    { input: "I took the whole bottle.", level: "emergency", scenario: SELF_HARM },
+    { input: "i overdosed on my sleeping pills", level: "emergency", scenario: SELF_HARM },
+    { input: "Me tomé el frasco entero.", level: "emergency", scenario: SELF_HARM },
+    { input: "No quiero que nadie me encuentre.", level: "emergency", scenario: SELF_HARM },
+    // indirect ideation
+    { input: "Honestly everyone would be better off if I wasn't around anymore.", level: "emergency", scenario: SELF_HARM },
+    { input: "I wish I wasn't here anymore", level: "emergency", scenario: SELF_HARM },
+    { input: "I don't see the point of living anymore", level: "emergency", scenario: SELF_HARM },
+    { input: "Mi familia estaría mejor sin mí.", level: "emergency", scenario: SELF_HARM },
+    // pad count over time
+    { input: "I've gone through four pads in the last two hours", level: "emergency", scenario: "severe_bleeding" },
+    { input: "went through 2 maxi pads in the last hour", level: "emergency", scenario: "severe_bleeding" },
+    { input: "Cambié tres toallas en una hora.", level: "emergency", scenario: "severe_bleeding" },
+    {
+      input: "I've gone through four pads in the last two hours",
+      level: "emergency",
+      scenario: "severe_postpartum_warning",
+      postpartumContext: true,
+    },
+  ];
+  it.each(variants)("$input", (c) => {
+    const v = check(c);
+    expect(v.guidance).toMatch(/911/);
+    if (c.scenario === SELF_HARM) expect(v.guidance).toMatch(/988/);
+  });
+
+  const hopeless: Case[] = [
+    { input: "I don't see the point of any of this anymore. Nothing matters.", level: "concerning", scenario: SELF_HARM },
+    { input: "Nothing matters anymore.", level: "concerning", scenario: SELF_HARM },
+    { input: "Ya nada importa.", level: "concerning", scenario: SELF_HARM },
+  ];
+  it.each(hopeless)("hopelessness → concerning with crisis line: $input", (c) => {
+    const v = check(c);
+    expect(v.guidance).toMatch(/988/);
+  });
+
+  const controls: Case[] = [
+    { input: "I took all my pills this morning like I was supposed to.", level: "none" },
+    { input: "I take all my morning pills at once with breakfast.", level: "none" },
+    { input: "I took two pills for my headache", level: "none" },
+    { input: "Do I need to take the whole bottle of antibiotics?", level: "none" },
+    { input: "I took the whole bottle of antibiotics like prescribed.", level: "none" },
+    { input: "Can you overdose on metformin?", level: "none" },
+    { input: "I don't see the point of this medication, it makes me tired.", level: "none" },
+    { input: "Nothing matters more to me than getting better.", level: "none" },
+    { input: "I used 3 pads in 24 hours", level: "none" },
+    { input: "I changed two pads today", level: "none" },
+    { input: "I haven't gone through more than two pads in six hours", level: "none" },
+  ];
+  it.each(controls)("control: $input", (c) => {
+    check(c);
+  });
+
+  it("negated indirect ideation is downgraded, never dropped", () => {
+    expect(evaluateSafety("I don't wish I wasn't here, I'm just tired").level).not.toBe("none");
+  });
+});

@@ -24,4 +24,10 @@ export const nav = {
   "nav.loop.verify": "Verify",
   "nav.loop.act": "Act",
   "nav.loop.followUp": "Follow Up",
+
+  // [ui-fix-1] AppShell landmark labels
+  "nav.primaryLabel": "Main",
+  "nav.secondaryLabel": "More",
+  "nav.footerLabel": "More (footer)",
+  // [/ui-fix-1]
 } satisfies Namespaced<"nav">;

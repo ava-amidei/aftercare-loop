@@ -58,7 +58,8 @@ export function PatientSwitcher({ className }: PatientSwitcherProps) {
       <label htmlFor={id} className="sr-only lg:not-sr-only lg:text-sm lg:font-medium lg:text-ink-muted">
         {t("common.patientSwitcher.label")}
       </label>
-      <div className="relative min-w-0">
+      {/* Full width on its own mobile header row; capped widths from md up. */}
+      <div className="relative min-w-0 flex-1 md:flex-none">
         <UserRound
           aria-hidden="true"
           className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-brand-700"
@@ -70,8 +71,8 @@ export function PatientSwitcher({ className }: PatientSwitcherProps) {
           disabled={!hydrated}
           aria-busy={!hydrated || undefined}
           className={cn(
-            "min-h-11 w-full max-w-[11rem] appearance-none truncate rounded-control border border-border-strong bg-surface",
-            "py-2 pr-8 pl-8 text-sm font-semibold text-ink sm:max-w-[16rem] lg:max-w-[20rem]",
+            "min-h-11 w-full appearance-none truncate rounded-control border border-border-strong bg-surface",
+            "py-2 pr-8 pl-8 text-sm font-semibold text-ink md:max-w-[16rem] lg:max-w-[20rem]",
             "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
             "disabled:cursor-wait disabled:opacity-70",
           )}

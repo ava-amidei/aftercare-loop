@@ -16,7 +16,7 @@
 import { getAiMode, makeMeta, DocumentInterpretationSchema, type ModelDocumentInterpretation } from "@/lib/ai";
 import { getScriptedInterpretation } from "@/lib/ai/scripted";
 import { extractTopics, normalizeTopics, retrieveEvidence } from "@/lib/evidence";
-import { evaluateSafety, SAFETY_GUIDANCE } from "@/lib/safety";
+import { detectInjectionMarkers, evaluateSafety, safetyContextOf, SAFETY_GUIDANCE } from "@/lib/safety";
 import type {
   DocumentInterpretation,
   EvidenceMatch,
@@ -69,6 +69,8 @@ const NOTES: Record<
     unverified: (n: number) => string;
     noEvidence: string;
     warningSigns: string;
+    injectedInstruction: string;
+    injectedDocument: string;
   }
 > = {
   en: {
@@ -85,6 +87,10 @@ const NOTES: Record<
     noEvidence: "No curated reference in our collection matched this document's topics, so no sources are cited.",
     warningSigns:
       "Your document lists warning signs that may need urgent care. If you have any of them now, follow the instructions in your document or call 911 (or your local emergency number).",
+    injectedInstruction:
+      "A line in this document looks like instructions aimed at the assistant, not at you. It was not added to your care plan. Please confirm your instructions with your care team.",
+    injectedDocument:
+      "Part of this document looks like instructions aimed at the assistant, not at you. They were ignored. Please confirm your instructions with your care team.",
   },
   es: {
     liveUnavailable: "La IA en vivo no está disponible; solo se muestran las instrucciones extraídas.",
@@ -104,6 +110,10 @@ const NOTES: Record<
       "Ninguna referencia de nuestra colección coincidió con los temas de este documento, por lo que no se citan fuentes.",
     warningSigns:
       "Su documento enumera señales de alerta que pueden requerir atención urgente. Si tiene alguna de ellas ahora, siga las instrucciones de su documento o llame al 911 (o al número de emergencias local).",
+    injectedInstruction:
+      "Una línea de este documento parece contener instrucciones dirigidas al asistente, no a usted. No se agregó a su plan de cuidado. Confirme sus instrucciones con su equipo de atención médica.",
+    injectedDocument:
+      "Una parte de este documento parece contener instrucciones dirigidas al asistente, no a usted. Se ignoraron. Confirme sus instrucciones con su equipo de atención médica.",
   },
 };
 
@@ -275,6 +285,25 @@ function scriptedContent(
   };
 }
 
+/**
+ * Prompt-injection flag (ARCHITECTURE §2.7): text aimed at the assistant is
+ * data, never an instruction to the patient. Logs counts only (§2.10).
+ */
+function injectionFlags(
+  document: VisitDocument,
+  instructions: DocumentInterpretation["instructions"],
+  language: Language,
+): SafetyFlag[] {
+  const markerCount = detectInjectionMarkers(document.text).length;
+  const flaggedInstructions = instructions.filter((i) => i.suspectedInjection).length;
+  if (markerCount === 0 && flaggedInstructions === 0) return [];
+  if (!(process.env.NODE_ENV === "test" || process.env.VITEST)) {
+    console.info("[interpret]", JSON.stringify({ documentId: document.id, injectionMarkers: markerCount, flaggedInstructions }));
+  }
+  const n = notes(language);
+  return [{ level: "clarify_with_clinician", message: flaggedInstructions > 0 ? n.injectedInstruction : n.injectedDocument }];
+}
+
 // ---------------------------------------------------------------------------
 // interpretDocument
 // ---------------------------------------------------------------------------
@@ -293,7 +322,7 @@ export async function interpretDocument(
   const verdict = evaluateSafety(document.text, {
     source: "document",
     language,
-    postpartumContext: Boolean(profile.pregnancyOrPostpartumContext),
+    ...safetyContextOf(profile),
   });
   const ruleFlags = documentSafetyFlags(verdict, language);
 
@@ -350,7 +379,8 @@ export async function interpretDocument(
   //    used; the heuristic result (no narrative) lists condition-related matches.
   const referenceIds = heuristic ? defaultSourceIds(evidence, profile) : base.referenceIds;
 
-  const unverifiedCount = instructions.filter((i) => i.sourceVerification !== "verified").length;
+  // Injection-flagged lines get their own flag, not the "could not be matched" note.
+  const unverifiedCount = instructions.filter((i) => i.sourceVerification !== "verified" && !i.suspectedInjection).length;
   const limitations = [
     ...serviceNotes,
     ...base.limitations,
@@ -368,8 +398,13 @@ export async function interpretDocument(
     instructions,
     unansweredQuestions: base.unansweredQuestions,
     limitations: [...new Set(limitations)],
-    safetyFlags: mergeFlags(ruleFlags, modelFlags),
+    safetyFlags: mergeFlags(ruleFlags, injectionFlags(document, instructions, language), modelFlags),
     referenceIds,
-    meta: makeMeta(responseMode, model, language),
+    meta: {
+      ...makeMeta(responseMode, model, language),
+      // Lets consumers (e.g. the "Explain my diagnosis" quick prompt) tell a
+      // generated narrative from the heuristic service note in whatThisMeans.
+      generatedBy: heuristic ? "deterministic" : responseMode === "live_claude" ? "model" : "scripted",
+    },
   };
 }

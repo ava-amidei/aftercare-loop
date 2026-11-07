@@ -6,8 +6,8 @@ import { SCRIPTED_UNSUPPORTED } from "@/lib/ai/scripted";
 import { KatReplySchema, type KatReply } from "@/lib/ai/schemas";
 import { aiFailure } from "@/lib/ai/errors";
 import { getReference } from "@/lib/evidence";
-import { evaluateSafety } from "@/lib/safety";
-import { exactRef, getDocuments, getPatient } from "@/data/patients";
+import { evaluateSafety, safetyContextOf } from "@/lib/safety";
+import { exactRef, getDocuments, getPatient, patientFixtures } from "@/data/patients";
 import { getGroundTruth } from "@/data/ground-truth";
 import type {
   ActionItem,
@@ -227,11 +227,14 @@ describe("askKat — quick prompts are deterministic (pt-a-pcos)", () => {
     expect(m.content).toContain(A_UNANSWERED);
     expect(m.content).toContain(A_UNVERIFIED); // unverified instruction → clarification question
     expect(m.content).toContain("Bring your period calendar to your next visit");
-    expect(m.content).toMatch(/Would you like to ask your clinic whether transportation assistance or a telehealth appointment is available\?/);
+    // Barrier questions are offered (and saved) in clinic-facing wording, never as a prompt.
+    expect(m.content).toContain("Is transportation assistance or a telehealth appointment available for my follow-up care?");
+    expect(m.content).not.toMatch(/Would you like to ask/);
     const questions = (m.actions ?? []).filter((a) => a.kind === "add_question").map((a) => a.payload?.question as string);
     expect(questions).toContain(A_UNANSWERED);
     expect(questions.some((q) => q.includes(A_UNVERIFIED))).toBe(true);
-    expect(questions.some((q) => q.startsWith("Would you like to ask your clinic whether"))).toBe(true);
+    expect(questions).toContain("Is transportation assistance or a telehealth appointment available for my follow-up care?");
+    expect(questions.some((q) => /^would you like to/i.test(q))).toBe(false);
     // every bullet in the content has a matching add_question action
     const bulletsInContent = m.content.split("\n").filter((l) => l.startsWith("• ")).map((l) => l.slice(2));
     expect(bulletsInContent.length).toBeGreaterThan(0);
@@ -525,5 +528,32 @@ describe("helpers", () => {
     expect(
       filterReferenceIds(["ref-medlineplus-pcos", "ref-medlineplus-metformin"], exists, new Set(["ref-medlineplus-metformin"])),
     ).toEqual(["ref-medlineplus-metformin"]);
+  });
+});
+
+describe("askKat — profile safety context is shared (safety review)", () => {
+  const MESSAGES = ["I have a fever of 101", "bad headache and blurry vision", "my calf is swollen and painful"];
+
+  it("gives the same verdict as evaluateSafety with safetyContextOf(profile), for every fixture", async () => {
+    for (const { profile } of patientFixtures) {
+      for (const message of MESSAGES) {
+        const { deps } = makeDeps();
+        const res = await askKat(req(profile.id, message), ctxFor(profile.id), deps);
+        const expected = evaluateSafety(message, { language: profile.language, ...safetyContextOf(profile), source: "message" });
+        expect({ patient: profile.id, message, level: res.safety.level, scenario: res.safety.scenario }).toEqual({
+          patient: profile.id,
+          message,
+          level: expected.level,
+          scenario: expected.scenario,
+        });
+      }
+    }
+  });
+
+  it("treats a documented pregnancy as maternal context (pt-k)", async () => {
+    const { deps } = makeDeps();
+    const res = await askKat(req("pt-k-asthma-pregnancy", "I have a fever of 101"), ctxFor("pt-k-asthma-pregnancy"), deps);
+    expect(res.safety.level).toBe("emergency");
+    expect(res.safety.scenario).toBe("severe_postpartum_warning");
   });
 });

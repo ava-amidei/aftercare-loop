@@ -7,8 +7,9 @@ not medical advice, not a medical device, and not HIPAA-compliant (see `SECURITY
 
 - **Synthetic data only.** There are twelve fictional patients (`src/data/patients/`). None are
   based on real people or records.
-- **Scripted Demo Mode covers patients A–E only.** Predefined responses exist for the five primary
-  scenarios (`src/data/scripted/`). The other fixtures need live mode for AI-shaped content. In
+- **Scripted Demo Mode covers seven of the twelve patients.** Predefined responses exist for
+  patients A–E and for the two Spanish-language patients F and I (`src/data/scripted/`). The other
+  fixtures need live mode for AI-shaped content. In
   scripted mode, questions outside the script get a fixed "can't answer that" message instead of a
   guess.
 - **Live mode depends on an external model.** With `ANTHROPIC_API_KEY` set, output is model

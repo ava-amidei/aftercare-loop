@@ -6,7 +6,9 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "acce
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-control font-semibold whitespace-nowrap select-none " +
+  // Labels wrap (never whitespace-nowrap) so long/translated labels stay inside
+  // narrow mobile columns instead of widening the page; max-w-full caps the box.
+  "inline-flex max-w-full items-center justify-center gap-2 rounded-control text-center leading-snug font-semibold select-none " +
   "transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600 " +
   "disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60";
 
@@ -21,10 +23,10 @@ const variants: Record<ButtonVariant, string> = {
 
 // Every size keeps a >= 44px (h-11) touch target.
 const sizes: Record<ButtonSize, string> = {
-  sm: "min-h-11 px-3 text-sm",
-  md: "min-h-12 px-5 text-base",
-  lg: "min-h-14 px-6 text-lg",
-  icon: "h-11 w-11 p-0",
+  sm: "min-h-11 px-3 py-2 text-sm",
+  md: "min-h-12 px-5 py-2.5 text-base",
+  lg: "min-h-14 px-6 py-3 text-lg",
+  icon: "h-11 w-11 shrink-0 p-0 whitespace-nowrap",
 };
 
 export interface ButtonStyleOptions {
