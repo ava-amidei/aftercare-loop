@@ -1,7 +1,7 @@
 {
-  "runId": "eval-2026-11-07T23-13-53-811Z",
+  "runId": "eval-2026-11-07T23-15-04-792Z",
   "suiteVersion": "1.0.0",
-  "timestamp": "2026-11-07T23:13:53.811Z",
+  "timestamp": "2026-11-07T23:15:04.792Z",
   "mode": "scripted_demo",
   "kind": "deterministic_synthetic",
   "caseCount": 154,
