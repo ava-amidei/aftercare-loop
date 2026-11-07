@@ -54,7 +54,7 @@ function NavLink({
         href={item.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-1 text-xs font-semibold",
+          "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-control px-0.5 text-[0.6875rem] font-semibold leading-tight tracking-tight",
           active ? "text-brand-800" : "text-ink-muted hover:text-ink",
         )}
       >
@@ -66,7 +66,15 @@ function NavLink({
         >
           <Icon aria-hidden="true" className="size-5" />
         </span>
-        <span className="max-w-full truncate">{label}</span>
+        {/*
+          Never truncate: at 375px a five-item bar leaves ~70px per label, so
+          a long word ("Understand", "Seguimiento") or the larger_text pref
+          would clip. Labels wrap/hyphenate instead (data-nav-label is a
+          test hook).
+        */}
+        <span data-nav-label className="max-w-full text-center break-words hyphens-auto">
+          {label}
+        </span>
       </Link>
     );
   }
@@ -211,7 +219,7 @@ function ShellFrame({ children, patientSwitcher, languageToggle, resetDemo, stri
             aria-label={s.primaryNav}
             className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 pb-safe backdrop-blur md:hidden"
           >
-            <ul className="mx-auto flex h-[var(--bottom-nav-height)] max-w-lg items-stretch px-1">
+            <ul className="mx-auto flex h-[var(--bottom-nav-height)] max-w-lg items-stretch px-0.5">
               {PRIMARY_NAV.map((item) => (
                 <li key={item.href} className="flex min-w-0 flex-1">
                   <NavLink item={item} label={labelFor(item)} pathname={pathname} variant="bottom" />

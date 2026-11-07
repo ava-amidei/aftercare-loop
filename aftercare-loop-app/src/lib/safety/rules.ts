@@ -259,12 +259,15 @@ type Signal =
 
 const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
   chest_core: [
-    /\bchest (?:pain|pains|pressure|tightness|tight|is tight|feels tight|heaviness|heavy|feels heavy|is heavy|discomfort|hurts|hurting|is hurting|squeezing|crushing|burning|feels like)\b/,
+    /\bchest (?:pain|pains|pressure|tightness|heaviness|discomfort|hurts|hurting|is hurting|squeezing|crushing|burning|feels like)\b/,
+    // "chest is tight", "chest feels very heavy", "chest has been really tight":
+    // intensifiers between the verb and the adjective must not defeat the match.
+    /\bchest (?:is |feels |felt |has been |is feeling |keeps feeling |is getting |getting |got |went )?(?:(?:really|very|so|extremely|pretty|super|quite|incredibly|kind of|kinda|a little|a bit) ){0,2}(?:tight|heavy)\b/,
     /\b(?:pain|pains|pressure|tightness|heaviness|discomfort|squeezing|weight|hurting|burning) (?:in|on|across|around|under) (?:my |the )?chest\b/,
     /\btight(?:ness in (?:my |the )?)? chest\b/,
     /\bdolor (?:\w+ )?(?:\w+ )?(?:en el|en mi|de|del) pecho\b/,
     /\bdolor toracico\b/,
-    /\b(?:presion|opresion|peso|ardor|molestia) (?:\w+ )?(?:en el|en mi) pecho\b/,
+    /\b(?:presion|opresion|peso|ardor|molestia) (?:\w+ ){0,2}(?:en el|en mi) pecho\b/,
     /\bme duele (?:\w+ )?(?:el )?pecho\b/,
     /\bpecho apretado\b/,
     /\bme aprieta el pecho\b/,
@@ -289,7 +292,7 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\b(?:spreads?|spreading|radiat\w*|goes|going|moving|shooting) (?:to|into|down|up) (?:my |the )?(?:left |right )?(?:arm|jaw|neck|shoulder|back)\b/,
     /\b(?:dolor|entumecimiento|hormigueo) (?:en|hacia) (?:el|mi|la) (?:brazo|mandibula|quijada|cuello|espalda|hombro)\b/,
     /\bme duele (?:el|la) (?:brazo|mandibula|quijada)\b/,
-    /\b(?:se me duerme|se me adormece|tengo entumecido) el brazo\b/,
+    /\b(?:se me (?:duerme|durmio|adormece|adormecio|entumece|entumecio)|tengo entumecido) el brazo\b/,
     /\b(?:se extiende|se va|baja|corre|se pasa) (?:al|a la|hacia el|hacia la|por el) (?:brazo|mandibula|quijada|cuello|espalda)\b/,
   ],
   sweating: [/\b(?:sweat\w*|clammy|diaphore\w*)\b/, /\b(?:sudor\w*|sudando|empapad[oa] en sudor)\b/],
@@ -349,6 +352,9 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\bse me (?:cae|cayo|esta cayendo|tuerce|torcio) (?:la cara|la boca|un lado de la cara)\b/,
     /\bun lado de (?:la|mi) cara\b/,
     /\bhabla (?:arrastrada|enredada|rara)\b/,
+    /\bhablo (?:raro|rara|enredado|enredada|arrastrado|arrastrada|chistoso|chistosa)\b/,
+    /\bse me (?:duerme|durmio|adormece|adormecio|entumece|entumecio|esta durmiendo) (?:la cara|la mitad de la cara|media cara|un lado de la cara|la boca)\b/,
+    /\b(?:la )?mitad de (?:la|mi) cara\b/,
     /\barrastr\w* las palabras\b/,
     /\bno puedo hablar (?:bien|claro)\b/,
     /\bdificultad para hablar\b/,
@@ -361,6 +367,7 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\b(?:numb|numbness|tingling|needles) (?:in|on) (?:my )?(?:arm|leg|hand|face|fingers)\b/,
     /\b(?:arm|leg|hand|face) (?:is |feels |went )?(?:numb|tingly|weak)\b/,
     /\b(?:hormigueo|entumecimiento|adormecimiento) en (?:el|la|mi) (?:brazo|pierna|mano|cara)\b/,
+    /\bse me (?:duerme|durmio|adormece|adormecio|entumece|entumecio|esta durmiendo) (?:el brazo|la pierna|la mano|los dedos)\b/,
   ],
   sudden_headache: [
     /\bworst headache (?:of|in) my (?:entire )?life\b/,
@@ -399,6 +406,7 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\bno (?:para|deja|paro|dejo) de sangrar\b/,
     /\b(?:vomitando|tosiendo|escupiendo) sangre\b/,
     /\bmucha sangre\b/,
+    /\b(?:mucho|muchisimo|demasiado) sangrado\b/,
     /\bsangro mucho\b/,
   ],
   bleed_concerning: [

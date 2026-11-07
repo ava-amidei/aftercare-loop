@@ -127,3 +127,47 @@ describe("buildCommunicationSummary", () => {
     expect(JSON.stringify(state)).toBe(snapshot);
   });
 });
+
+describe("buildCommunicationSummary — teach-back saved for the care team (fix round 2)", () => {
+  const session = (over: Partial<PatientSessionState["teachBack"][string]> = {}) => ({
+    questionId: "tb-pt-a-1",
+    patientId: "pt-a-pcos",
+    attempts: [],
+    initialCorrect: false,
+    finalCorrect: false,
+    clarificationProvided: true,
+    savedForClinician: true,
+    completed: true,
+    ...over,
+  });
+
+  it("3 wrong attempts → the question and its source passage are listed as unresolved", () => {
+    const state = sessionFor("pt-a-pcos");
+    const base = buildCommunicationSummary(state, { now: NOW });
+    const withTb = buildCommunicationSummary({ ...state, teachBack: { "tb-pt-a-1": session() } }, { now: NOW });
+    const q = groundTruthByPatient["pt-a-pcos"]!.teachBackQuestions.find((x) => x.id === "tb-pt-a-1")!;
+    const added = withTb.unresolvedItems.filter((u) => !base.unresolvedItems.includes(u));
+    expect(added).toHaveLength(1);
+    expect(added[0]).toContain(q.prompt);
+    expect(added[0]).toContain(q.sourceRef.quote);
+    expect(withTb.text).toContain(q.prompt);
+  });
+
+  it("omits sessions answered correctly or not saved, and other patients' sessions", () => {
+    const state = sessionFor("pt-a-pcos");
+    const base = buildCommunicationSummary(state, { now: NOW }).unresolvedItems;
+    for (const tb of [
+      session({ finalCorrect: true }),
+      session({ savedForClinician: false, completed: false }),
+      session({ patientId: "pt-b-postpartum" }),
+    ]) {
+      expect(buildCommunicationSummary({ ...state, teachBack: { [tb.questionId]: tb } }, { now: NOW }).unresolvedItems).toEqual(base);
+    }
+  });
+
+  it("uses a generic line when the question record is unknown", () => {
+    const state = sessionFor("pt-a-pcos");
+    const s = buildCommunicationSummary({ ...state, teachBack: { x: session({ questionId: "tb-unknown" }) } }, { now: NOW, teachBackQuestions: [] });
+    expect(s.unresolvedItems).toContain("A teach-back question from my visit summary that is still unclear to me");
+  });
+});

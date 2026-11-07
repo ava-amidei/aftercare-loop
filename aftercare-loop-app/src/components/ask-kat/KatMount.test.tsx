@@ -113,6 +113,22 @@ describe("Ask Kat", () => {
     expect(chat()).toHaveLength(1);
   });
 
+  it("keeps focus in the panel after a welcome chip is sent, so Escape still closes it", async () => {
+    const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse(reply({ content: "Chip reply" })));
+    renderKat(fetchMock);
+    const dialog = await openPanel();
+    const chip = within(within(dialog).getByTestId("kat-welcome-chips")).getByRole("button", {
+      name: "What should I ask my doctor?",
+    });
+    chip.focus();
+    fireEvent.click(chip);
+    expect(await within(dialog).findByText("Chip reply")).toBeInTheDocument();
+    expect(within(dialog).queryByTestId("kat-welcome-chips")).not.toBeInTheDocument();
+    expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    fireEvent.keyDown(document.activeElement ?? document.body, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
+  });
+
   it("sending a message appends both turns to the active patient's store and sends context", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(
       jsonResponse(reply({ referenceIds: ["does-not-exist"], content: "Kat reply text" })),

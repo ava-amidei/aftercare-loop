@@ -10,7 +10,9 @@
  *  4. scripted_demo → scripted lookup (or the honest "unsupported" text);
  *     live_claude → structured Claude call (KatReply schema, effort medium).
  *  5. Post-processing: quotes → verified SourceRefs, referenceIds filtered to
- *     the curated index, contextual actions attached.
+ *     the curated index, contextual actions attached. Live replies also pass
+ *     the deterministic output guard (kat-output-guard.ts): medication-change
+ *     directives and false reassurance are replaced.
  *
  * Logging: none here beyond what the AI client logs (ids/lengths only).
  */
@@ -30,7 +32,7 @@ import {
   retrieveEvidence as defaultRetrieveEvidence,
   type RetrieveEvidenceInput,
 } from "@/lib/evidence";
-import { containsFalseReassurance, evaluateSafety, safetyContextOf } from "@/lib/safety";
+import { evaluateSafety, safetyContextOf } from "@/lib/safety";
 import type {
   AiMeta,
   ChatMessage,
@@ -47,6 +49,7 @@ import type {
 } from "@/lib/types";
 import { createId } from "@/lib/utils/ids";
 import { isRefVerified, katAction, profileLanguage, scopeKatContext, type KatContext } from "./kat-context";
+import { guardModelOutput } from "./kat-output-guard";
 import { runQuickPrompt, type KatDraft } from "./quick-prompts";
 import { locateQuote } from "./source-verification";
 
@@ -62,14 +65,10 @@ const STR = {
   en: {
     concerningLead: "I want to make sure you get the right help first.",
     limitations: "What your documents don't say:",
-    reassuranceFallback:
-      "I can't tell how serious this is, and I don't want to guess. Please check with your care team about this.",
   },
   es: {
     concerningLead: "Primero quiero asegurarme de que reciba la ayuda adecuada.",
     limitations: "Lo que sus documentos no dicen:",
-    reassuranceFallback:
-      "No puedo saber qué tan grave es esto y no quiero adivinar. Por favor, consulte esto con su equipo de atención.",
   },
 } as const;
 
@@ -269,7 +268,13 @@ function draftFromReply(
     } else if (a.kind === "check_understanding") {
       const questionIds = (ctx.teachBackQuestions ?? []).map((t) => t.id);
       if (questionIds.length === 0) continue;
-      actions.push(katAction(language, "check_understanding", { questionIds, href: "/check" }, label));
+      // Keep the specific question the reply is about, but only if it belongs to this patient.
+      const questionId = typeof a.payload?.questionId === "string" && questionIds.includes(a.payload.questionId)
+        ? a.payload.questionId
+        : undefined;
+      actions.push(
+        katAction(language, "check_understanding", { ...(questionId ? { questionId } : {}), questionIds, href: "/check" }, label),
+      );
     } else if (a.kind === "view_action_plan") {
       actions.push(katAction(language, "view_action_plan", { href: "/action-plan" }, label));
     } else {
@@ -408,11 +413,19 @@ export async function askKat(
   }
 
   const reply = result.data;
-  let content = reply.content;
-  // Supplementary output check: never false-reassure a concerning message.
-  if (safety.level === "concerning" && containsFalseReassurance(content)) {
-    content = STR[language].reassuranceFallback;
-  }
+  // Deterministic output checks on every live reply (ARCHITECTURE §2.6): no
+  // medication-change directives, no false reassurance (whole reply replaced
+  // when the message itself was concerning).
+  const guardOpts = {
+    language,
+    medicationNames: ctx.profile.medications.map((m) => m.name),
+    document: ctx.document,
+  };
+  const content = guardModelOutput(reply.content, { ...guardOpts, strictReassurance: safety.level === "concerning" }).text;
+  const limitations = reply.limitations.filter((l) => {
+    const g = guardModelOutput(l, guardOpts);
+    return !g.medicationDirective && !g.falseReassurance;
+  });
   const draft = draftFromReply(
     {
       content,
@@ -424,7 +437,7 @@ export async function askKat(
         question: a.questionText,
         quote: a.sourceQuote,
       })),
-      limitations: reply.limitations,
+      limitations,
     },
     ctx,
     language,

@@ -43,7 +43,9 @@ test("primary journey: understand → ask kat → check → plan → follow up �
   await expect(log.locator('[data-role="user"]').first()).toContainText("What should I ask my doctor?");
   await expect(log.locator('[data-role="assistant"]')).toHaveCount(assistantBefore + 1, { timeout: 30_000 });
   await expect(log.locator('[data-role="assistant"]').last()).not.toBeEmpty();
+  // Focus must stay in the panel after the chip unmounts, so Escape still closes it.
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 
   // Check: answer one teach-back question.
   await page.goto("/check");

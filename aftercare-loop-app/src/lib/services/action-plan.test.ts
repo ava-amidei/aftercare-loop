@@ -346,3 +346,23 @@ describe("buildActionPlan — language", () => {
     expect(suggestBarrierActions(getPatient("pt-a-pcos")!, { now: NOW })).toHaveLength(1);
   });
 });
+
+describe("buildActionPlan — verified quotes that conflict with a documented fluid limit (fix round 2)", () => {
+  it("pt-e: a verified 'drink plenty of water' quote never becomes a care-plan item", () => {
+    const profile = getPatient("pt-e-multi")!;
+    const doc = getDocument(groundTruthByPatient["pt-e-multi"]!.documentId)!;
+    const base = gtInterpretation("pt-e-multi");
+    const quote = "drink plenty of water, especially when your blood sugar is high";
+    const interp: ActionPlanInterpretation = {
+      ...base,
+      instructions: [
+        ...base.instructions,
+        { description: "Drink plenty of water, especially when blood sugar is high", type: "lifestyle", sourceRef: exactRef(doc, quote), sourceVerification: "verified" },
+      ],
+    };
+    const plan = buildActionPlan({ profile, interpretation: interp, document: doc, now: NOW });
+    expect(plan.some((a) => /plenty of water/i.test(a.description))).toBe(false);
+    expect(plan.some((a) => a.category === "care_plan" && /1\.5 liters/.test(a.description))).toBe(true);
+    expect(plan.some((a) => a.origin === "ai_suggested" && /hydration targets/i.test(a.description))).toBe(true);
+  });
+});

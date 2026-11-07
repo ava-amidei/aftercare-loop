@@ -40,6 +40,21 @@ describe("AppShell", () => {
     }
   });
 
+  it("never truncates mobile bottom-nav labels (they wrap instead)", () => {
+    render(
+      <AppShell withKat={false}>
+        <p>x</p>
+      </AppShell>,
+    );
+    const bottomNav = screen.getAllByRole("navigation", { name: "Main" })[1];
+    const labels = bottomNav.querySelectorAll("[data-nav-label]");
+    expect(labels).toHaveLength(5);
+    for (const el of labels) {
+      expect(el.className).not.toMatch(/\btruncate\b|\bwhitespace-nowrap\b|\btext-ellipsis\b/);
+      expect(el.className).toMatch(/\bbreak-words\b/);
+    }
+  });
+
   it("renders provided header slots and the fallback otherwise", () => {
     const { unmount } = render(
       <AppShell withKat={false}>

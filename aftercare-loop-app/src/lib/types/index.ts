@@ -616,3 +616,21 @@ export interface ExtractedInstruction {
 // ---------------------------------------------------------------------------
 // END safety fix additions
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// BEGIN services fix round 2 additions (owner: services fixer) — optional fields only
+// ---------------------------------------------------------------------------
+
+export interface ExtractedInstruction {
+  /**
+   * True when the passage is quoted exactly but reads as generic "drink more"
+   * advice while the record documents a fluid limit (e.g. a handout the patient
+   * reported). Such an item is "unverified" with no SourceRef, so it lands in
+   * "Needs clarification", never in My Care Plan.
+   */
+  conflictsWithDocumentedRestriction?: boolean;
+}
+
+// ---------------------------------------------------------------------------
+// END services fix round 2 additions
+// ---------------------------------------------------------------------------

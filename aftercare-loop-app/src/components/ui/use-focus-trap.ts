@@ -32,6 +32,13 @@ export interface FocusTrapOptions {
   lockScroll?: boolean;
 }
 
+/**
+ * Active surfaces, innermost last. Keys are handled on `document` (so Esc and
+ * Tab still work after the focused element unmounts and focus falls to
+ * <body>), and only by the topmost surface so a nested dialog closes alone.
+ */
+const trapStack: object[] = [];
+
 /** Focus management for modal surfaces: initial focus, Tab cycling, Esc, focus restore. */
 export function useFocusTrap(
   containerRef: RefObject<HTMLElement | null>,
@@ -49,7 +56,15 @@ export function useFocusTrap(
     const prevOverflow = document.body.style.overflow;
     if (lockScroll) document.body.style.overflow = "hidden";
 
+    const token = {};
+    trapStack.push(token);
+
     function onKeyDown(event: KeyboardEvent) {
+      if (!container || trapStack[trapStack.length - 1] !== token || event.defaultPrevented) return;
+      const current = document.activeElement;
+      const focusLost = !current || current === document.body;
+      // A non-modal surface only reacts while focus is inside it (or was dropped).
+      if (!trap && !focusLost && !container.contains(current)) return;
       if (event.key === "Escape") {
         if (onEscape) {
           event.stopPropagation();
@@ -57,7 +72,7 @@ export function useFocusTrap(
         }
         return;
       }
-      if (!trap || event.key !== "Tab" || !container) return;
+      if (!trap || event.key !== "Tab") return;
       const items = getFocusable(container);
       if (items.length === 0) {
         event.preventDefault();
@@ -66,7 +81,6 @@ export function useFocusTrap(
       }
       const first = items[0]!;
       const last = items[items.length - 1]!;
-      const current = document.activeElement;
       if (event.shiftKey && (current === first || !container.contains(current))) {
         event.preventDefault();
         last.focus();
@@ -76,9 +90,11 @@ export function useFocusTrap(
       }
     }
 
-    container.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
     return () => {
-      container.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("keydown", onKeyDown);
+      const idx = trapStack.lastIndexOf(token);
+      if (idx !== -1) trapStack.splice(idx, 1);
       if (lockScroll) document.body.style.overflow = prevOverflow;
       if (previouslyFocused && typeof previouslyFocused.focus === "function" && document.contains(previouslyFocused)) {
         previouslyFocused.focus({ preventScroll: true });

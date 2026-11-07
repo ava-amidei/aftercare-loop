@@ -2,7 +2,8 @@
  * Clinician communication summary (SPEC §12.10). Pure.
  *
  * Collects the patient's questions, reported barriers, unresolved follow-up
- * items and verified documented instructions (with exact source quotes) into
+ * items (incl. teach-back questions saved for the care team because they are
+ * still unclear) and verified documented instructions (with exact source quotes) into
  * an editable plain-text block in the profile language. It is a draft for the
  * patient to copy — nothing is transmitted anywhere.
  */
@@ -13,8 +14,10 @@ import type {
   Language,
   PatientSessionState,
   SourceRef,
+  TeachBackQuestion,
   VisitDocument,
 } from "@/lib/types";
+import { getGroundTruth } from "@/data/ground-truth";
 import { formatDate, nowIso } from "@/lib/utils/dates";
 import { normalizeWhitespace } from "@/lib/utils/text";
 import { toClinicQuestion } from "./barriers";
@@ -49,6 +52,8 @@ export const SUMMARY_STRINGS = {
     due: (date: string) => `due ${date}`,
     needsClarification: "needs clarification",
     source: "Source",
+    teachBackUnclear: (prompt: string) => `Still unclear after a teach-back check: ${prompt}`,
+    teachBackUnclearUnknown: "A teach-back question from my visit summary that is still unclear to me",
   },
   es: {
     title: "Notas para mi equipo de atención",
@@ -62,12 +67,16 @@ export const SUMMARY_STRINGS = {
     due: (date: string) => `fecha límite ${date}`,
     needsClarification: "necesita aclaración",
     source: "Fuente",
+    teachBackUnclear: (prompt: string) => `Aún no me queda claro después de una pregunta de comprobación: ${prompt}`,
+    teachBackUnclearUnknown: "Una pregunta de comprobación sobre mi resumen de la visita que aún no me queda clara",
   },
 } as const;
 
 export interface CommunicationSummaryOptions {
   /** ISO timestamp for generatedAt (defaults to now). */
   now?: string;
+  /** Teach-back questions for this patient (defaults to the fixture ground truth). */
+  teachBackQuestions?: TeachBackQuestion[];
 }
 
 function dedupe(values: string[]): string[] {
@@ -142,7 +151,20 @@ export function buildCommunicationSummary(
     const desc = normalizeWhitespace(a.description);
     return notes.length ? `${desc} (${notes.join("; ")})` : desc;
   };
-  const unresolvedItems = dedupe(unresolvedActions.map(unresolvedLine));
+  // Teach-back questions saved for the care team (attempts ran out, or the
+  // patient chose to save) that were never answered correctly, with the
+  // passage they are about.
+  const tbQuestions = options.teachBackQuestions ?? getGroundTruth(profile.id)?.teachBackQuestions ?? [];
+  const teachBackLines = Object.values(state.teachBack ?? {})
+    .filter((t) => t && t.patientId === profile.id && t.savedForClinician && t.finalCorrect !== true)
+    .map((t) => {
+      const q = tbQuestions.find((x) => x.id === t.questionId);
+      if (!q) return s.teachBackUnclearUnknown;
+      const quote = normalizeWhitespace(q.sourceRef?.quote ?? "");
+      const line = s.teachBackUnclear(normalizeWhitespace(q.prompt));
+      return quote ? `${line} (${s.source}: "${quote}")` : line;
+    });
+  const unresolvedItems = dedupe([...unresolvedActions.map(unresolvedLine), ...teachBackLines]);
 
   const documentedInstructions = documented.map((a) => ({
     description: normalizeWhitespace(a.description),

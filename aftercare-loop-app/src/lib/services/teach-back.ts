@@ -23,6 +23,7 @@ import type {
   TeachBackSession,
   VisitDocument,
 } from "@/lib/types";
+import { containsUnsupportedMedicationDirective } from "./kat-output-guard";
 import {
   detectMisconception,
   normalizeAnswer,
@@ -201,10 +202,17 @@ export async function clarify(input: ClarifyInput, deps: ClarifyDeps = {}): Prom
 
   const clarification = result.data.clarification.trim();
   const modelMisunderstanding = result.data.misunderstanding.trim();
+  const guardOpts = {
+    medicationNames: input.profile.medications.map((m) => m.name),
+    document: input.document,
+  };
   if (
     !clarification ||
     containsJudgmentalLanguage(clarification) ||
-    containsJudgmentalLanguage(modelMisunderstanding)
+    containsJudgmentalLanguage(modelMisunderstanding) ||
+    // Never let a re-explanation direct a medication change (ARCHITECTURE §2.6).
+    containsUnsupportedMedicationDirective(clarification, guardOpts) ||
+    containsUnsupportedMedicationDirective(modelMisunderstanding, guardOpts)
   ) {
     return deterministicClarification(input);
   }

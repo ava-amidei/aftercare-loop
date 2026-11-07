@@ -33,6 +33,7 @@ import type {
   SourceRef,
   VisitDocument,
 } from "@/lib/types";
+import { descriptionAddsMedicationChange } from "@/lib/safety/advice-guards";
 import { detectInjectionMarkers } from "@/lib/safety/sanitize";
 import { slugify } from "@/lib/utils/text";
 import { locateQuote, sectionIdFor, verifySourceRef, verifySourceRefs } from "./source-verification";
@@ -488,6 +489,11 @@ export function hasInjectionMarkers(item: ExtractedInstruction): boolean {
   );
 }
 
+export interface ValidateInstructionsOptions {
+  /** Profile medication names, so "Increase your furosemide…" is caught without a dose word. */
+  medicationNames?: readonly string[];
+}
+
 /**
  * Re-verify every instruction against the document text. Verified only when the
  * final ref slices exactly to its quote; otherwise "unverified" with no ref.
@@ -496,11 +502,14 @@ export function hasInjectionMarkers(item: ExtractedInstruction): boolean {
  * `suspectedInjection`, loses its ref and goes to "Needs clarification".
  * Due dates are re-derived from the verified quote (never trusted from the
  * extractor); unverified instructions never carry a due date. Duplicate
- * locations are dropped.
+ * locations are dropped. A verified instruction whose (AI-written) description
+ * states a medication change its quote does not is shown in the clinician's
+ * own words instead (ARCHITECTURE §2.6: never change medications).
  */
 export function validateInstructions(
   doc: VisitDocument,
   items: readonly ExtractedInstruction[],
+  options: ValidateInstructionsOptions = {},
 ): ExtractedInstruction[] {
   const checked = verifySourceRefs(
     doc,
@@ -523,7 +532,10 @@ export function validateInstructions(
       if (seen.has(key)) continue;
       seen.add(key);
       const dueDate = parseDueDate(item.sourceRef.quote, doc.createdAt);
-      out.push({ ...rest, sourceVerification: "verified", ...(dueDate ? { dueDate } : {}) });
+      const description = descriptionAddsMedicationChange(item.description ?? "", item.sourceRef.quote, options.medicationNames)
+        ? quoteAsDescription(item.sourceRef.quote)
+        : rest.description;
+      out.push({ ...rest, description, sourceVerification: "verified", ...(dueDate ? { dueDate } : {}) });
     } else {
       const { sourceRef: _bad, ...noRef } = rest;
       void _bad;
@@ -533,10 +545,16 @@ export function validateInstructions(
   return out;
 }
 
+/** The clinician's quote used as a description (as the heuristic extractor does). */
+function quoteAsDescription(quote: string): string {
+  return quote.trim().replace(/[.;:]+$/, "");
+}
+
 /** Map model instructions (verbatim quotes, no offsets) into validated instructions. */
 export function fromModelInstructions(
   doc: VisitDocument,
   items: readonly ModelInstruction[],
+  options: ValidateInstructionsOptions = {},
 ): ExtractedInstruction[] {
   const mapped: ExtractedInstruction[] = items.map((m) => {
     const located = locateQuote(doc, m.sourceQuote ?? "");
@@ -549,7 +567,7 @@ export function fromModelInstructions(
     const claimed = (m.sourceQuote ?? "").trim();
     return claimed ? { ...base, unverifiedQuote: claimed } : base;
   });
-  return validateInstructions(doc, mapped);
+  return validateInstructions(doc, mapped, options);
 }
 
 // ---------------------------------------------------------------------------
@@ -581,11 +599,12 @@ export async function extractInstructionsDetailed(
 ): Promise<ExtractionResult> {
   const { profile, document } = input;
   const mode = deps.mode ?? getAiMode();
+  const options: ValidateInstructionsOptions = { medicationNames: (profile.medications ?? []).map((m) => m.name) };
 
   if (mode === "scripted_demo") {
     const scripted = (deps.scripted ?? getScriptedInterpretation)(profile.id, document.id);
     if (scripted && Array.isArray(scripted.instructions)) {
-      return { instructions: validateInstructions(document, scripted.instructions), source: "scripted" };
+      return { instructions: validateInstructions(document, scripted.instructions, options), source: "scripted" };
     }
     return { instructions: extractInstructionsHeuristic(document), source: "heuristic" };
   }
@@ -593,7 +612,7 @@ export async function extractInstructionsDetailed(
   const result = await generateModelInterpretation(input, deps.generate ?? generateStructured);
   if (result.ok) {
     return {
-      instructions: fromModelInstructions(document, result.data.instructions),
+      instructions: fromModelInstructions(document, result.data.instructions, options),
       source: "live",
       model: result.model,
     };

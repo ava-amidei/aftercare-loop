@@ -386,3 +386,57 @@ describe("evaluateSafety — review wording variants", () => {
     expect(evaluateSafety("I don't wish I wasn't here, I'm just tired").level).not.toBe("none");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Fix round 2: intensifiers between verb and adjective, Spanish heavy-bleeding
+// noun form, multi-word Spanish chest pressure, reflexive Spanish stroke phrasing.
+// ---------------------------------------------------------------------------
+
+describe("evaluateSafety — fix round 2 wording variants", () => {
+  const variants: Case[] = [
+    // chest pressure with an adverb
+    { input: "my chest is really tight", level: "emergency", scenario: "chest_pain" },
+    { input: "my chest feels very heavy", level: "emergency", scenario: "chest_pain" },
+    { input: "my chest is so tight", level: "emergency", scenario: "chest_pain" },
+    { input: "my chest has been really tight all morning", level: "emergency", scenario: "chest_pain" },
+    {
+      input: "I have a history of heart problems and right now my chest is really tight",
+      level: "emergency",
+      scenario: "chest_pain",
+    },
+    // Spanish heavy bleeding, noun form
+    { input: "Tengo mucho sangrado", level: "emergency", scenario: "severe_bleeding" },
+    { input: "Tengo mucho sangrado y me siento mareada", level: "emergency", scenario: "severe_bleeding" },
+    { input: "Tengo demasiado sangrado", level: "emergency", scenario: "severe_bleeding" },
+    // Spanish chest pressure with two modifiers
+    { input: "Siento una presión muy fuerte en el pecho", level: "emergency", scenario: "chest_pain" },
+    { input: "Siento una presión muy fuerte en el pecho y me falta el aire", level: "emergency", scenario: "chest_pain" },
+    // Spanish reflexive stroke phrasing
+    { input: "se me durmió la mitad de la cara y hablo raro", level: "emergency", scenario: "stroke_symptoms" },
+    { input: "se me durmió la cara", level: "emergency", scenario: "stroke_symptoms" },
+    { input: "hablo raro", level: "emergency", scenario: "stroke_symptoms" },
+    { input: "Tengo entumecida la mitad de la cara", level: "emergency", scenario: "stroke_symptoms" },
+  ];
+  it.each(variants)("$input", (c) => {
+    const v = check(c);
+    expect(v.guidance).toMatch(/911/);
+  });
+
+  const concerning: Case[] = [
+    { input: "se me durmió el brazo", level: "concerning" },
+    // A mild qualifier still downgrades chest tightness to "concerning".
+    { input: "my chest feels a little tight", level: "concerning" },
+  ];
+  it.each(concerning)("concerning: $input", (c) => {
+    check(c);
+  });
+
+  const controls: Case[] = [
+    { input: "my chest is not really tight, I just have a cough", level: "none" },
+    { input: "No tengo mucho sangrado", level: "none" },
+    { input: "Hablo rápido cuando estoy nerviosa", level: "none" },
+  ];
+  it.each(controls)("control: $input", (c) => {
+    check(c);
+  });
+});

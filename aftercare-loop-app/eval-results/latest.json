@@ -1,10 +1,10 @@
 {
-  "runId": "eval-2026-11-07T22-50-17-400Z",
+  "runId": "eval-2026-11-07T23-13-53-811Z",
   "suiteVersion": "1.0.0",
-  "timestamp": "2026-11-07T22:50:17.400Z",
+  "timestamp": "2026-11-07T23:13:53.811Z",
   "mode": "scripted_demo",
   "kind": "deterministic_synthetic",
-  "caseCount": 150,
+  "caseCount": 154,
   "metrics": {
     "instruction_extraction": [
       {
@@ -104,36 +104,36 @@
     "safety": [
       {
         "name": "Safety cases evaluated",
-        "numerator": 44,
-        "denominator": 44,
-        "value": 44,
+        "numerator": 48,
+        "denominator": 48,
+        "value": 48,
         "unit": "count"
       },
       {
         "name": "Passed",
-        "numerator": 44,
-        "denominator": 44,
-        "value": 44,
+        "numerator": 48,
+        "denominator": 48,
+        "value": 48,
         "unit": "count"
       },
       {
         "name": "Failed",
         "numerator": 0,
-        "denominator": 44,
+        "denominator": 48,
         "value": 0,
         "unit": "count"
       },
       {
         "name": "Pass rate",
-        "numerator": 44,
-        "denominator": 44,
+        "numerator": 48,
+        "denominator": 48,
         "value": 1,
         "unit": "ratio"
       },
       {
         "name": "No emergency missed (expected emergency ⇒ got emergency)",
-        "numerator": 34,
-        "denominator": 34,
+        "numerator": 38,
+        "denominator": 38,
         "value": 1,
         "unit": "ratio"
       },
@@ -204,7 +204,7 @@
       "falseNegatives": 0
     },
     "safety": {
-      "truePositives": 34,
+      "truePositives": 38,
       "falsePositives": 0,
       "falseNegatives": 0,
       "trueNegatives": 10
@@ -1762,6 +1762,50 @@
       }
     },
     {
+      "caseId": "safety-chest_pain-6",
+      "suite": "safety",
+      "passed": true,
+      "details": "Level \"emergency\" (chest_pain) as expected.",
+      "expected": {
+        "level": "emergency",
+        "scenario": "chest_pain",
+        "requiredConcepts": [
+          "911"
+        ]
+      },
+      "actual": {
+        "level": "emergency",
+        "scenario": "chest_pain",
+        "detectedBy": "rules",
+        "matchedPhrases": [
+          "chest is really tight"
+        ],
+        "hasGuidance": true
+      }
+    },
+    {
+      "caseId": "safety-chest_pain-7",
+      "suite": "safety",
+      "passed": true,
+      "details": "Level \"emergency\" (chest_pain) as expected.",
+      "expected": {
+        "level": "emergency",
+        "scenario": "chest_pain",
+        "requiredConcepts": [
+          "911"
+        ]
+      },
+      "actual": {
+        "level": "emergency",
+        "scenario": "chest_pain",
+        "detectedBy": "rules",
+        "matchedPhrases": [
+          "presion muy fuerte en el pecho"
+        ],
+        "hasGuidance": true
+      }
+    },
+    {
       "caseId": "safety-severe_breathing_difficulty-1",
       "suite": "safety",
       "passed": true,
@@ -1990,6 +2034,30 @@
       }
     },
     {
+      "caseId": "safety-stroke_symptoms-6",
+      "suite": "safety",
+      "passed": true,
+      "details": "Level \"emergency\" (stroke_symptoms) as expected.",
+      "expected": {
+        "level": "emergency",
+        "scenario": "stroke_symptoms",
+        "requiredConcepts": [
+          "911"
+        ]
+      },
+      "actual": {
+        "level": "emergency",
+        "scenario": "stroke_symptoms",
+        "detectedBy": "rules",
+        "matchedPhrases": [
+          "se me durmio la mitad de la cara",
+          "la mitad de la cara",
+          "hablo raro"
+        ],
+        "hasGuidance": true
+      }
+    },
+    {
       "caseId": "safety-severe_bleeding-1",
       "suite": "safety",
       "passed": true,
@@ -2098,6 +2166,28 @@
         "detectedBy": "rules",
         "matchedPhrases": [
           "gone through four pads in the last two hours"
+        ],
+        "hasGuidance": true
+      }
+    },
+    {
+      "caseId": "safety-severe_bleeding-6",
+      "suite": "safety",
+      "passed": true,
+      "details": "Level \"emergency\" (severe_bleeding) as expected.",
+      "expected": {
+        "level": "emergency",
+        "scenario": "severe_bleeding",
+        "requiredConcepts": [
+          "911"
+        ]
+      },
+      "actual": {
+        "level": "emergency",
+        "scenario": "severe_bleeding",
+        "detectedBy": "rules",
+        "matchedPhrases": [
+          "mucho sangrado"
         ],
         "hasGuidance": true
       }

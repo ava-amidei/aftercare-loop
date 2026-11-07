@@ -6,7 +6,7 @@ import { SCRIPTED_UNSUPPORTED } from "@/lib/ai/scripted";
 import { KatReplySchema, type KatReply } from "@/lib/ai/schemas";
 import { aiFailure } from "@/lib/ai/errors";
 import { getReference } from "@/lib/evidence";
-import { evaluateSafety, safetyContextOf } from "@/lib/safety";
+import { containsFalseReassurance, evaluateSafety, safetyContextOf } from "@/lib/safety";
 import { exactRef, getDocuments, getPatient, patientFixtures } from "@/data/patients";
 import { getGroundTruth } from "@/data/ground-truth";
 import type {
@@ -402,6 +402,27 @@ describe("askKat — scripted mode free text", () => {
   });
 });
 
+describe("askKat — check_understanding deep link", () => {
+  it("keeps the scripted questionId the reply is about (fasting → tb-pt-a-2)", async () => {
+    const res = await askKat(req(A, "Can I drink water before my blood test?"), ctxFor(A));
+    const action = res.message.actions?.find((a) => a.kind === "check_understanding");
+    expect(action?.payload?.questionId).toBe("tb-pt-a-2");
+    expect(action?.payload?.questionIds).toEqual(expect.arrayContaining(["tb-pt-a-1", "tb-pt-a-2"]));
+  });
+
+  it("drops a questionId that is not one of this patient's teach-back questions", async () => {
+    const { deps, getScriptedKatReply } = makeDeps();
+    getScriptedKatReply.mockReturnValue({
+      content: "Let's check.",
+      actions: [{ kind: "check_understanding", label: "Check", payload: { questionId: "tb-pt-e-2" } }],
+    });
+    const res = await askKat(req(A, "Check me"), ctxFor(A), deps);
+    const action = res.message.actions?.find((a) => a.kind === "check_understanding");
+    expect(action?.payload?.questionId).toBeUndefined();
+    expect(action?.payload?.questionIds).toContain("tb-pt-a-1");
+  });
+});
+
 describe("askKat — live mode free text", () => {
   it("calls generateStructured with KatReply schema, effort medium, trimmed history and evidence", async () => {
     const { deps, generateStructured, retrieveEvidence } = makeDeps({ getAiMode: () => "live_claude" });
@@ -458,6 +479,37 @@ describe("askKat — live mode free text", () => {
       }
     }
     expect(kinds).toContain("check_understanding");
+  });
+
+  it("removes false reassurance from a live reply even when the message is not concerning", async () => {
+    const { deps, generateStructured } = makeDeps({ getAiMode: () => "live_claude" });
+    generateStructured.mockResolvedValue({
+      ok: true,
+      model: "claude-test",
+      data: liveReply({ content: "Don't worry, you are fine. This is completely normal and nothing to worry about." }),
+    });
+    const res = await askKat(req(A, "I have a headache that won't go away, is that normal?"), ctxFor(A), deps);
+    expect(res.safety.level).toBe("none");
+    expect(containsFalseReassurance(res.message.content)).toBe(false);
+    expect(res.message.content).toMatch(/care team/);
+  });
+
+  it("replaces a medication-change directive in a live reply (concerning message)", async () => {
+    const { deps, generateStructured } = makeDeps({ getAiMode: () => "live_claude" });
+    generateStructured.mockResolvedValue({
+      ok: true,
+      model: "claude-test",
+      data: liveReply({
+        content: "Yes, take an extra 500 mg metformin tonight and double your dose tomorrow.",
+        limitations: ["You could also skip your evening dose.", "The summary does not mention stairs."],
+      }),
+    });
+    const res = await askKat(req(A, CONCERNING_MSG), ctxFor(A), deps);
+    expect(res.safety.level).toBe("concerning");
+    expect(res.message.content.startsWith(res.safety.guidance!)).toBe(true);
+    expect(res.message.content).not.toMatch(/extra 500 mg|double your dose|skip your evening dose/i);
+    expect(res.message.content).toMatch(/can't advise changing/);
+    expect(res.message.content).toContain("The summary does not mention stairs.");
   });
 
   it("returns a typed error message when the model call fails", async () => {

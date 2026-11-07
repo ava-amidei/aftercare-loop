@@ -104,6 +104,18 @@ describe("clarify modes", () => {
     expect(r.clarification).not.toMatch(JUDGMENTAL);
   });
 
+  it("live: a medication-change directive falls back to the deterministic template", async () => {
+    const generate = async (): Promise<AiResult<TeachBackClarification>> => ({
+      ok: true,
+      model: "claude-test",
+      data: { misunderstanding: "The timing seems unclear.", clarification: "Let me explain another way. You can double your dose if you miss one." },
+    });
+    const r = await clarify(input, { mode: "live_claude", generate });
+    expect(r.mode).toBe("scripted_demo");
+    expect(r.clarification).not.toMatch(/double your dose/i);
+    expect(r.clarification).toContain(q.sourceRef.quote);
+  });
+
   it("live: model failure falls back with a safe error", async () => {
     const generate = async (): Promise<AiResult<TeachBackClarification>> => ({ ok: false, kind: "api", error: "Kat couldn't reach the AI service." });
     const r = await clarify(input, { mode: "live_claude", generate });

@@ -17,6 +17,7 @@ import { getAiMode, makeMeta, DocumentInterpretationSchema, type ModelDocumentIn
 import { getScriptedInterpretation } from "@/lib/ai/scripted";
 import { extractTopics, normalizeTopics, retrieveEvidence } from "@/lib/evidence";
 import { detectInjectionMarkers, evaluateSafety, safetyContextOf, SAFETY_GUIDANCE } from "@/lib/safety";
+import { conflictsWithFluidRestriction, detectDocumentedRestrictions } from "@/lib/safety/advice-guards";
 import type {
   DocumentInterpretation,
   EvidenceMatch,
@@ -71,6 +72,7 @@ const NOTES: Record<
     warningSigns: string;
     injectedInstruction: string;
     injectedDocument: string;
+    fluidConflict: string;
   }
 > = {
   en: {
@@ -91,6 +93,8 @@ const NOTES: Record<
       "A line in this document looks like instructions aimed at the assistant, not at you. It was not added to your care plan. Please confirm your instructions with your care team.",
     injectedDocument:
       "Part of this document looks like instructions aimed at the assistant, not at you. They were ignored. Please confirm your instructions with your care team.",
+    fluidConflict:
+      "Your record limits how much fluid you drink, and your document also mentions advice to drink more. That advice was not added to your care plan. Ask your care team which applies to you.",
   },
   es: {
     liveUnavailable: "La IA en vivo no está disponible; solo se muestran las instrucciones extraídas.",
@@ -114,6 +118,8 @@ const NOTES: Record<
       "Una línea de este documento parece contener instrucciones dirigidas al asistente, no a usted. No se agregó a su plan de cuidado. Confirme sus instrucciones con su equipo de atención médica.",
     injectedDocument:
       "Una parte de este documento parece contener instrucciones dirigidas al asistente, no a usted. Se ignoraron. Confirme sus instrucciones con su equipo de atención médica.",
+    fluidConflict:
+      "Su expediente limita la cantidad de líquidos que toma, y su documento también menciona un consejo de tomar más líquidos. Ese consejo no se agregó a su plan de cuidado. Pregunte a su equipo de atención médica cuál se aplica a usted.",
   },
 };
 
@@ -258,6 +264,39 @@ interface Generated {
   instructions: DocumentInterpretation["instructions"];
 }
 
+/**
+ * A verified quote can still be generic "drink more" advice that contradicts a
+ * documented fluid limit (e.g. a handout the patient reported in "Reason for
+ * visit"). It is not a clinician-documented next step: it loses its ref, is
+ * marked unverified + `conflictsWithDocumentedRestriction`, and goes to
+ * "Needs clarification".
+ */
+export function guardRestrictionConflicts(
+  profile: PatientProfile,
+  document: VisitDocument,
+  instructions: DocumentInterpretation["instructions"],
+): DocumentInterpretation["instructions"] {
+  const restrictions = detectDocumentedRestrictions(profile, document);
+  if (!restrictions.fluid) return instructions;
+  return instructions.map((i) => {
+    if (i.sourceVerification !== "verified" || !i.sourceRef) return i;
+    if (!conflictsWithFluidRestriction([i.description, i.sourceRef.quote], restrictions)) return i;
+    const { sourceRef: _ref, dueDate: _due, ...rest } = i;
+    void _ref;
+    void _due;
+    return { ...rest, sourceVerification: "unverified", conflictsWithDocumentedRestriction: true };
+  });
+}
+
+function restrictionConflictFlags(
+  instructions: DocumentInterpretation["instructions"],
+  language: Language,
+): SafetyFlag[] {
+  return instructions.some((i) => i.conflictsWithDocumentedRestriction)
+    ? [{ level: "clarify_with_clinician", message: notes(language).fluidConflict }]
+    : [];
+}
+
 /** Scripted Demo Mode content for this patient/document, validated and post-checked; null if none. */
 function scriptedContent(
   lookup: ScriptedInterpretationFn,
@@ -281,7 +320,9 @@ function scriptedContent(
       referenceIds: restrictIds(s.referenceIds, allowed),
     },
     safetyFlags: s.safetyFlags,
-    instructions: validateInstructions(document, s.instructions),
+    instructions: validateInstructions(document, s.instructions, {
+      medicationNames: (profile.medications ?? []).map((m) => m.name),
+    }),
   };
 }
 
@@ -351,7 +392,9 @@ export async function interpretDocument(
           referenceIds: restrictIds(d.referenceIds, allowed),
         },
         safetyFlags: d.safetyFlags,
-        instructions: fromModelInstructions(document, d.instructions),
+        instructions: fromModelInstructions(document, d.instructions, {
+          medicationNames: (profile.medications ?? []).map((m) => m.name),
+        }),
       };
       responseMode = "live_claude";
       model = result.model;
@@ -366,7 +409,11 @@ export async function interpretDocument(
 
   // 4. Heuristic fallback (deterministic, verbatim quotes only).
   const heuristic = generated === null;
-  const instructions = generated ? generated.instructions : extractInstructionsHeuristic(document);
+  const instructions = guardRestrictionConflicts(
+    profile,
+    document,
+    generated ? generated.instructions : extractInstructionsHeuristic(document),
+  );
   const base: Narrative = generated
     ? generated.narrative
     : {
@@ -379,8 +426,11 @@ export async function interpretDocument(
   //    used; the heuristic result (no narrative) lists condition-related matches.
   const referenceIds = heuristic ? defaultSourceIds(evidence, profile) : base.referenceIds;
 
-  // Injection-flagged lines get their own flag, not the "could not be matched" note.
-  const unverifiedCount = instructions.filter((i) => i.sourceVerification !== "verified" && !i.suspectedInjection).length;
+  // Injection-flagged and restriction-conflict lines get their own flag, not the
+  // "could not be matched" note.
+  const unverifiedCount = instructions.filter(
+    (i) => i.sourceVerification !== "verified" && !i.suspectedInjection && !i.conflictsWithDocumentedRestriction,
+  ).length;
   const limitations = [
     ...serviceNotes,
     ...base.limitations,
@@ -398,7 +448,12 @@ export async function interpretDocument(
     instructions,
     unansweredQuestions: base.unansweredQuestions,
     limitations: [...new Set(limitations)],
-    safetyFlags: mergeFlags(ruleFlags, injectionFlags(document, instructions, language), modelFlags),
+    safetyFlags: mergeFlags(
+      ruleFlags,
+      injectionFlags(document, instructions, language),
+      restrictionConflictFlags(instructions, language),
+      modelFlags,
+    ),
     referenceIds,
     meta: {
       ...makeMeta(responseMode, model, language),

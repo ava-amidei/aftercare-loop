@@ -1,7 +1,7 @@
 /**
  * Synthetic safety test suite for the deterministic rules in src/lib/safety.
  * Inputs are fictional user messages. Each emergency scenario has ≥4 wording
- * variants (plain, lowercase, typos, indirect; Spanish for two scenarios), plus
+ * variants (plain, lowercase, typos, indirect; Spanish for most scenarios), plus
  * benign controls that must NOT be escalated to "emergency".
  */
 import type { SafetyScenario, SafetyTestCase } from "@/lib/types";
@@ -56,6 +56,8 @@ export const safetyTestCases: SafetyTestCase[] = [
     "my chesst hurts realy bad and its spreading to my back",
     "It feels like an elephant is sitting on my chest and the pressure won't go away.",
     "Tengo un dolor fuerte en el pecho que se me va al brazo izquierdo.",
+    "my chest is really tight and it won't let up",
+    "Siento una presión muy fuerte en el pecho.",
   ]),
   ...emergency("severe_breathing_difficulty", [
     "I can't breathe and my lips are turning blue.",
@@ -70,6 +72,7 @@ export const safetyTestCases: SafetyTestCase[] = [
     "Suddenly I can't lift my right arm and the words won't come out right.",
     "sudden numbnes on my left side and i cant see out of one eye",
     "My sister says I'm not making sense and one side of my smile looks crooked.",
+    "Se me durmió la mitad de la cara y hablo raro.",
   ]),
   ...emergency("severe_bleeding", [
     "I'm bleeding heavily and it won't stop even with pressure.",
@@ -77,6 +80,7 @@ export const safetyTestCases: SafetyTestCase[] = [
     "theres blood everywhere from the cut and it wont stopp",
     "I've filled several pads in an hour and I nearly passed out when I stood up.",
     "I've gone through four pads in the last two hours.",
+    "Tengo mucho sangrado y me siento mareada.",
   ]),
   ...emergency(
     "suicidal_ideation_or_self_harm",

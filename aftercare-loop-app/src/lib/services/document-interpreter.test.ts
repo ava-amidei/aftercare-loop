@@ -302,3 +302,63 @@ describe("interpretDocument — profile safety context is shared (safety review)
     }
   });
 });
+
+describe("interpretDocument — live-model guards (fix round 2)", () => {
+  const ptE = patientFixtures.find((f) => f.profile.id === "pt-e-multi")!;
+  const live = (instructions: ModelDocumentInterpretation["instructions"]) =>
+    interpretDocument(
+      { profile: ptE.profile, document: ptE.document, evidence: [] },
+      { mode: "live_claude", generate: gen({ ok: true, data: modelData({ instructions, referenceIds: [], terms: [] }), model: "m" }) },
+    );
+
+  it("a medication-change description over an unrelated verbatim quote is shown in the clinician's words", async () => {
+    const out = await live([
+      { description: "Increase your furosemide to 80 mg if swollen", type: "medication", sourceQuote: "Take furosemide 40 mg once each morning.", dueDate: null },
+      { description: "Increase your furosemide when your ankles swell", type: "medication", sourceQuote: "Take furosemide 40 mg once each morning.", dueDate: null },
+    ]);
+    const verified = out.instructions.filter((i) => i.sourceVerification === "verified");
+    expect(verified).toHaveLength(1); // same location de-duplicated
+    expect(verified[0]!.description).toBe("Take furosemide 40 mg once each morning");
+    expect(out.instructions.some((i) => /increase/i.test(i.description))).toBe(false);
+  });
+
+  it("keeps a faithful description when the quote itself states the change", async () => {
+    const out = await live([
+      { description: "Take furosemide 40 mg each morning", type: "medication", sourceQuote: "Take furosemide 40 mg once each morning.", dueDate: null },
+    ]);
+    expect(out.instructions[0]!.description).toBe("Take furosemide 40 mg each morning");
+  });
+
+  it("generic 'drink plenty of water' quoted from the record is not a verified step when fluids are limited", async () => {
+    const out = await live([
+      { description: "Drink plenty of water, especially when blood sugar is high", type: "lifestyle", sourceQuote: "drink plenty of water, especially when your blood sugar is high", dueDate: null },
+      { description: "Limit fluids to 1.5 liters a day", type: "lifestyle", sourceQuote: "Limit your total fluids to 1.5 liters (about 6 cups) per day, including soups and drinks.", dueDate: null },
+    ]);
+    const water = out.instructions.find((i) => /plenty of water/i.test(i.description))!;
+    expect(water.sourceVerification).toBe("unverified");
+    expect(water.sourceRef).toBeUndefined();
+    expect(water.conflictsWithDocumentedRestriction).toBe(true);
+    const limit = out.instructions.find((i) => /1\.5 liters/.test(i.description))!;
+    expect(limit.sourceVerification).toBe("verified");
+    expect(out.safetyFlags.some((f) => f.level === "clarify_with_clinician" && /limits how much fluid/.test(f.message))).toBe(true);
+    expect(out.limitations.some((l) => /could not be matched/.test(l))).toBe(false);
+
+    const plan = buildActionPlan({ profile: ptE.profile, interpretation: out, document: ptE.document, now: "2026-11-01T00:00:00.000Z" });
+    expect(plan.some((a) => /plenty of water/i.test(a.description))).toBe(false);
+    expect(plan.some((a) => a.category === "care_plan" && /1\.5 liters/.test(a.description))).toBe(true);
+    expect(plan.some((a) => /hydration targets/i.test(a.description))).toBe(true);
+  });
+
+  it("does not flag hydration advice when no fluid limit is documented", async () => {
+    const d = { ...doc, text: `${TEXT}- Drink plenty of water during the day.\n` };
+    const out = await interpretDocument(
+      { profile, document: d, evidence: [] },
+      {
+        mode: "live_claude",
+        generate: gen({ ok: true, data: modelData({ instructions: [{ description: "Drink plenty of water", type: "lifestyle", sourceQuote: "Drink plenty of water during the day.", dueDate: null }] }), model: "m" }),
+      },
+    );
+    expect(out.instructions[0]!.sourceVerification).toBe("verified");
+    expect(out.instructions[0]!.conflictsWithDocumentedRestriction).toBeUndefined();
+  });
+});

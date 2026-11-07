@@ -160,6 +160,8 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
       inputRef.current?.focus();
       return;
     }
+    // Welcome chips unmount once the chat starts; keep focus in the panel.
+    inputRef.current?.focus({ preventScroll: true });
     void send(t(quickPromptKey(id)), id);
   };
 

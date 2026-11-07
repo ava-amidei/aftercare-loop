@@ -12,7 +12,8 @@
  * Guards:
  *  - never creates AI medication dose/frequency change directives;
  *  - never creates generic hydration/diet items when the document or profile
- *    documents a restriction — asks about individualized targets instead.
+ *    documents a restriction — asks about individualized targets instead (this
+ *    also applies to verified quotes that conflict with a documented fluid limit).
  *
  * Ids are stable hashes, so re-running never duplicates items; merging with
  * `existing` preserves status, reminders and createdAt.
@@ -29,6 +30,14 @@ import type {
 import { nowIso } from "@/lib/utils/dates";
 import { stableId } from "@/lib/utils/ids";
 import { normalizeWhitespace } from "@/lib/utils/text";
+import {
+  conflictsWithFluidRestriction,
+  descriptionAddsMedicationChange,
+  detectDocumentedRestrictions,
+  isGenericDietText,
+  isGenericHydrationText,
+  isMedicationChangeDirective,
+} from "@/lib/safety/advice-guards";
 import { suggestBarrierActions } from "./barriers";
 
 export { suggestBarrierActions, BARRIER_SUGGESTIONS } from "./barriers";
@@ -86,77 +95,14 @@ const STRINGS = {
 // Guards (exported for tests and reuse)
 // ---------------------------------------------------------------------------
 
-const FLUID_RESTRICTION_PATTERNS: RegExp[] = [
-  /fluid restriction/i,
-  /restrict(?:ed|ing)? (?:your )?(?:total )?(?:fluids?|liquids?|water)/i,
-  /limit(?:ed|ing)? (?:your )?(?:total |daily )?(?:fluids?|liquids?|water|how much you drink)/i,
-  /(?:fluids?|liquids?) (?:limit|restriction)/i,
-  /no more than [^.\n]{0,40}(?:fluids?|liquids?|cups|liters|litres|ounces)/i,
-  /restricci[oó]n de l[ií]quidos/i,
-  /limit(?:e|ar|a) (?:el total de |los |sus )?(?:l[ií]quidos|agua)/i,
-];
-
-const DIET_RESTRICTION_PATTERNS: RegExp[] = [
-  /low[- ](?:sodium|salt|potassium|phosphorus|protein)/i,
-  /(?:limit|restrict|reduce)(?:ed|ing)? (?:your )?(?:salt|sodium|potassium|phosphorus|protein)/i,
-  /(?:sodium|salt|potassium|diet(?:ary)?) restriction/i,
-  /restricci[oó]n (?:de sal|de sodio|de potasio|en la dieta|alimentaria)/i,
-  /(?:dieta )?baja en (?:sal|sodio|potasio)/i,
-];
-
-/** A documented, individualized fluid amount (e.g. "2 to 3 liters of fluid each day"). */
-const FLUID_TARGET_PATTERN =
-  /\b\d+(?:[.,]\d+)?(?:\s*(?:to|-|–|a)\s*\d+(?:[.,]\d+)?)?\s*(?:liters?|litres?|litros?|cups?|tazas?|ounces?|oz)\b[^.\n]{0,30}\b(?:fluids?|water|liquids?|l[ií]quidos?|agua)\b/i;
-
-const GENERIC_HYDRATION = /\b(?:hydrat\w*|drink (?:more|plenty|extra|lots)|more (?:water|fluids?)|plenty of (?:water|fluids?)|glasses of water|increase (?:your )?(?:fluid|water)|water intake|fluid intake|tomar (?:m[aá]s|mucha) agua|hidrat\w*)/i;
-const GENERIC_DIET = /\b(?:eat (?:more|less|healthier|a healthy)|healthy (?:diet|eating)|balanced diet|nutrition|increase (?:your )?(?:protein|fruits?|vegetables)|alimentaci[oó]n saludable|dieta (?:sana|saludable|balanceada)|comer m[aá]s)/i;
-
-/**
- * Returns which restriction kinds are documented in the document text or
- * profile care instructions. `fluidTarget` = an individualized fluid amount is
- * documented (generic hydration advice is then suppressed, no extra question).
- */
-export function detectDocumentedRestrictions(
-  profile: PatientProfile,
-  document?: VisitDocument | null,
-): { fluid: boolean; diet: boolean; fluidTarget: boolean } {
-  const haystack = [document?.text ?? "", ...(profile.careInstructions ?? [])].join("\n");
-  return {
-    fluid: FLUID_RESTRICTION_PATTERNS.some((p) => p.test(haystack)),
-    diet: DIET_RESTRICTION_PATTERNS.some((p) => p.test(haystack)),
-    fluidTarget: FLUID_TARGET_PATTERN.test(haystack),
-  };
-}
-
-export function isGenericHydrationText(text: string): boolean {
-  return GENERIC_HYDRATION.test(text);
-}
-
-export function isGenericDietText(text: string): boolean {
-  return GENERIC_DIET.test(text);
-}
-
-const MED_CHANGE_VERB =
-  /\b(?:increase|decrease|reduce|raise|lower|double|halve|cut back|stop|skip|change|adjust|switch|taper|discontinue|titrate|instead|more often|less often|extra dose|aumente|aumentar|disminuya|disminuir|reduzca|reducir|suspenda|suspender|cambie|cambiar|deje de|dejar de|omita|omitir|en lugar de|m[aá]s seguido)\b/i;
-const MED_CHANGE_OBJECT =
-  /\b(?:dose|doses|dosage|mg|mcg|units?|medications?|medicines?|meds|pills?|tablets?|insulin|prescriptions?|dosis|medicamentos?|medicinas?|pastillas?|unidades)\b/i;
-
-function isQuestion(text: string): boolean {
-  const t = text.trim();
-  return t.endsWith("?") || t.startsWith("¿");
-}
-
-/**
- * True when an AI-authored text reads as a directive to change a medication
- * (dose, frequency, stop/skip). Questions to the care team are allowed.
- */
-export function isMedicationChangeDirective(text: string, medicationNames: string[] = []): boolean {
-  if (isQuestion(text)) return false;
-  if (!MED_CHANGE_VERB.test(text)) return false;
-  if (MED_CHANGE_OBJECT.test(text)) return true;
-  const lower = text.toLowerCase();
-  return medicationNames.some((n) => n.trim().length > 2 && lower.includes(n.trim().toLowerCase()));
-}
+// Restriction and medication-change guards live in @/lib/safety/advice-guards
+// (shared with the document interpreter); re-exported here for existing callers.
+export {
+  detectDocumentedRestrictions,
+  isGenericHydrationText,
+  isGenericDietText,
+  isMedicationChangeDirective,
+} from "@/lib/safety/advice-guards";
 
 /** Exact traceability check (ARCHITECTURE §2.5). */
 export function isVerifiedRef(document: VisitDocument | null | undefined, ref: SourceRef | undefined): ref is SourceRef {
@@ -196,9 +142,7 @@ function verifiedInstructionItem(
   const medNames = profile.medications.map((m) => m.name);
   // If the AI-written description reads as a med change the quote doesn't state,
   // fall back to the clinician's own words.
-  const description =
-    isMedicationChangeDirective(instruction.description, medNames) &&
-    !isMedicationChangeDirective(ref.quote, medNames)
+  const description = descriptionAddsMedicationChange(instruction.description, ref.quote, medNames)
       ? ref.quote
       : normalizeWhitespace(instruction.description) || ref.quote;
   const draft: Draft = {
@@ -359,6 +303,13 @@ export function buildActionPlan(input: BuildActionPlanInput): ActionItem[] {
   // 1. Instructions: verified → care plan; anything else → needs clarification.
   for (const instruction of interp?.instructions ?? []) {
     if (document && isVerifiedRef(document, instruction.sourceRef)) {
+      // A traceable quote can still be generic "drink more" advice (e.g. a
+      // handout the patient reported) that contradicts a documented fluid
+      // limit. It never becomes a care-plan step; ask which applies instead.
+      if (conflictsWithFluidRestriction([instruction.description, instruction.sourceRef.quote], restrictions)) {
+        needHydrationQuestion = true;
+        continue;
+      }
       drafts.push(verifiedInstructionItem(profile, document, instruction, instruction.sourceRef, language));
     } else {
       const text = instruction.description || instruction.sourceRef?.quote || "";
