@@ -10,8 +10,15 @@ AI-powered women's health literacy and patient empowerment platform (hackathon M
 | Path | What |
 |---|---|
 | `aftercare-loop-app/` | The Next.js application (see its README for setup) |
-| `docs/` | Architecture contract, product spec, demo script, security roadmap, limitations |
+| `docs/` | Architecture contract, product spec, demo script, security roadmap, limitations, research brief |
+| `aftercare-loop-mobile/` | Capacitor iOS/Android shell that wraps the live web app (see its README) |
+| `aftercare-loop-media/` | Demo video pipeline (narration, TTS, recording, assembly) and pitch materials |
 | `aftercare-loop-assets/` | Local-only assets and credentials (git-ignored, never committed) |
+
+## Team
+
+Team HW1: Stephanie Kim, Ava Amidei, Kemigisha Sherifah Muzungu M, Payton Mendygral.
+Mentors: Rhea John, Pavel Stepanov.
 
 ## Quick start
 

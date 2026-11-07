@@ -11,3 +11,13 @@ aftercare-loop-app/test-results/
 aftercare-loop-app/playwright-report/
 aftercare-loop-app/*.tsbuildinfo
 aftercare-loop-app/next-env.d.ts
+aftercare-loop-mobile/node_modules/
+aftercare-loop-mobile/ios/App/Pods/
+aftercare-loop-mobile/ios/App/build/
+aftercare-loop-mobile/android/.gradle/
+aftercare-loop-mobile/android/build/
+aftercare-loop-mobile/android/app/build/
+aftercare-loop-media/**/out/
+aftercare-loop-media/**/*.wav
+aftercare-loop-media/**/*.mp4
+aftercare-loop-media/**/*.webm
