@@ -24,3 +24,5 @@ aftercare-loop-media/**/*.webm
 # Stray build/dependency output at the repo root
 /node_modules/
 /.next/
+aftercare-loop-app/.vercel/
+node_modules/
