@@ -14,33 +14,36 @@
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "latest",
+    "@google/genai": "^3.0.0",
+    "@heroicons/react": "^2.2.0",
+    "clsx": "^2.1.1",
+    "firebase": "^13.2.0",
+    "lucide-react": "latest",
     "next": "16.4.5",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "firebase": "^13.2.0",
+    "tailwind-merge": "^2.5.0",
     "zod": "^3.23.8",
-    "@anthropic-ai/sdk": "latest",
-    "zustand": "^5.0.0",
-    "lucide-react": "latest",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.5.0"
+    "zod-to-json-schema": "^3.25.2",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.48.0",
     "@tailwindcss/turbopack": "^4",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.5.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.0",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
-    "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^3.0.0",
-    "@vitejs/plugin-react": "^4.3.0",
     "jsdom": "^25.0.0",
-    "@testing-library/react": "^16.0.0",
-    "@testing-library/jest-dom": "^6.5.0",
-    "@testing-library/user-event": "^14.5.0",
+    "tailwindcss": "^4",
     "tsx": "^4.19.0",
-    "@playwright/test": "^1.48.0"
+    "typescript": "^5",
+    "vitest": "^3.0.0"
   }
 }
