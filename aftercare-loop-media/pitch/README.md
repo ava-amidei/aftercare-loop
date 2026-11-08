@@ -15,6 +15,12 @@ If you edit the claude.ai deck, re-export or update the PowerPoint and `SLIDES.m
 
 ## Change log
 
+**2026-11-08 (later)** — refreshed to the committed eval run `eval-2026-11-08T14-59-30-916Z` (`aftercare-loop-app/eval-results/latest.json`: suite 1.0.0, deterministic synthetic, Scripted Demo Mode, 189 cases, 0 errors):
+- Evaluation (slide 11): safety now "83 of 83 passed" (40 of 40 emergencies caught, 43 of 43 non-emergencies not escalated); footer and notes give the new run id and 189 cases. Extraction (P/R/F1 1.00; 54 TP, 0 FP, 0 FN), citation validity (58 of 58) and comprehension (36 of 36) are unchanged.
+- Architecture (slide 10): "About 50" became "54 hand-curated references", in the slide and its notes.
+- Rebuilt `aftercare-loop-pitch.pptx`, `aftercare-loop-pitch.pdf` and `SLIDES.md`.
+- **Pending:** these two slide changes are NOT yet in the claude.ai artifact. Publishing to it was blocked because it is now shared publicly. Until someone republishes evaluation.html and architecture.html, the artifact still shows 154 cases, 48 of 48 and "About 50".
+
 **2026-11-08** — judge-panel fixes 4, 9 and 16 from `docs/VALIDATION-REPORT.md`, applied to the artifact and the exports:
 - Roadmap (slide 13): "Scripted Demo Mode covers 7 of 12 patients (2 in Spanish)"; clinician communication summary moved to Today (it ships at `/follow-up`); P1 is now "PDF extraction, broader Spanish, human-reviewed output sample".
 - Sample Kat question changed from "Why do I need a fasting blood test?" to the scripted key "Can I drink water before my blood test?" (slides 6 and 7 and their notes); Kat's reply now quotes the scripted pt-a answer.

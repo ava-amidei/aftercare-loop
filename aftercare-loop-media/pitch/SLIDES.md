@@ -191,7 +191,7 @@ Editable copies: `aftercare-loop-pitch.pptx` (PowerPoint) and `aftercare-loop-pi
 - 5. Verify
 - zod schema + exact source-quote check. Mode stamped on every response.
 - Curated evidence index
-- About 50 hand-curated references (MedlinePlus, NIH, CDC, ACOG); tag and keyword retrieval; citation validity measured.
+- 54 hand-curated references (MedlinePlus, NIH, CDC, ACOG); tag and keyword retrieval; citation validity measured.
 - Synthetic patients + ground truth
 - 12 fictional fixtures with expected instructions, teach-back keys and safety outcomes.
 - Evaluation harness
@@ -201,7 +201,7 @@ Editable copies: `aftercare-loop-pitch.pptx` (PowerPoint) and `aftercare-loop-pi
 
 **Speaker notes**
 
-> Under the hood it is a Next.js 16 app with a strict pipeline. The client holds demo state in the browser and calls API route handlers that validate every body with zod; model keys never reach the browser. Every request then hits deterministic safety rules before anything else. Only then do we either look up a scripted response or call the model provider server-side, Claude or Gemini, asking for structured JSON. The output is validated against a schema and every extracted quote is checked against the original document; unverified quotes are flagged, and the response is stamped with its mode. Underneath sit a curated evidence index of about 50 references, twelve synthetic patients with ground truth, and an evaluation harness that scores the whole pipeline. Nothing in the code branches on a condition name; conditions live in data and prompts, which is what makes it condition-agnostic.
+> Under the hood it is a Next.js 16 app with a strict pipeline. The client holds demo state in the browser and calls API route handlers that validate every body with zod; model keys never reach the browser. Every request then hits deterministic safety rules before anything else. Only then do we either look up a scripted response or call the model provider server-side, Claude or Gemini, asking for structured JSON. The output is validated against a schema and every extracted quote is checked against the original document; unverified quotes are flagged, and the response is stamped with its mode. Underneath sit a curated evidence index of 54 hand-curated references, twelve synthetic patients with ground truth, and an evaluation harness that scores the whole pipeline. Nothing in the code branches on a condition name; conditions live in data and prompts, which is what makes it condition-agnostic.
 
 ## 11. What we measure  (`evaluation`)
 
@@ -214,17 +214,17 @@ Editable copies: `aftercare-loop-pitch.pptx` (PowerPoint) and `aftercare-loop-pi
 - 100%
 - 58 of 58 source quotes matched the original document exactly; 0 invalid citations (counted, never hidden)
 - Safety pass rate
-- 48 of 48 passed
-- Six urgent scenarios with wording variants and benign controls; deterministic rules, failures listed individually
+- 83 of 83 passed
+- 40 of 40 emergencies caught; 43 of 43 non-emergencies not escalated; failures listed individually
 - Comprehension (simulated)
 - 36 of 36 clarified
 - Teach-back questions correct initially, then after clarification; misunderstandings identified and unresolved items saved
 - Three of four suites measure the pipeline, not model accuracy; see docs/VALIDATION-REPORT.md
-- Run eval-2026-11-08 · suite 1.0.0 · deterministic synthetic suite, Scripted Demo Mode · 154 cases · fictional patients, not clinical validation
+- Run eval-2026-11-08T14-59-30-916Z · suite 1.0.0 · deterministic synthetic suite, Scripted Demo Mode · 189 cases, 0 errors · fictional patients, not clinical validation
 
 **Speaker notes**
 
-> We would rather show you a dashboard than an adjective. The evaluation harness runs the whole pipeline against our synthetic patients and ground truth, and reports four things: how precisely we extract instructions, whether every citation resolves to a real curated source, whether every urgent scenario, including wording variants and benign controls, is handled by the deterministic rules, and whether teach-back scoring catches a wrong answer and accepts the corrected one. These numbers come from run eval-2026-11-08, suite version 1.0.0, a deterministic synthetic run in Scripted Demo Mode across 154 cases. Be precise about what that means: three of the four suites measure the pipeline, not model accuracy. Scripted patients use predefined instructions, the citation suite checks the verification step, and comprehension answers are simulated from the question record. These are automated tests on synthetic cases written by the same team. It is not clinical validation, and the dashboard says so.
+> We would rather show you a dashboard than an adjective. The evaluation harness runs the whole pipeline against our synthetic patients and ground truth, and reports four things: how precisely we extract instructions, whether every citation resolves to a real curated source, whether every urgent scenario, including wording variants and benign controls, is handled by the deterministic rules, and whether teach-back scoring catches a wrong answer and accepts the corrected one. These numbers come from run eval-2026-11-08T14-59-30-916Z, suite version 1.0.0, a deterministic synthetic run in Scripted Demo Mode across 189 cases with no errors. The safety suite passed 83 of 83: all 40 emergencies caught, and none of the 43 non-emergency inputs escalated. Be precise about what that means: three of the four suites measure the pipeline, not model accuracy. Scripted patients use predefined instructions, the citation suite checks the verification step, and comprehension answers are simulated from the question record. These are automated tests on synthetic cases written by the same team. It is not clinical validation, and the dashboard says so.
 
 ## 12. Start where the need is concentrated: community health centers  (`market`)
 
