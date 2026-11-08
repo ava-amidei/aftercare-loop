@@ -157,7 +157,7 @@ Scroll to **Help with getting care**.
 
 **Slide 11, evaluation.** (Skip slide 10 unless a judge asks about architecture.)
 > We would rather show a dashboard than an adjective. Our evaluation harness runs the whole pipeline
-> on 154 synthetic cases: instruction extraction, citation validity, safety, and comprehension. The
+> on 189 synthetic cases: instruction extraction, citation validity, safety, and comprehension. The
 > numbers on this slide come from that run and are never hard-coded. Be precise about what they are:
 > three of the four suites measure the pipeline, not model accuracy, and none of this is clinical
 > validation. The dashboard says so in its first line.
@@ -190,14 +190,14 @@ Scroll to **Help with getting care**.
 |---|---|---|
 | Is this HIPAA-compliant? Could I use it with real patients? | Payton | No. It is an educational MVP on fictional data; state lives in the browser. The roadmap lists the HIPAA gap assessment, BAAs and clinician review that come before any real patient. |
 | What stops the AI from inventing an instruction? | Sherifah | An instruction enters the plan only if its quote matches the document character for character; otherwise it is held for clarification. You saw that with Priya. The model never emits offsets; we compute them. |
-| What if a patient types "I want to hurt myself" or "chest pain"? | Sherifah | Deterministic rules run before any model call, on every message and document. Emergency guidance comes back immediately, with no lecture. Forty-eight of forty-eight safety cases pass, including wording variants and benign controls. |
+| What if a patient types "I want to hurt myself" or "chest pain"? | Sherifah | Deterministic rules run before any model call, on every message and document. Emergency guidance comes back immediately, with no lecture. Eighty-three of eighty-three safety cases pass, including wording variants and benign controls. |
 | Can Kat tell me to change my medication? | Sherifah | No. Medication-change questions are caught before any lookup; Kat quotes the documented instruction and says the decision belongs to the care team. |
 | Is the demo live AI or scripted? | Ava | Scripted Demo Mode today, and the badge says so on every response. Live mode uses Gemini or Claude server-side with the same safety rules and the same source verification. |
 | Why women's health and not everyone? | Stephanie | The information gap is widest there: years to diagnosis for PCOS, endometriosis and POTS, and a thin postpartum follow-up. The code is condition-agnostic; conditions live in data. |
 | How is this different from MyChart or a chatbot? | Ava | Portals store the summary; chatbots answer questions. Neither checks understanding, traces actions to the clinician's words, plans around barriers, or hands unresolved items back. |
 | Who pays? | Payton | Hypothesis: the FQHC's quality or patient-experience lead, per service site per year. Reimbursement is not assumed. The pilot tests the price and the buyer. |
-| What do the 100% numbers mean? | Payton | They are automated tests on 154 synthetic cases written by us. Three of the four suites measure the pipeline, not model accuracy. It is honest engineering evidence, not clinical validation. |
-| What did you build it with? | Ava | Next.js 16, TypeScript, zod-validated API routes, deterministic safety rules, a curated evidence index of about fifty references, twelve synthetic patients with ground truth, and an evaluation harness with over fourteen hundred tests. |
+| What do the 100% numbers mean? | Payton | They are automated tests on 189 synthetic cases written by us. Three of the four suites measure the pipeline, not model accuracy. It is honest engineering evidence, not clinical validation. |
+| What did you build it with? | Ava | Next.js 16, TypeScript, zod-validated API routes, deterministic safety rules, a curated evidence index of fifty-four references, twelve synthetic patients with ground truth, and an evaluation harness with over fifteen hundred tests. |
 | Spanish? Accessibility? | Stephanie | English and Spanish today, with adjustable text size, a user-chosen accent color, and seventeen-pixel body text on mobile. Broader Spanish is a P1 item. |
 
 If nobody owns a question, the person who spoke last takes it. Never answer with a number that is
