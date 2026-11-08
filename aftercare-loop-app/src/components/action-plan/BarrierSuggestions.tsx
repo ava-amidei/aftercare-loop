@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, HandHelping, Plus } from "lucide-react";
+import { LifebuoyIcon } from "@heroicons/react/24/outline";
+import { CheckIcon, PlusIcon } from "@heroicons/react/20/solid";
 import type { ActionItem } from "@/lib/types";
 import { Button, Card, OriginBadge } from "@/components/ui";
 import { barrierKey, originKey, useT } from "@/lib/i18n";
@@ -23,15 +24,15 @@ export function BarrierSuggestions({ items, savedQuestions, onAddToQuestions }: 
     <section
       aria-labelledby="barrier-suggestions-title"
       data-testid="barrier-suggestions"
-      className="flex flex-col gap-3 rounded-card border-2 border-dashed border-origin-ai/50 bg-origin-ai-soft/40 p-4 sm:p-5"
+      className="flex flex-col gap-3 rounded-3xl border-2 border-dashed border-origin-ai/50 bg-origin-ai-soft/40 p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
-        <HandHelping aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-origin-ai" />
+        <LifebuoyIcon aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-origin-ai" />
         <div className="flex flex-col gap-1">
-          <h3 id="barrier-suggestions-title" className="text-lg font-semibold text-ink">
+          <h3 id="barrier-suggestions-title" className="text-lg font-semibold text-gray-90">
             {t("actionPlan.barrier.sectionTitle")}
           </h3>
-          <p className="text-base text-ink-muted">{t("actionPlan.barrier.sectionHint")}</p>
+          <p className="text-base text-gray-70">{t("actionPlan.barrier.sectionHint")}</p>
         </div>
       </div>
       <ul className="flex flex-col gap-3">
@@ -49,11 +50,11 @@ export function BarrierSuggestions({ items, savedQuestions, onAddToQuestions }: 
               <Card padding="sm" className="flex flex-col gap-2 border-dashed">
                 <OriginBadge origin="ai_suggested" label={t(originKey("ai_suggested"))} size="sm" />
                 {barrierLabel && (
-                  <p className="text-sm font-medium text-ink-muted">
+                  <p className="text-sm font-medium text-gray-70">
                     {t("actionPlan.barrier.because", { barrier: barrierLabel })}
                   </p>
                 )}
-                <p className="text-base font-semibold text-ink">{item.description}</p>
+                <p className="text-base font-semibold text-gray-90">{item.description}</p>
                 <div>
                   <Button
                     size="sm"
@@ -61,9 +62,9 @@ export function BarrierSuggestions({ items, savedQuestions, onAddToQuestions }: 
                     disabled={added}
                     leftIcon={
                       added ? (
-                        <Check aria-hidden="true" className="size-4" />
+                        <CheckIcon aria-hidden="true" className="size-4" />
                       ) : (
-                        <Plus aria-hidden="true" className="size-4" />
+                        <PlusIcon aria-hidden="true" className="size-4" />
                       )
                     }
                     onClick={() => onAddToQuestions(item)}

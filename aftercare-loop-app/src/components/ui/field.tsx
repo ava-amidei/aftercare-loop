@@ -24,7 +24,7 @@ export function Field({ label, hint, error, required, id, className, children }:
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       {label && (
-        <label htmlFor={controlId} className="text-base font-medium text-ink">
+        <label htmlFor={controlId} className="text-base font-medium text-gray-90">
           {label}
           {required && (
             <span aria-hidden="true" className="ml-0.5 text-danger">
@@ -34,7 +34,7 @@ export function Field({ label, hint, error, required, id, className, children }:
         </label>
       )}
       {hint && (
-        <p id={hintId} className="text-sm text-ink-muted">
+        <p id={hintId} className="text-sm text-gray-70">
           {hint}
         </p>
       )}
@@ -48,11 +48,14 @@ export function Field({ label, hint, error, required, id, className, children }:
   );
 }
 
+// DESIGN: inputs are filled gray-5 (no outline) with a primary focus ring.
+// The ring is primary-700 (>= 3.37:1 on white/gray-5 for every accent preset).
 export const controlBase =
-  "w-full rounded-control border bg-surface text-base text-ink placeholder:text-ink-subtle " +
-  "transition-colors focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-brand-600 " +
-  "disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-ink-subtle";
+  "w-full rounded-2xl bg-gray-5 text-base text-gray-90 placeholder:text-gray-60 " +
+  "transition-[background-color,box-shadow] focus-visible:bg-gray-0 focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-primary-700 " +
+  "disabled:cursor-not-allowed disabled:bg-gray-10 disabled:text-gray-60";
 
+/** Invalid: inset danger ring (an error cue, not a decorative outline). */
 export function controlState(invalid: boolean) {
-  return invalid ? "border-danger" : "border-border-strong hover:border-ink-muted";
+  return invalid ? "bg-danger-soft ring-2 ring-inset ring-danger" : "hover:bg-gray-10";
 }

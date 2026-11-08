@@ -32,3 +32,28 @@ Derive tints/shades of the primary for hover/focus/disabled states; keep text co
 
 ## Apply to
 App UI (tokens, components, nav, Ask Kat FAB/panel), PWA icons/manifest, demo video title/end cards, pitch deck theme.
+
+## Design tokens
+Implemented in `aftercare-loop-app/src/app/globals.css` (`@theme`). Use them as Tailwind utilities (`bg-primary`, `text-gray-90`, `rounded-3xl`, `shadow-float`, …).
+
+| Group | Tokens |
+|---|---|
+| Primary (personalised) | `--color-primary` #FBA17E, `--color-primary-50 … -900` (500 = base; 50 #FFF4F0, 100 #FEE6DC, 700 #B73706, 800 #8B2A04, 900 #631E03), `--color-primary-soft`, `--color-primary-hover`, `--color-primary-strong` #EE6200, `--color-primary-ring`, `--color-primary-ink`, `--color-primary-contrast` (text on primary), `--color-primary-strong-contrast`. `<ThemeApplier/>` rewrites these on `<html>` from the chosen accent. Defaults match `deriveAccentVars("#FBA17E")`. |
+| Secondary | `--color-secondary` #F7D794, `--color-secondary-50/-100/-200`, `--color-secondary-strong` #7A5300 |
+| Accent (Ask Kat, progress) | `--color-accent` #FF9A00, `--color-accent-50 … -950` (600 #E68A00 hover, 800 #804D00 text) |
+| Logo | `--color-logo` #FFA617 (mark only) |
+| Neutrals | `--color-gray-0` #FFFFFF, `-5` #F6F4F2, `-10` #ECE8E4, `-20` #DCD7D2, `-30` #C3BDB7, `-40` #A69F98, `-50` #8C867F, `-60` #696460, `-70` #504B46, `-80` #3A3632, `-90` #25221F, `-100` #141414. Tailwind's default gray palette is reset, so only these exist. |
+| Semantic | `--color-success/-soft/-strong`, `--color-warning/-soft/-strong`, `--color-danger/-soft/-strong`, `--color-info/-soft/-strong`, `--color-origin-{clinician,patient,ai}[-soft]`, `--color-highlight` (= secondary) / `--color-highlight-ink` |
+| Shape | `--radius-card` 1.5rem (= `rounded-3xl`), `--radius-control` 1rem (= `rounded-2xl`, inputs), `--radius-sheet` 1.75rem (mobile sheet top corners). Buttons and pills use `rounded-full`. |
+| Elevation | `--shadow-float` is the only shadow. It is used on the FAB, sheet, dialog and toast. Everything else is flat. |
+| Type | `--font-sans` = Montserrat (`next/font/google`, 400/500/600/700, variable `--font-montserrat`). Root is 17px on mobile and 16px on desktop. |
+| Legacy aliases | `canvas`, `surface`, `surface-muted`, `border`, `border-strong`, `ink`, `ink-muted`, `ink-subtle`, `brand-*` map onto the tokens above. They are for older code only; don't use them in new code. |
+
+Surfaces: the page canvas is gray-5, cards are gray-0 (muted cards are gray-10), list rows and insets inside cards are gray-5, and inputs are filled gray-5 with a primary-700 focus ring. Selected chips and answers use the secondary fill. Active nav uses a primary pill with a solid Heroicon. Icons: 24/outline for nav and actions, 24/solid for filled or active states, 20/solid inside buttons. The shared icon type is `HeroIcon` in `src/components/ui/icon.ts`. There is one deliberate outline: AI-suggested items keep a dashed edge, a non-colour cue for "suggestion, not an instruction" (ARCHITECTURE §2.4).
+
+Contrast (WCAG 2.x, computed):
+- gray-90 on primary #FBA17E is 7.91:1, and gray-100 on primary is 9.21:1. gray-100 on primary-strong #EE6200 is 5.60:1. gray-100 on accent #FF9A00 is 8.66:1, and on accent-600 it is 7.02:1.
+- White text fails on most of these fills: 3.29:1 on #EE6200 (passes only as large text, ≥18px bold), 2.13:1 on #FF9A00 (fails even as large text), and 2.00:1 on #FBA17E. So the UI never puts white text on primary or accent fills. White is used only on danger (6.57:1), success (5.36:1) and warning (6.22:1).
+- Body text gray-90 on white is 15.82:1. Secondary text gray-70 is 7.86:1 on gray-5 and 7.07:1 on gray-10. Captions and placeholders in gray-60 are 5.33:1 on gray-5.
+- Links and emphasis use `text-primary-800`, which is at least 4.9:1 on white and gray-5 for every accent preset (peach 8.64:1). The focus ring `primary-700` is at least 3.37:1 on white and gray-5 for every preset.
+- Selected chips: gray-100 on secondary #F7D794 is 12+:1. Kat chips: accent-900 on accent-100 is 8.94:1.

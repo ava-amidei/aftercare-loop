@@ -187,7 +187,8 @@ export interface EvidenceMatch {
 // AI service outputs (all validated with zod in src/lib/ai/schemas.ts)
 // ---------------------------------------------------------------------------
 
-export type ResponseMode = "live_claude" | "scripted_demo";
+/** live_* = a real model produced the content (provider in the suffix). */
+export type ResponseMode = "live_claude" | "live_gemini" | "scripted_demo";
 
 export interface AiMeta {
   mode: ResponseMode;
@@ -633,4 +634,31 @@ export interface ExtractedInstruction {
 
 // ---------------------------------------------------------------------------
 // END services fix round 2 additions
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// BEGIN personalization additions (owner: personalization-and-pwa) — optional only
+// ---------------------------------------------------------------------------
+
+/** Root font-size step (sm 15px, md 17px, lg 19px, xl 22px at a 16px browser default). */
+export type FontScale = "sm" | "md" | "lg" | "xl";
+
+/**
+ * Per-patient appearance (docs/DESIGN.md "Personalization"). Both fields are
+ * optional: an unset accent means the brand default (#FBA17E); an unset
+ * fontScale defers to the accessibility prefs (larger_text → "lg", else "md").
+ */
+export interface AppearancePrefs {
+  /** "#RRGGBB" accent colour. */
+  accent?: string;
+  fontScale?: FontScale;
+}
+
+// Interface declaration merging: adds an OPTIONAL field to PatientSessionState.
+export interface PatientSessionState {
+  appearance?: AppearancePrefs;
+}
+
+// ---------------------------------------------------------------------------
+// END personalization additions
 // ---------------------------------------------------------------------------

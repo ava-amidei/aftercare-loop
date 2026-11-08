@@ -24,6 +24,7 @@ import type {
   Language,
   PatientProfile,
   ReferenceId,
+  ResponseMode,
   SafetyFlag,
   SafetyVerdict,
   TermDefinition,
@@ -47,7 +48,7 @@ export interface InterpretDocumentInput {
 }
 
 export interface InterpretDocumentDeps {
-  mode?: "live_claude" | "scripted_demo";
+  mode?: ResponseMode;
   generate?: GenerateStructuredFn;
   scripted?: ScriptedInterpretationFn;
   retrieve?: typeof retrieveEvidence;
@@ -377,7 +378,7 @@ export async function interpretDocument(
   let model: string | undefined;
 
   // 3. Generation.
-  if (mode === "live_claude") {
+  if (mode !== "scripted_demo") {
     const result = await generateModelInterpretation({ profile, document, evidence }, deps.generate);
     if (result.ok) {
       const d = result.data;
@@ -396,7 +397,7 @@ export async function interpretDocument(
           medicationNames: (profile.medications ?? []).map((m) => m.name),
         }),
       };
-      responseMode = "live_claude";
+      responseMode = mode;
       model = result.model;
     } else {
       generated = scriptedContent(scriptedLookup, document, profile, allowed);
@@ -459,7 +460,7 @@ export async function interpretDocument(
       ...makeMeta(responseMode, model, language),
       // Lets consumers (e.g. the "Explain my diagnosis" quick prompt) tell a
       // generated narrative from the heuristic service note in whatThisMeans.
-      generatedBy: heuristic ? "deterministic" : responseMode === "live_claude" ? "model" : "scripted",
+      generatedBy: heuristic ? "deterministic" : responseMode !== "scripted_demo" ? "model" : "scripted",
     },
   };
 }

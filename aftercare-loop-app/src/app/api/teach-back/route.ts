@@ -15,7 +15,7 @@ import { getGroundTruth } from "@/data/ground-truth";
 import { getDocument, getPatient } from "@/data/patients";
 import { evaluateSafety, safetyContextOf } from "@/lib/safety";
 import { runTeachBackAttempt } from "@/lib/services/teach-back";
-import type { SafetyVerdict, TeachBackSession } from "@/lib/types";
+import type { ResponseMode, SafetyVerdict, TeachBackSession } from "@/lib/types";
 
 const AttemptSchema = z.object({
   attemptNumber: z.number().int().min(1).max(10),
@@ -24,7 +24,7 @@ const AttemptSchema = z.object({
   correct: z.boolean(),
   misunderstanding: z.string().max(2000).optional(),
   clarification: z.string().max(4000).optional(),
-  clarificationMode: z.enum(["live_claude", "scripted_demo"]).optional(),
+  clarificationMode: z.enum(["live_claude", "live_gemini", "scripted_demo"]).optional(),
   at: z.string().max(64),
 });
 
@@ -52,7 +52,7 @@ const BodySchema = z.object({
 export interface TeachBackRouteResponse {
   session: TeachBackSession;
   clarification?: string;
-  clarificationMode?: "live_claude" | "scripted_demo";
+  clarificationMode?: ResponseMode;
   safety?: SafetyVerdict;
 }
 

@@ -29,7 +29,7 @@ export function MetricTable({ metrics, caption, className }: MetricTableProps) {
       <table className="w-full min-w-[18rem] border-collapse text-left text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="border-b border-border text-ink-muted">
+          <tr className="border-b border-gray-10 text-gray-70">
             <th scope="col" className="py-2 pr-3 font-medium">
               {t("evaluation.table.metric")}
             </th>
@@ -46,14 +46,14 @@ export function MetricTable({ metrics, caption, className }: MetricTableProps) {
             const value = formatMetricValue(m, t.lang);
             const fraction = metricFraction(m);
             return (
-              <tr key={m.name} className="border-b border-border/70 last:border-0">
-                <th scope="row" className="py-2 pr-3 font-normal text-ink">
+              <tr key={m.name} className="border-b border-gray-10 last:border-0">
+                <th scope="row" className="py-2 pr-3 font-normal text-gray-90">
                   {label(m.name)}
                 </th>
-                <td className="py-2 pr-3 text-right font-semibold tabular-nums text-ink">
-                  {value ?? <span className="font-normal text-ink-subtle">{t("evaluation.notEvaluated")}</span>}
+                <td className="py-2 pr-3 text-right font-semibold tabular-nums text-gray-90">
+                  {value ?? <span className="font-normal text-gray-60">{t("evaluation.notEvaluated")}</span>}
                 </td>
-                <td className="py-2 text-right tabular-nums text-ink-muted">
+                <td className="py-2 text-right tabular-nums text-gray-70">
                   {fraction ? t("evaluation.fraction", { ...fraction }) : "—"}
                 </td>
               </tr>

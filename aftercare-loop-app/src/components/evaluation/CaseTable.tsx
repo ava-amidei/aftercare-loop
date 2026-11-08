@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { CircleCheck, CircleX } from "lucide-react";
+import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/outline";
 import type { EvalCaseResult } from "@/lib/types";
 import { Badge, Card, CardHeader, CardTitle, EmptyState, Select } from "@/components/ui";
 import { evalSuiteKey, useT } from "@/lib/i18n";
@@ -48,7 +48,7 @@ export function CaseTable({ cases }: { cases: EvalCaseResult[] }) {
               ]}
             />
           </div>
-          <p id={countId} role="status" aria-live="polite" className="text-sm text-ink-muted">
+          <p id={countId} role="status" aria-live="polite" className="text-sm text-gray-70">
             {t("evaluation.cases.showing", { shown: shown.length, total: cases.length })}
           </p>
           {shown.length === 0 ? (
@@ -58,7 +58,7 @@ export function CaseTable({ cases }: { cases: EvalCaseResult[] }) {
               <table id="eval-cases-table" aria-describedby={countId} className="w-full min-w-[40rem] border-collapse text-left text-sm">
                 <caption className="sr-only">{t("evaluation.cases")}</caption>
                 <thead>
-                  <tr className="border-b border-border text-ink-muted">
+                  <tr className="border-b border-gray-10 text-gray-70">
                     <th scope="col" className="py-2 pr-3 font-medium">{t("evaluation.case.id")}</th>
                     <th scope="col" className="py-2 pr-3 font-medium">{t("evaluation.case.suite")}</th>
                     <th scope="col" className="py-2 pr-3 font-medium">{t("evaluation.case.result")}</th>
@@ -67,23 +67,23 @@ export function CaseTable({ cases }: { cases: EvalCaseResult[] }) {
                 </thead>
                 <tbody>
                   {shown.map((c) => (
-                    <tr key={c.caseId} data-testid="eval-case-row" className="border-b border-border/70 align-top last:border-0">
-                      <th scope="row" className="py-2 pr-3 font-mono text-xs font-normal break-all text-ink">
+                    <tr key={c.caseId} data-testid="eval-case-row" className="border-b border-gray-10 align-top last:border-0">
+                      <th scope="row" className="py-2 pr-3 font-mono text-xs font-normal break-all text-gray-90">
                         {c.caseId}
                       </th>
-                      <td className="py-2 pr-3 text-ink-muted">{t(evalSuiteKey(c.suite))}</td>
+                      <td className="py-2 pr-3 text-gray-70">{t(evalSuiteKey(c.suite))}</td>
                       <td className="py-2 pr-3">
                         {c.passed ? (
-                          <Badge size="sm" variant="success" icon={<CircleCheck aria-hidden="true" className="size-3.5" />}>
+                          <Badge size="sm" variant="success" icon={<CheckCircleIcon aria-hidden="true" className="size-3.5" />}>
                             {t("evaluation.case.passed")}
                           </Badge>
                         ) : (
-                          <Badge size="sm" variant="danger" icon={<CircleX aria-hidden="true" className="size-3.5" />}>
+                          <Badge size="sm" variant="danger" icon={<XCircleIcon aria-hidden="true" className="size-3.5" />}>
                             {t("evaluation.case.failed")}
                           </Badge>
                         )}
                       </td>
-                      <td className="py-2 text-ink">
+                      <td className="py-2 text-gray-90">
                         <p className="break-words">{c.details}</p>
                         <CasePayload result={c} />
                       </td>

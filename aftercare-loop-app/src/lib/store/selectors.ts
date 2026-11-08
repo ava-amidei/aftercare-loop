@@ -73,3 +73,9 @@ export const useActiveActions = () =>
 /** All fixture patient profiles, in fixture order (for the patient switcher). */
 export const usePatientProfiles = (): PatientProfile[] =>
   useDemoStore(useShallow((s) => Object.values(s.patients).map((p) => p.profile)));
+
+// ---- appearance (personalization-and-pwa) ---------------------------------
+
+export const selectActiveAppearance = (s: DemoStore) => selectActiveSession(s)?.appearance;
+/** Active patient's saved appearance (undefined = brand defaults). */
+export const useActiveAppearance = () => useDemoStore(selectActiveAppearance);

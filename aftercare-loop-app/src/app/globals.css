@@ -1,78 +1,139 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   Aftercare Loop — design tokens (ARCHITECTURE §7)
-   Owner: design-system-shell. Other agents: ADD new tokens in a clearly
-   delimited block at the end of this file; do not rewrite these.
+   Aftercare Loop — design tokens (docs/DESIGN.md, binding)
+   Owner: design-restyle. Other agents: ADD new tokens in a clearly delimited
+   block at the end of this file; do not rewrite these.
+
+   Contrast (WCAG 2.x, computed; see docs/DESIGN.md "Design tokens"):
+   - gray-90 #25221F on primary #FBA17E 7.91:1; gray-100 on primary 9.21:1
+   - white on primary-strong #EE6200 3.29:1 and on accent #FF9A00 2.13:1, so
+     white text is NOT used on either (fails AA even at 18px bold on #FF9A00);
+     fills use gray-100 text instead (5.60:1 / 8.66:1).
+   - primary-800 text (links/emphasis) >= 4.9:1 on white/gray-5 for every
+     accent preset; gray-70 secondary text 7.86:1 on gray-5.
    ========================================================================== */
 
 @theme {
-  /* Brand — deep teal (#0F766E = brand-700) */
-  --color-brand-50: #f0fdfa;
-  --color-brand-100: #ccfbf1;
-  --color-brand-200: #99f6e4;
-  --color-brand-300: #5eead4;
-  --color-brand-400: #2dd4bf;
-  --color-brand-500: #14b8a6;
-  --color-brand-600: #0d9488;
-  --color-brand-700: #0f766e;
-  --color-brand-800: #115e59;
-  --color-brand-900: #134e4a;
-  --color-brand-950: #042f2e;
+  /* Reset Tailwind's default gray palette: only the DESIGN gray scale exists. */
+  --color-gray-*: initial;
 
-  /* Accent — warm coral for Ask Kat (#F0705A = accent-500).
-     White text needs accent-700 or darker for AA contrast. */
-  --color-accent-50: #fef5f3;
-  --color-accent-100: #fde7e2;
-  --color-accent-200: #fbd2c9;
-  --color-accent-300: #f7b1a3;
-  --color-accent-400: #f38c77;
-  --color-accent-500: #f0705a;
-  --color-accent-600: #dc5236;
-  --color-accent-700: #b8402a;
-  --color-accent-800: #983726;
-  --color-accent-900: #7e3224;
-  --color-accent-950: #44160f;
+  /* Primary — peach-orange #FBA17E. The --color-primary-* family is overridden
+     at runtime by <ThemeApplier/> (components/theme/color.ts) from the
+     patient's chosen accent; these defaults equal deriveAccentVars("#FBA17E"),
+     so first paint matches. --color-primary-500 is the base. */
+  --color-primary: #fba17e;
+  --color-primary-50: #fff4f0;
+  --color-primary-100: #fee6dc;
+  --color-primary-200: #fdcdba;
+  --color-primary-300: #fbac8d;
+  --color-primary-400: #fba17e;
+  --color-primary-500: #fba17e;
+  --color-primary-600: #e44507;
+  --color-primary-700: #b73706;
+  --color-primary-800: #8b2a04;
+  --color-primary-900: #631e03;
+  --color-primary-soft: #fee6dc; /* = primary-100: soft fills */
+  --color-primary-hover: #fa885b;
+  --color-primary-strong: #ee6200; /* pressed/hover primary */
+  --color-primary-ring: #f8642a; /* 3:1 on white (custom accents) */
+  --color-primary-ink: #d44007; /* 4.5:1 on white */
+  --color-primary-contrast: #141414; /* text on --color-primary */
+  --color-primary-strong-contrast: #141414; /* text on --color-primary-strong */
 
-  /* Semantic surfaces & text (stone neutrals) */
-  --color-canvas: #fafaf9; /* stone-50: page background */
-  --color-surface: #ffffff; /* cards, panels */
-  --color-surface-muted: #f5f5f4; /* stone-100 */
-  --color-border: #e7e5e4; /* stone-200 */
-  --color-border-strong: #a8a29e; /* stone-400 */
-  --color-ink: #1c1917; /* stone-900: body text */
-  --color-ink-muted: #57534e; /* stone-600: secondary text (7:1 on white) */
-  --color-ink-subtle: #78716c; /* stone-500: captions only */
+  /* Secondary — sand #F7D794: soft fills, selected chips, info surfaces. */
+  --color-secondary: #f7d794;
+  --color-secondary-50: #fef9ec;
+  --color-secondary-100: #fcefd2;
+  --color-secondary-200: #fae4b6;
+  --color-secondary-strong: #7a5300; /* text on secondary tints, 4.93:1 on #F7D794 */
 
-  /* Status */
-  --color-success: #15803d;
-  --color-success-soft: #f0fdf4;
+  /* Accent — amber #FF9A00: Ask Kat, progress, callouts. Fixed (not personalised). */
+  --color-accent: #ff9a00;
+  --color-accent-50: #fff5e5;
+  --color-accent-100: #ffeacc;
+  --color-accent-200: #ffd599;
+  --color-accent-300: #ffc166;
+  --color-accent-400: #ffac33;
+  --color-accent-500: #ff9a00;
+  --color-accent-600: #e68a00; /* hover; gray-100 text 7.02:1 */
+  --color-accent-700: #b36b00;
+  --color-accent-800: #804d00; /* text on accent-50/100, >= 6:1 */
+  --color-accent-900: #5c3700;
+  --color-accent-950: #3d2400;
+
+  /* Logo mark only. */
+  --color-logo: #ffa617;
+
+  /* Neutral scale (warm gray). 0 = white, 100 = near-black. */
+  --color-gray-0: #ffffff;
+  --color-gray-5: #f6f4f2;
+  --color-gray-10: #ece8e4;
+  --color-gray-20: #dcd7d2;
+  --color-gray-30: #c3bdb7;
+  --color-gray-40: #a69f98;
+  --color-gray-50: #8c867f;
+  --color-gray-60: #696460; /* captions/placeholders: 5.33:1 on gray-5 */
+  --color-gray-70: #504b46; /* secondary text: 7.86:1 on gray-5 */
+  --color-gray-80: #3a3632;
+  --color-gray-90: #25221f; /* body text: 15.82:1 on white */
+  --color-gray-100: #141414;
+
+  /* Semantic (harmonised: warmer soft surfaces, same meaning). */
+  --color-success: #1e7a43;
+  --color-success-soft: #eef7f1;
   --color-success-strong: #14532d;
-  --color-warning: #b45309;
-  --color-warning-soft: #fffbeb;
-  --color-warning-strong: #78350f;
-  --color-danger: #b91c1c;
-  --color-danger-soft: #fef2f2;
-  --color-danger-strong: #7f1d1d;
-  --color-info: #1d4ed8;
-  --color-info-soft: #eff6ff;
-  --color-info-strong: #1e3a8a;
+  --color-warning: #8f5200;
+  --color-warning-soft: #fff5dc;
+  --color-warning-strong: #6b3d00;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdf0ee;
+  --color-danger-strong: #7a1a12;
+  --color-info: #2b5bb8;
+  --color-info-soft: #eef3fc;
+  --color-info-strong: #1c3a75;
 
   /* Action origin (ARCHITECTURE §2.4) — distinct hue + icon + label */
   --color-origin-clinician: #115e59;
-  --color-origin-clinician-soft: #f0fdfa;
+  --color-origin-clinician-soft: #eaf6f4;
   --color-origin-patient: #1e40af;
-  --color-origin-patient-soft: #eff6ff;
+  --color-origin-patient-soft: #eef3fc;
   --color-origin-ai: #6d28d9;
-  --color-origin-ai-soft: #f5f3ff;
+  --color-origin-ai-soft: #f4f1fd;
 
-  /* Highlight for source passages */
-  --color-highlight: #fef08a;
-  --color-highlight-ink: #422006;
+  /* Highlight for source passages (secondary sand). */
+  --color-highlight: #f7d794;
+  --color-highlight-ink: #141414;
 
-  /* Radius */
-  --radius-card: 1rem;
-  --radius-control: 0.75rem;
+  /* Legacy aliases (pre-DESIGN names). Kept so in-flight code keeps the new
+     look; prefer the names above in new code. */
+  --color-canvas: var(--color-gray-5);
+  --color-surface: var(--color-gray-0);
+  --color-surface-muted: var(--color-gray-5);
+  --color-border: var(--color-gray-10);
+  --color-border-strong: var(--color-gray-50);
+  --color-ink: var(--color-gray-90);
+  --color-ink-muted: var(--color-gray-70);
+  --color-ink-subtle: var(--color-gray-60);
+  --color-brand-50: var(--color-primary-50);
+  --color-brand-100: var(--color-primary-100);
+  --color-brand-200: var(--color-primary-200);
+  --color-brand-300: var(--color-primary-300);
+  --color-brand-400: var(--color-primary-400);
+  --color-brand-500: var(--color-primary-500);
+  --color-brand-600: var(--color-primary-600);
+  --color-brand-700: var(--color-primary-700);
+  --color-brand-800: var(--color-primary-800);
+  --color-brand-900: var(--color-primary-900);
+  --color-brand-950: var(--color-primary-900);
+
+  /* Radius: cards 3xl, inputs 2xl, buttons/pills full. */
+  --radius-card: 1.5rem;
+  --radius-control: 1rem;
+  --radius-sheet: 1.75rem;
+
+  /* The single shadow level — floating elements only (FAB, sheet, dialog, toast). */
+  --shadow-float: 0 10px 30px -8px rgb(20 20 20 / 0.22), 0 2px 6px -2px rgb(20 20 20 / 0.08);
 
   /* Motion */
   --animate-fade-in: fade-in 160ms ease-out both;
@@ -117,8 +178,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* Layout variables shared with Ask Kat (FAB placement, ARCHITECTURE §7) */
@@ -161,10 +222,13 @@ html[data-text-size="large"] {
   }
 }
 html[data-contrast="high"] {
-  --color-ink-muted: #292524;
-  --color-ink-subtle: #44403c;
-  --color-border: #78716c;
-  --color-border-strong: #44403c;
+  /* Secondary/caption text steps darken to near body text. */
+  --color-gray-70: #25221f;
+  --color-gray-60: #3a3632;
+  --color-gray-50: #504b46;
+  /* Filled surfaces gain separation without adding outlines. */
+  --color-gray-5: #ece8e4;
+  --color-gray-10: #dcd7d2;
 }
 
 @layer base {
@@ -172,6 +236,7 @@ html[data-contrast="high"] {
     background-color: var(--color-canvas);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    font-weight: 400;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
@@ -180,13 +245,16 @@ html[data-contrast="high"] {
   h2,
   h3,
   h4 {
+    font-weight: 700;
     line-height: 1.25;
+    letter-spacing: -0.01em;
     text-wrap: balance;
   }
 
   /* Visible focus ring everywhere (keyboard users). */
+  /* primary-700: >= 3.37:1 on white/gray-5 for every accent preset. */
   :focus-visible {
-    outline: 3px solid var(--color-brand-600);
+    outline: 3px solid var(--color-primary-700);
     outline-offset: 2px;
     border-radius: 0.25rem;
   }

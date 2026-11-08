@@ -81,10 +81,19 @@ export function buildConnectUrl(code: string, codeSystem: CodeSystem, language: 
 }
 
 const ALLOWED_HOST = /(^|\.)medlineplus\.gov$|(^|\.)nih\.gov$/;
+/** Codes are short alphanumerics (ICD-10 "E28.2", RxCUI "617314", LOINC "2345-7"). */
+const CODE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9.-]{0,19}$/;
+const LANGUAGES: ReadonlySet<string> = new Set<Language>(["en", "es"]);
+/** Connect feeds are a few KB; anything far larger is not a feed we expect. */
+export const MAX_CONNECT_RESPONSE_BYTES = 512 * 1024;
+const MAX_LINK_LENGTH = 2048;
 
-/** Strip tracking params; return null if not an allowed https NLM/NIH URL. */
+/**
+ * Strip tracking params; return null unless it is a plain https link on the
+ * default port to medlineplus.gov / *.nih.gov with no embedded credentials.
+ */
 export function sanitizeConnectLink(href: unknown): string | null {
-  if (typeof href !== "string") return null;
+  if (typeof href !== "string" || href.length > MAX_LINK_LENGTH) return null;
   let url: URL;
   try {
     url = new URL(href);
@@ -92,6 +101,7 @@ export function sanitizeConnectLink(href: unknown): string | null {
     return null;
   }
   if (url.protocol !== "https:" || !ALLOWED_HOST.test(url.hostname)) return null;
+  if (url.username || url.password || url.port) return null;
   for (const key of [...url.searchParams.keys()]) {
     if (key.startsWith("utm_")) url.searchParams.delete(key);
   }
@@ -160,21 +170,34 @@ export async function fetchMedlinePlusConnect(
   if (!isMedlinePlusLiveEnabled(deps.env)) return [];
   const language: Language = lookup.language ?? "en";
   const codeSystem: CodeSystem = lookup.codeSystem ?? "icd10cm";
+  if (!LANGUAGES.has(language) || !Object.hasOwn(CODE_SYSTEMS, codeSystem)) return [];
   const topic = lookup.topic?.toLowerCase().trim();
-  const code = lookup.code ?? (topic ? MEDLINEPLUS_CONNECT_ICD10[topic] : undefined);
-  if (!code) return [];
+  // Own-property lookup only: "constructor" / "__proto__" are not topics.
+  const code =
+    lookup.code ?? (topic && Object.hasOwn(MEDLINEPLUS_CONNECT_ICD10, topic) ? MEDLINEPLUS_CONNECT_ICD10[topic] : undefined);
+  if (typeof code !== "string" || !CODE_PATTERN.test(code)) return [];
 
   const doFetch = deps.fetch ?? globalThis.fetch;
   if (typeof doFetch !== "function") return [];
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), deps.timeoutMs ?? 4000);
   try {
-    const res = await doFetch(buildConnectUrl(code, codeSystem, language), {
+    const url = buildConnectUrl(code, codeSystem, language);
+    const res = await doFetch(url, {
       signal: controller.signal,
       headers: { Accept: "application/json" },
+      // Never follow a redirect away from the fixed Connect endpoint, and send no cookies.
+      redirect: "error",
+      credentials: "omit",
+      cache: "no-store",
     });
     if (!res.ok) return [];
-    const json: unknown = await res.json();
+    if (res.url && new URL(res.url).origin !== new URL(MEDLINEPLUS_CONNECT_URL).origin) return [];
+    const declared = Number(res.headers.get("content-length"));
+    if (Number.isFinite(declared) && declared > MAX_CONNECT_RESPONSE_BYTES) return [];
+    const body = await res.text();
+    if (body.length > MAX_CONNECT_RESPONSE_BYTES) return [];
+    const json: unknown = JSON.parse(body);
     const accessedAt = (deps.now?.() ?? new Date()).toISOString().slice(0, 10);
     return mapConnectFeed(json, { language, topic, accessedAt, limit: lookup.limit ?? 3 });
   } catch {

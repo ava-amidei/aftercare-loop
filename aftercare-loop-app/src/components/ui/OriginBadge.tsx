@@ -1,11 +1,12 @@
-import { Sparkles, Stethoscope, UserCheck, type LucideIcon } from "lucide-react";
+import { DocumentCheckIcon, SparklesIcon, UserIcon } from "@heroicons/react/24/outline";
+import type { HeroIcon } from "@/components/ui/icon";
 import type { ActionOrigin } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 
 export interface OriginMeta {
   label: string;
   description: string;
-  Icon: LucideIcon;
+  Icon: HeroIcon;
   className: string;
 }
 
@@ -14,21 +15,22 @@ export const ORIGIN_META: Record<ActionOrigin, OriginMeta> = {
   clinician_documented: {
     label: "Clinician-documented",
     description: "Written in your visit document by your care team.",
-    Icon: Stethoscope,
-    className: "bg-origin-clinician-soft text-origin-clinician border-origin-clinician/40 border-solid",
+    Icon: DocumentCheckIcon,
+    className: "bg-origin-clinician-soft text-origin-clinician",
   },
   patient_selected: {
     label: "Patient-selected",
     description: "A goal you chose for yourself.",
-    Icon: UserCheck,
-    className: "bg-origin-patient-soft text-origin-patient border-origin-patient/40 border-solid",
+    Icon: UserIcon,
+    className: "bg-origin-patient-soft text-origin-patient",
   },
   ai_suggested: {
     label: "AI-suggested",
     description: "A suggestion from Ask Kat. Not an instruction from your clinician.",
-    Icon: Sparkles,
-    // Dashed border = a non-color cue that this is a suggestion.
-    className: "bg-origin-ai-soft text-origin-ai border-origin-ai/50 border-dashed",
+    Icon: SparklesIcon,
+    // Dashed edge = a non-color cue that this is a suggestion (ARCHITECTURE §2.4).
+    // The one deliberate exception to DESIGN's "no outlines" rule.
+    className: "bg-origin-ai-soft text-origin-ai border border-dashed border-origin-ai/60",
   },
 };
 
@@ -67,7 +69,7 @@ export function OriginBadge({
       data-origin={origin}
       title={desc}
       className={cn(
-        "inline-flex max-w-full items-center gap-1.5 rounded-full border font-semibold leading-tight",
+        "inline-flex max-w-full items-center gap-1.5 rounded-full font-semibold leading-tight",
         size === "sm" ? "px-2 py-0.5 text-xs" : "px-2.5 py-1 text-sm",
         meta.className,
         className,

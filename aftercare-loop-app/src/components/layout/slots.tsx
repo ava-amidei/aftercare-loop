@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { UserRound } from "lucide-react";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 
 /**
  * Header control slots. The dashboard/store agents plug real controls in via
@@ -20,9 +20,9 @@ export function PatientSwitcherSlot({
   return (
     <span
       data-slot="patient-switcher"
-      className="inline-flex min-h-11 items-center gap-1.5 rounded-control px-2 text-sm font-medium text-ink-muted"
+      className="inline-flex min-h-11 items-center gap-1.5 rounded-full px-2 text-sm font-medium text-gray-70"
     >
-      <UserRound aria-hidden="true" className="size-4" />
+      <UserCircleIcon aria-hidden="true" className="size-4" />
       {fallbackLabel}
     </span>
   );

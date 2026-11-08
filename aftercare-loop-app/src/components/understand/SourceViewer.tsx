@@ -11,7 +11,7 @@
  * mismatch says so instead of guessing (ARCHITECTURE §2.5).
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { CircleCheck, FileText, TriangleAlert } from "lucide-react";
+import { CheckCircleIcon, DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Alert, Sheet } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import type { SourceRef, VisitDocument } from "@/lib/types";
@@ -55,7 +55,7 @@ export function SourceViewer({ open, onOpenChange, document, sourceRef, label }:
       className="md:w-[min(40rem,100vw)]"
     >
       <div className="flex flex-col gap-4" data-testid="source-viewer">
-        {label && <p className="text-base font-medium text-ink">{label}</p>}
+        {label && <p className="text-base font-medium text-gray-90">{label}</p>}
         {!document ? (
           <Alert variant="warning">{t("understand.viewer.noDocument")}</Alert>
         ) : (
@@ -63,20 +63,20 @@ export function SourceViewer({ open, onOpenChange, document, sourceRef, label }:
             {sourceRef &&
               (segments ? (
                 <p className="inline-flex items-center gap-1.5 text-sm font-medium text-success-strong">
-                  <CircleCheck aria-hidden="true" className="size-4" />
+                  <CheckCircleIcon aria-hidden="true" className="size-4" />
                   {t("common.verification.verified")}
                 </p>
               ) : (
-                <Alert variant="warning" icon={<TriangleAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" />}>
+                <Alert variant="warning" icon={<ExclamationTriangleIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />}>
                   {t("understand.viewer.notFound")}
                 </Alert>
               ))}
-            <p className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
-              <FileText aria-hidden="true" className="size-4" />
+            <p className="inline-flex items-center gap-1.5 text-sm text-gray-70">
+              <DocumentTextIcon aria-hidden="true" className="size-4" />
               {t("understand.document.original")}
             </p>
             <div
-              className="rounded-control border border-border bg-surface-muted p-4 font-sans text-base leading-relaxed whitespace-pre-wrap text-ink"
+              className="rounded-2xl bg-gray-5 p-4 font-sans text-base leading-relaxed whitespace-pre-wrap text-gray-90"
               data-testid="source-viewer-text"
             >
               {segments ? (
@@ -86,7 +86,7 @@ export function SourceViewer({ open, onOpenChange, document, sourceRef, label }:
                     ref={markRef}
                     data-testid="source-viewer-highlight"
                     aria-label={t("understand.document.highlight")}
-                    className="rounded-sm bg-warning-soft px-0.5 text-ink ring-2 ring-warning/60"
+                    className="rounded-sm bg-warning-soft px-0.5 text-gray-90 ring-2 ring-warning/60"
                   >
                     {segments.match}
                   </mark>

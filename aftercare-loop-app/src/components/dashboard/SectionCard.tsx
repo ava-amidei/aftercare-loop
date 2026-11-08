@@ -20,15 +20,15 @@ export function SectionCard({ id, title, subtitle, icon, action, children, class
       <Card className="flex h-full flex-col gap-3">
         <div className="flex items-start gap-3">
           {icon && (
-            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-control bg-brand-50 text-brand-700">
+            <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-primary-900">
               {icon}
             </span>
           )}
           <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-            <h2 id={headingId} className="text-lg font-semibold text-ink">
+            <h2 id={headingId} className="text-lg font-semibold text-gray-90">
               {title}
             </h2>
-            {subtitle && <p className="text-sm text-ink-muted">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-gray-70">{subtitle}</p>}
           </div>
           {action}
         </div>
@@ -41,8 +41,8 @@ export function SectionCard({ id, title, subtitle, icon, action, children, class
 /** Small inline empty state used inside dashboard cards. */
 export function InlineEmpty({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-start gap-2 rounded-control border border-dashed border-border-strong bg-surface-muted p-3">
-      <p className="text-base text-ink-muted">{children}</p>
+    <div className="flex flex-col items-start gap-2 rounded-2xl bg-gray-5 p-3">
+      <p className="text-base text-gray-70">{children}</p>
       {action}
     </div>
   );

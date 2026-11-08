@@ -12,13 +12,14 @@ import {
   type KeyboardEvent,
 } from "react";
 import { useRouter } from "next/navigation";
-import { Minus, RotateCcw, SendHorizontal, Trash2 } from "lucide-react";
+import { ArrowUturnLeftIcon, MinusIcon, PaperAirplaneIcon, TrashIcon } from "@heroicons/react/20/solid";
 import type { ChatMessage, KatContextualAction, QuickPromptId, SourceRef, VisitDocument } from "@/lib/types";
 import { Alert, Button, EmptyState, LoadingRegion, ModeBadge, SkeletonText, Sheet, useToast } from "@/components/ui";
 import { SourceViewer } from "@/components/understand/SourceViewer";
 import { useDemoStore, useHasHydrated } from "@/lib/store";
 import { quickPromptKey, useT } from "@/lib/i18n";
 import { activeDocumentOf, hasUserMessages, hrefForAction, isWelcomeMessage, panelModeOf, questionOf } from "./kat-client";
+import { LogoMark } from "@/components/layout/Logo";
 import { KatIcon } from "./KatFab";
 import { KatMessage } from "./KatMessage";
 import { KatSuggestionChips } from "./KatSuggestionChips";
@@ -182,8 +183,8 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
         description={<span className="hidden sm:inline">{t("askKat.subtitle")}</span>}
         closeLabel={t("askKat.close")}
         headerIcon={
-          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-100 text-accent-800">
-            <KatIcon />
+          <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-100">
+            <LogoMark className="size-7" size={28} />
           </span>
         }
         headerActions={
@@ -193,14 +194,14 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
               type="button"
               onClick={onMinimize}
               aria-label={t("askKat.minimize")}
-              className="inline-flex size-11 shrink-0 items-center justify-center rounded-control text-ink-muted hover:bg-surface-muted hover:text-ink"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-gray-70 hover:bg-gray-10 hover:text-gray-90"
             >
-              <Minus aria-hidden="true" className="size-5" />
+              <MinusIcon aria-hidden="true" className="size-5" />
             </button>
           </>
         }
-        className="md:shadow-2xl"
-        bodyClassName="flex flex-col gap-3 bg-canvas"
+        className="md:shadow-float"
+        bodyClassName="flex flex-col gap-3 bg-gray-5"
         footer={
           <div className="flex flex-col gap-2">
             {started && <KatSuggestionChips t={t} onSelect={onChip} disabled={pending} compact />}
@@ -217,7 +218,7 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
                 onKeyDown={onKeyDown}
                 maxLength={4000}
                 placeholder={t("askKat.input.placeholder")}
-                className="max-h-36 min-h-12 flex-1 resize-none rounded-control border border-border-strong bg-surface px-3.5 py-3 text-base leading-snug text-ink placeholder:text-ink-muted focus-visible:border-brand-600 focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-brand-600/40 field-sizing-content"
+                className="max-h-36 min-h-12 flex-1 resize-none rounded-2xl bg-gray-5 px-4 py-3 text-base leading-snug text-gray-90 placeholder:text-gray-70 hover:bg-gray-10 focus-visible:bg-gray-0 focus-visible:outline-3 focus-visible:outline-offset-1 focus-visible:outline-primary-700 field-sizing-content"
               />
               <Button
                 type="submit"
@@ -227,19 +228,19 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
                 aria-label={t("askKat.send")}
                 disabled={!draft.trim() || pending}
               >
-                <SendHorizontal aria-hidden="true" className="size-5" />
+                <PaperAirplaneIcon aria-hidden="true" className="size-5" />
               </Button>
             </form>
             <div className="flex items-center justify-between gap-2">
-              <p className="text-xs text-ink-muted">{t("askKat.notAClinician")}</p>
+              <p className="text-xs text-gray-70">{t("askKat.notAClinician")}</p>
               {started && (
                 <button
                   type="button"
                   onClick={() => clearKatChat(patientId)}
                   disabled={pending}
-                  className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-control px-2 text-xs font-medium text-ink-muted hover:bg-surface-muted hover:text-ink disabled:opacity-60"
+                  className="inline-flex min-h-11 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-medium text-gray-70 hover:bg-gray-10 hover:text-gray-90 disabled:opacity-60"
                 >
-                  <Trash2 aria-hidden="true" className="size-3.5" />
+                  <TrashIcon aria-hidden="true" className="size-3.5" />
                   {t("askKat.clearChat")}
                 </button>
               )}
@@ -252,7 +253,7 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
             <ModeBadge mode="scripted_demo" className="w-full" />
           </div>
         )}
-        {profileName && <p className="text-xs text-ink-muted">{t("askKat.contextFor", { name: profileName })}</p>}
+        {profileName && <p className="text-xs text-gray-70">{t("askKat.contextFor", { name: profileName })}</p>}
 
         {!hydrated ? (
           <LoadingRegion label={t("askKat.hydrating")}>
@@ -286,11 +287,11 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
               </Fragment>
             ))}
             {pending && (
-              <li className="flex items-center gap-2 pl-10 text-sm text-ink-muted" role="status" data-testid="kat-thinking">
+              <li className="flex items-center gap-2 pl-10 text-sm text-gray-70" role="status" data-testid="kat-thinking">
                 <span aria-hidden="true" className="flex gap-1">
-                  <span className="size-2 rounded-full bg-accent-400 motion-safe:animate-pulse" />
-                  <span className="size-2 rounded-full bg-accent-400 motion-safe:animate-pulse [animation-delay:150ms]" />
-                  <span className="size-2 rounded-full bg-accent-400 motion-safe:animate-pulse [animation-delay:300ms]" />
+                  <span className="size-2 rounded-full bg-accent motion-safe:animate-pulse" />
+                  <span className="size-2 rounded-full bg-accent motion-safe:animate-pulse [animation-delay:150ms]" />
+                  <span className="size-2 rounded-full bg-accent motion-safe:animate-pulse [animation-delay:300ms]" />
                 </span>
                 {t("askKat.thinking")}
               </li>
@@ -304,7 +305,7 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
                     <Button
                       variant="secondary"
                       size="sm"
-                      leftIcon={<RotateCcw aria-hidden="true" className="size-4" />}
+                      leftIcon={<ArrowUturnLeftIcon aria-hidden="true" className="size-4" />}
                       onClick={() => void retry()}
                     >
                       {t("askKat.retry")}

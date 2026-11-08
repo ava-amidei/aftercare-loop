@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Stethoscope } from "lucide-react";
+import { DocumentCheckIcon } from "@heroicons/react/24/outline";
 import { OriginBadge } from "@/components/ui/OriginBadge";
 import { SourceQuote } from "@/components/ui/SourceQuote";
 import type { ActionItem, VisitDocument } from "@/lib/types";
@@ -18,16 +18,16 @@ function TaskRow({ action, documents }: { action: ActionItem; documents: VisitDo
   const doc = action.sourceRef ? documents.find((d) => d.id === action.sourceRef?.documentId) : undefined;
   const sourceId = `source-${action.id}`;
   return (
-    <li className="flex flex-col gap-2 rounded-control border border-border p-3" data-testid="care-team-task">
+    <li className="flex flex-col gap-2 rounded-2xl bg-gray-5 p-3" data-testid="care-team-task">
       <div className="flex flex-wrap items-center gap-2">
         <OriginBadge origin={action.origin} label={t(originKey(action.origin))} size="sm" />
-        <span className="text-xs font-medium tracking-wide text-ink-muted uppercase">
+        <span className="text-xs font-medium tracking-wide text-gray-70 uppercase">
           {t(actionTypeKey(action.type))}
         </span>
       </div>
-      <p className="text-base font-medium text-ink">{action.description}</p>
+      <p className="text-base font-medium text-gray-90">{action.description}</p>
       {action.dueDate && (
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm text-gray-70">
           {t("common.dueDate", { date: formatDate(action.dueDate, t.lang) })}
         </p>
       )}
@@ -38,7 +38,7 @@ function TaskRow({ action, documents }: { action: ActionItem; documents: VisitDo
             aria-expanded={showSource}
             aria-controls={sourceId}
             onClick={() => setShowSource((v) => !v)}
-            className="inline-flex min-h-11 items-center self-start rounded-control px-1 text-sm font-semibold text-brand-800 underline underline-offset-4 hover:text-brand-900"
+            className="inline-flex min-h-11 items-center self-start rounded-full px-1 text-sm font-semibold text-primary-800 underline underline-offset-4 hover:text-primary-900"
           >
             {showSource ? t("common.hideSource") : t("common.viewSource")}
           </button>
@@ -77,7 +77,7 @@ export function CareTeamTasks({
   const planLink = (label: string) => (
     <Link
       href="/action-plan"
-      className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-800 underline underline-offset-4"
+      className="inline-flex min-h-11 items-center text-sm font-semibold text-primary-800 underline underline-offset-4"
     >
       {label}
     </Link>
@@ -87,7 +87,7 @@ export function CareTeamTasks({
       id="dashboard-care-team"
       title={t("dashboard.tasks.title")}
       subtitle={t("dashboard.tasks.subtitle")}
-      icon={<Stethoscope aria-hidden="true" className="size-5" />}
+      icon={<DocumentCheckIcon aria-hidden="true" className="size-5" />}
     >
       {tasks.length === 0 ? (
         interpreted ? (
@@ -97,7 +97,7 @@ export function CareTeamTasks({
             action={
               <Link
                 href="/understand"
-                className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-800 underline underline-offset-4"
+                className="inline-flex min-h-11 items-center text-sm font-semibold text-primary-800 underline underline-offset-4"
               >
                 {t("dashboard.start.cta")}
               </Link>

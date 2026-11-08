@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { BookOpen, ClipboardCheck } from "lucide-react";
+import { ClipboardDocumentCheckIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon } from "@heroicons/react/20/solid";
 import type { TeachBackQuestion, TeachBackSession } from "@/lib/types";
 import { getGroundTruth } from "@/data/ground-truth";
 import {
@@ -69,7 +70,7 @@ export function CheckUnderstandingView({ initialQuestionId, fetchImpl }: CheckUn
     <PageHeader
       title={t("check.title")}
       description={t("check.subtitle")}
-      icon={<ClipboardCheck aria-hidden="true" className="size-6" />}
+      icon={<ClipboardDocumentCheckIcon aria-hidden="true" className="size-6" />}
     />
   );
 
@@ -94,12 +95,12 @@ export function CheckUnderstandingView({ initialQuestionId, fetchImpl }: CheckUn
       <>
         {header}
         <EmptyState
-          icon={<ClipboardCheck aria-hidden="true" className="size-7" />}
+          icon={<ClipboardDocumentCheckIcon aria-hidden="true" className="size-7" />}
           title={t("check.emptyTitle")}
           description={t("check.empty")}
           action={
             <Link href="/understand" className={buttonVariants({ variant: "primary" })}>
-              <BookOpen aria-hidden="true" className="size-5" />
+              <BookOpenIcon aria-hidden="true" className="size-5" />
               {t("check.goToUnderstand")}
             </Link>
           }
@@ -124,13 +125,13 @@ export function CheckUnderstandingView({ initialQuestionId, fetchImpl }: CheckUn
       {header}
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-1">
-          <p className="text-lg font-medium text-ink">{t("check.intro")}</p>
-          <p className="text-base text-ink-muted">{t("check.introDetail")}</p>
-          {document && <p className="text-sm text-ink-muted">{t("check.aboutDocument", { title: document.title })}</p>}
+          <p className="text-lg font-medium text-gray-90">{t("check.intro")}</p>
+          <p className="text-base text-gray-70">{t("check.introDetail")}</p>
+          {document && <p className="text-sm text-gray-70">{t("check.aboutDocument", { title: document.title })}</p>}
         </div>
 
         <div className="flex flex-col gap-2">
-          <p className="text-base font-semibold text-ink" data-testid="check-progress">
+          <p className="text-base font-semibold text-gray-90" data-testid="check-progress">
             {done
               ? t("check.complete.title")
               : t("check.progress", { current: index + 1, total })}
@@ -141,10 +142,10 @@ export function CheckUnderstandingView({ initialQuestionId, fetchImpl }: CheckUn
             aria-valuemin={0}
             aria-valuemax={total}
             aria-valuenow={Math.min(index, total)}
-            className="h-2 w-full overflow-hidden rounded-full bg-border"
+            className="h-2 w-full overflow-hidden rounded-full bg-gray-10"
           >
             <div
-              className="h-full rounded-full bg-brand-600 transition-[width]"
+              className="h-full rounded-full bg-accent transition-[width]"
               style={{ width: `${(Math.min(index, total) / total) * 100}%` }}
             />
           </div>

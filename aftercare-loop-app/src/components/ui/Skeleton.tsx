@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils/cn";
 
 export function Skeleton({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div aria-hidden="true" className={cn("animate-pulse rounded-control bg-border/70", className)} {...rest} />
+    <div aria-hidden="true" className={cn("animate-pulse rounded-2xl bg-gray-10", className)} {...rest} />
   );
 }
 

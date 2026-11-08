@@ -14,7 +14,9 @@ are not a compliance program.
 | Data | Fictional patients only. Every page shows "Demonstration using fictional patient data." | `src/data/patients/`, `DemoBanner` |
 | Storage | Demo state lives in the browser's `localStorage` only. No server database, no accounts. | `src/lib/store/` |
 | Secrets | `ANTHROPIC_API_KEY` is read server-side only (`src/lib/ai/client.ts`). No `NEXT_PUBLIC_` secrets. Clients call `/api/*`. | `src/lib/ai/client.ts` |
-| Input validation | API bodies are validated with zod. Invalid input returns 400 and oversized bodies return 413. Error messages don't echo request content. | `src/app/api/_lib/handler.ts` |
+| Input validation | API bodies are validated with zod. Invalid input returns 400, oversized bodies 413, non-JSON content types 415 and cross-site browser requests (`Sec-Fetch-Site: cross-site`) 403. Error messages don't echo request content. | `src/app/api/_lib/handler.ts` |
+| Rate limiting | Every POST API route is limited to 30 requests per minute per client IP and route (429 + `Retry-After`). The limiter is in-memory and per server instance, and the IP comes from proxy headers, so it is a demo-grade abuse brake, not a guarantee. Production needs a shared store and a trusted proxy. | `src/app/api/_lib/rate-limit.ts` |
+| Security headers | Every response carries a Content-Security-Policy (`default-src 'self'`, `connect-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`), X-Frame-Options DENY, nosniff, Referrer-Policy, Permissions-Policy, COOP and (outside dev) HSTS. `X-Powered-By` is off. The CSP still allows `'unsafe-inline'` scripts for the Next.js runtime; nonces are a production follow-up. | `next.config.ts`, `src/lib/security/headers.ts` |
 | Untrusted content | Document text is sanitized (control characters stripped, capped at 20,000 characters) and wrapped in delimiters. Prompts tell the model to treat it as data only. | `src/lib/safety/sanitize.ts`, `src/lib/ai/prompts.ts` |
 | Uploads | `.txt` files only, with a size limit. | `src/components/understand/file-input.ts` |
 | Safety | Deterministic emergency and crisis rules run before any model call. Emergencies get short guidance (911 / 988 in the US). | `src/lib/safety/rules.ts` |
@@ -23,7 +25,7 @@ are not a compliance program.
 | Transmission | Nothing is sent to real clinicians. The care-team queue is a labeled simulation. | `src/lib/services/care-team.ts` |
 
 Known gaps in the MVP: no authentication or authorization, no encryption at rest beyond what the
-browser provides, no audit log, no consent flow, no rate limiting, no formal threat model, and no
+browser provides, no audit log, no consent flow, only per-instance rate limiting, no formal threat model, and no
 third-party security review. When live mode is on, text is sent to an external model provider
 (Anthropic) under the deployer's own API terms. No Business Associate Agreement (BAA) is in place.
 

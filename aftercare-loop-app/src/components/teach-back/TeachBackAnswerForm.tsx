@@ -38,18 +38,18 @@ export function TeachBackAnswerForm({ question, submitting, onSubmit }: TeachBac
     <form onSubmit={submit} className="flex flex-col gap-4" noValidate aria-busy={submitting || undefined}>
       {choices.length > 0 && (
         <fieldset className="flex flex-col gap-2">
-          <legend className="mb-1 text-base font-medium text-ink">{t("check.chooseOne")}</legend>
+          <legend className="mb-1 text-base font-medium text-gray-90">{t("check.chooseOne")}</legend>
           {choices.map((c) => {
             const checked = choiceId === c.id && !text.trim();
             return (
               <label
                 key={c.id}
                 className={cn(
-                  "flex min-h-12 cursor-pointer items-start gap-3 rounded-control border px-4 py-3 text-base",
-                  "has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-brand-600",
+                  "flex min-h-12 cursor-pointer items-start gap-3 rounded-2xl px-4 py-3 text-base transition-colors",
+                  "has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-primary-700",
                   checked
-                    ? "border-brand-600 bg-brand-50 text-brand-900"
-                    : "border-border-strong bg-surface text-ink hover:bg-surface-muted",
+                    ? "bg-secondary font-medium text-gray-100"
+                    : "bg-gray-5 text-gray-90 hover:bg-gray-10",
                 )}
               >
                 <input
@@ -62,7 +62,7 @@ export function TeachBackAnswerForm({ question, submitting, onSubmit }: TeachBac
                     setText("");
                     setError(null);
                   }}
-                  className="mt-1 size-4 shrink-0 accent-brand-700"
+                  className="mt-1 size-4 shrink-0 accent-primary-700"
                 />
                 <span>{c.text}</span>
               </label>

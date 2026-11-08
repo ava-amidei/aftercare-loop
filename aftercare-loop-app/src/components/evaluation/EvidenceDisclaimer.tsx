@@ -25,13 +25,13 @@ export function EvidenceDisclaimer({ kind, pending = false }: { kind?: EvalKind;
       <Alert variant="warning" title={t("evaluation.disclaimer.title")} data-testid="eval-disclaimer">
         <p className="font-medium">{t("evaluation.disclaimer.text")}</p>
       </Alert>
-      <div className="overflow-x-auto rounded-card border border-border bg-surface">
+      <div className="overflow-x-auto rounded-3xl bg-gray-0">
         <table className="w-full border-collapse text-left text-sm">
-          <caption className="px-4 pt-3 text-left text-base font-semibold text-ink">
+          <caption className="px-4 pt-3 text-left text-base font-semibold text-gray-90">
             {t("evaluation.evidence.title")}
           </caption>
           <thead>
-            <tr className="border-b border-border text-ink-muted">
+            <tr className="border-b border-gray-10 text-gray-70">
               <th scope="col" className="px-4 py-2 font-medium">
                 {t("evaluation.evidence.type")}
               </th>
@@ -42,11 +42,11 @@ export function EvidenceDisclaimer({ kind, pending = false }: { kind?: EvalKind;
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.label} className="border-b border-border/70 last:border-0">
-                <th scope="row" className="px-4 py-2 font-normal text-ink">
+              <tr key={r.label} className="border-b border-gray-10 last:border-0">
+                <th scope="row" className="px-4 py-2 font-normal text-gray-90">
                   {r.label}
                 </th>
-                <td className="px-4 py-2 font-semibold text-ink">{r.value}</td>
+                <td className="px-4 py-2 font-semibold text-gray-90">{r.value}</td>
               </tr>
             ))}
           </tbody>

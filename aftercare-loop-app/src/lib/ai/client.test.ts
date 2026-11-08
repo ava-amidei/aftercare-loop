@@ -88,6 +88,8 @@ function parseReturns(text: string, stop_reason = "end_turn") {
 beforeEach(() => {
   vi.unstubAllEnvs();
   vi.stubEnv("ANTHROPIC_API_KEY", "test-key-not-real");
+  vi.stubEnv("GEMINI_API_KEY", "");
+  vi.stubEnv("AFTERCARE_PROVIDER", "");
   vi.stubEnv("AFTERCARE_FORCE_SCRIPTED", "");
   vi.stubEnv("AFTERCARE_MODEL", "");
   resetAnthropicClientForTests();

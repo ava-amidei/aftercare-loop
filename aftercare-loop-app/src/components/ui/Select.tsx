@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode, Ref, SelectHTMLAttributes } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils/cn";
 import { Field, controlBase, controlState } from "./field";
 
@@ -62,9 +62,9 @@ export function Select({
             ))}
             {children}
           </select>
-          <ChevronDown
+          <ChevronDownIcon
             aria-hidden="true"
-            className="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-ink-muted"
+            className="pointer-events-none absolute top-1/2 right-3 size-5 -translate-y-1/2 text-gray-70"
           />
         </div>
       )}

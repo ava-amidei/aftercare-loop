@@ -7,7 +7,8 @@
  */
 import { useState } from "react";
 import Link from "next/link";
-import { Copy, MessageSquareText, RefreshCw, Save, Send } from "lucide-react";
+import { ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, CheckCircleIcon, DocumentDuplicateIcon, PaperAirplaneIcon } from "@heroicons/react/20/solid";
 import type { CommunicationSummary, PatientSessionState, SafetyVerdict } from "@/lib/types";
 import {
   Alert,
@@ -53,7 +54,7 @@ export function FollowUpView() {
     <PageHeader
       title={t("followUp.pageTitle")}
       description={t("followUp.subtitle")}
-      icon={<MessageSquareText aria-hidden="true" className="size-6" />}
+      icon={<ChatBubbleBottomCenterTextIcon aria-hidden="true" className="size-6" />}
     />
   );
 
@@ -119,7 +120,7 @@ function FollowUpContent({ session }: { session: PatientSessionState }) {
         variant="danger"
         title={t("followUp.error")}
         action={
-          <Button variant="secondary" onClick={regenerate} leftIcon={<RefreshCw aria-hidden="true" className="size-5" />}>
+          <Button variant="secondary" onClick={regenerate} leftIcon={<ArrowPathIcon aria-hidden="true" className="size-5" />}>
             {t("common.retry")}
           </Button>
         }
@@ -187,7 +188,7 @@ function FollowUpContent({ session }: { session: PatientSessionState }) {
               onChange={(e) => setText(e.target.value)}
               className="text-base"
             />
-            <p className="text-sm text-ink-muted" aria-live="polite" data-testid="follow-up-save-state">
+            <p className="text-sm text-gray-70" aria-live="polite" data-testid="follow-up-save-state">
               {isSaved
                 ? t("followUp.summary.saved")
                 : saved
@@ -195,29 +196,29 @@ function FollowUpContent({ session }: { session: PatientSessionState }) {
                   : t("followUp.summary.draft")}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Button onClick={copy} leftIcon={<Copy aria-hidden="true" className="size-5" />}>
+              <Button onClick={copy} leftIcon={<DocumentDuplicateIcon aria-hidden="true" className="size-5" />}>
                 {t("followUp.summary.copy")}
               </Button>
-              <Button variant="secondary" onClick={save} leftIcon={<Save aria-hidden="true" className="size-5" />}>
+              <Button variant="secondary" onClick={save} leftIcon={<CheckCircleIcon aria-hidden="true" className="size-5" />}>
                 {t("followUp.summary.save")}
               </Button>
               <Button
                 variant="secondary"
                 onClick={regenerate}
-                leftIcon={<RefreshCw aria-hidden="true" className="size-5" />}
+                leftIcon={<ArrowPathIcon aria-hidden="true" className="size-5" />}
               >
                 {t("followUp.summary.regenerate")}
               </Button>
             </div>
-            <p className="text-sm text-ink-muted">{t("followUp.summary.regenerateHint")}</p>
-            <p className="text-sm text-ink-muted">{t("followUp.summary.noTransmit")}</p>
+            <p className="text-sm text-gray-70">{t("followUp.summary.regenerateHint")}</p>
+            <p className="text-sm text-gray-70">{t("followUp.summary.noTransmit")}</p>
 
-            <div className="flex flex-col gap-3 border-t border-border pt-4">
+            <div className="flex flex-col gap-3 border-t border-gray-10 pt-4">
               <p className="text-sm font-semibold text-warning-strong">{t("followUp.simulation.label")}</p>
               <Button
                 variant="accent"
                 onClick={send}
-                leftIcon={<Send aria-hidden="true" className="size-5" />}
+                leftIcon={<PaperAirplaneIcon aria-hidden="true" className="size-5" />}
                 className="self-start"
               >
                 {t("followUp.send.button")}
@@ -229,7 +230,7 @@ function FollowUpContent({ session }: { session: PatientSessionState }) {
                   <p className="mt-1">{t("followUp.send.done")}</p>
                 </Alert>
               )}
-              <p className="text-sm text-ink-muted">
+              <p className="text-sm text-gray-70">
                 {t("followUp.requests.count", { count: session.careTeamRequests.length })}
               </p>
               <Link href="/care-team" className={buttonVariants({ variant: "ghost", size: "sm", className: "self-start" })}>

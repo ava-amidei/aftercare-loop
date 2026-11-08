@@ -32,7 +32,7 @@ export const EvalRunSchema = z.object({
   runId: z.string().min(1),
   suiteVersion: z.string().min(1),
   timestamp: z.string().datetime(),
-  mode: z.enum(["live_claude", "scripted_demo"]),
+  mode: z.enum(["live_claude", "live_gemini", "scripted_demo"]),
   modelId: z.string().optional(),
   kind: z.enum(["deterministic_synthetic", "model_based", "human_reviewed"]),
   caseCount: z.number().int().nonnegative(),

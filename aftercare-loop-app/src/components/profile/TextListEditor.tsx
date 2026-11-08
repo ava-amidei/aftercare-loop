@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, type KeyboardEvent, type ReactNode } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { PlusIcon, TrashIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/ui";
 import { controlBase, controlState } from "@/components/ui/field";
 import { useT } from "@/lib/i18n";
@@ -61,14 +61,14 @@ export function TextListEditor({
 
   return (
     <fieldset className="flex flex-col gap-3" aria-describedby={hintId}>
-      <legend className="mb-1 text-base font-medium text-ink">{label}</legend>
+      <legend className="mb-1 text-base font-medium text-gray-90">{label}</legend>
       {hint && (
-        <p id={hintId} className="-mt-2 text-sm text-ink-muted">
+        <p id={hintId} className="-mt-2 text-sm text-gray-70">
           {hint}
         </p>
       )}
       {items.length === 0 ? (
-        <p className="rounded-control border border-dashed border-border-strong px-3 py-3 text-base text-ink-muted">
+        <p className="rounded-2xl bg-gray-5 px-3 py-3 text-base text-gray-70">
           {emptyText}
         </p>
       ) : (
@@ -76,7 +76,7 @@ export function TextListEditor({
           {items.map((item, i) => {
             const itemLabel = t("profile.list.item", { label, number: i + 1 });
             return (
-              <li key={i} className="flex flex-col gap-1.5 rounded-control border border-border bg-surface p-2.5">
+              <li key={i} className="flex flex-col gap-1.5 rounded-2xl bg-gray-5 p-2.5">
                 <ProfileOriginBadge origin={originFor(item)} patientWording={patientWording} className="self-start" />
                 <div className="flex items-start gap-2">
                   <input
@@ -92,7 +92,7 @@ export function TextListEditor({
                     aria-label={t("profile.list.remove", { item: item || itemLabel })}
                     onClick={() => onChange(items.filter((_, j) => j !== i))}
                   >
-                    <Trash2 aria-hidden="true" className="size-5" />
+                    <TrashIcon aria-hidden="true" className="size-5" />
                   </Button>
                 </div>
               </li>
@@ -101,7 +101,7 @@ export function TextListEditor({
         </ul>
       )}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={addId} className="text-sm font-medium text-ink">
+        <label htmlFor={addId} className="text-sm font-medium text-gray-90">
           {addLabel}
         </label>
         <div className="flex gap-2">
@@ -117,7 +117,7 @@ export function TextListEditor({
           <Button
             variant="secondary"
             size="sm"
-            leftIcon={<Plus aria-hidden="true" className="size-4" />}
+            leftIcon={<PlusIcon aria-hidden="true" className="size-4" />}
             onClick={add}
             disabled={!pending.trim()}
             aria-label={`${t("profile.list.add")}: ${label}`}

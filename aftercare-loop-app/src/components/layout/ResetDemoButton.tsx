@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { ArrowUturnLeftIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
@@ -35,7 +35,7 @@ export function ResetDemoButton({ className }: { className?: string }) {
         className={className}
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
-        leftIcon={<RotateCcw aria-hidden="true" className="size-4" />}
+        leftIcon={<ArrowUturnLeftIcon aria-hidden="true" className="size-4" />}
       >
         <span className="sr-only sm:not-sr-only">{t("common.resetDemo")}</span>
       </Button>

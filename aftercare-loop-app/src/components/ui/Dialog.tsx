@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useRef, type ReactNode, type RefObject } from "react";
-import { X } from "lucide-react";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import { cn } from "@/lib/utils/cn";
 import { Portal } from "./Portal";
 import { useFocusTrap } from "./use-focus-trap";
@@ -50,7 +50,7 @@ export function Dialog({
         <div
           aria-hidden="true"
           data-testid="dialog-backdrop"
-          className="absolute inset-0 animate-fade-in bg-stone-900/50"
+          className="absolute inset-0 animate-fade-in bg-gray-100/50"
           onClick={() => dismissOnBackdrop && onOpenChange(false)}
         />
         <div
@@ -61,18 +61,18 @@ export function Dialog({
           aria-describedby={description ? descId : undefined}
           tabIndex={-1}
           className={cn(
-            "relative z-10 flex max-h-[90dvh] w-full animate-scale-in flex-col overflow-hidden rounded-t-card bg-surface shadow-xl sm:rounded-card",
+            "relative z-10 flex max-h-[90dvh] w-full animate-scale-in flex-col overflow-hidden rounded-t-[var(--radius-sheet)] bg-gray-0 shadow-float sm:rounded-3xl",
             sizes[size],
             className,
           )}
         >
-          <div className="flex items-start gap-3 border-b border-border px-5 py-4">
+          <div className="flex items-start gap-3 border-b border-gray-10 px-5 py-4">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <h2 id={titleId} className="text-xl font-semibold text-ink">
+              <h2 id={titleId} className="text-xl font-semibold text-gray-90">
                 {title}
               </h2>
               {description && (
-                <p id={descId} className="text-base text-ink-muted">
+                <p id={descId} className="text-base text-gray-70">
                   {description}
                 </p>
               )}
@@ -81,14 +81,14 @@ export function Dialog({
               type="button"
               onClick={() => onOpenChange(false)}
               aria-label={closeLabel}
-              className="-mt-1 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-control text-ink-muted hover:bg-surface-muted hover:text-ink"
+              className="-mt-1 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-gray-70 hover:bg-gray-10 hover:text-gray-90"
             >
-              <X aria-hidden="true" className="size-5" />
+              <XMarkIcon aria-hidden="true" className="size-5" />
             </button>
           </div>
           {children && <div className="overflow-y-auto px-5 py-4">{children}</div>}
           {footer && (
-            <div className="flex flex-wrap justify-end gap-3 border-t border-border px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-4">
+            <div className="flex flex-wrap justify-end gap-3 border-t border-gray-10 px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:pb-4">
               {footer}
             </div>
           )}

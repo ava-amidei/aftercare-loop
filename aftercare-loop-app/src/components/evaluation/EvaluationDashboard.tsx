@@ -1,6 +1,7 @@
 "use client";
 
-import { ChartColumn, RefreshCw } from "lucide-react";
+import { ChartBarIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import type { EvalRun } from "@/lib/types";
 import {
   Alert,
@@ -36,10 +37,10 @@ export function EvaluationDashboard({ fetchImpl }: EvaluationDashboardProps) {
       <PageHeader
         title={t("evaluation.title")}
         description={t("evaluation.subtitle")}
-        icon={<ChartColumn aria-hidden="true" className="size-6" />}
+        icon={<ChartBarIcon aria-hidden="true" className="size-6" />}
         actions={
           state.status !== "loading" ? (
-            <Button variant="secondary" size="sm" onClick={state.reload} leftIcon={<RefreshCw aria-hidden="true" className="size-4" />}>
+            <Button variant="secondary" size="sm" onClick={state.reload} leftIcon={<ArrowPathIcon aria-hidden="true" className="size-4" />}>
               {t("evaluation.reload")}
             </Button>
           ) : undefined
@@ -64,12 +65,12 @@ export function EvaluationDashboard({ fetchImpl }: EvaluationDashboardProps) {
 
       {state.status === "not_evaluated" && (
         <EmptyState
-          icon={<ChartColumn aria-hidden="true" className="size-7" />}
+          icon={<ChartBarIcon aria-hidden="true" className="size-7" />}
           title={t("evaluation.notEvaluated.title")}
           description={
             <span className="flex flex-col items-center gap-2">
               <span>{t("evaluation.notEvaluated.body")}</span>
-              <code className="rounded-control bg-surface-muted px-3 py-1.5 font-mono text-sm text-ink">
+              <code className="rounded-2xl bg-gray-5 px-3 py-1.5 font-mono text-sm text-gray-90">
                 cd aftercare-loop-app &amp;&amp; npm run eval
               </code>
               <span>{t("evaluation.notEvaluated.after")}</span>
@@ -106,13 +107,13 @@ function RunResults({ run }: { run: EvalRun }) {
       <RunMetadata run={run} />
 
       <section aria-labelledby="eval-metrics-title" className="flex flex-col gap-4">
-        <h2 id="eval-metrics-title" className="text-xl font-semibold text-ink">
+        <h2 id="eval-metrics-title" className="text-xl font-semibold text-gray-90">
           {t("evaluation.metrics.title")}
         </h2>
         <div className="grid gap-4 lg:grid-cols-2">
           <MetricCard suite="instruction_extraction" metrics={run.metrics.instruction_extraction}>
             {extractionMatrix && <ConfusionMatrixTable suite="instruction_extraction" matrix={extractionMatrix} />}
-            <p className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+            <p className="flex flex-wrap items-center gap-2 text-sm text-gray-70">
               <OriginBadge origin="clinician_documented" size="sm" />
               <span>{t("evaluation.groundTruthNote")}</span>
             </p>

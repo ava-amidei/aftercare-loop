@@ -171,7 +171,7 @@ const DocumentInputSchema = z.object({
 });
 
 const AiMetaInputSchema = z.object({
-  mode: z.enum(["live_claude", "scripted_demo"]),
+  mode: z.enum(["live_claude", "live_gemini", "scripted_demo"]),
   model: z.string().max(200).optional(),
   generatedAt: z.string().max(64),
   disclaimer: z.string().max(2000),

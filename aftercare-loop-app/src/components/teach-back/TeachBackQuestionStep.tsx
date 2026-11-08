@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, BookmarkCheck, BookmarkPlus, CircleCheck, RotateCcw, Sparkles } from "lucide-react";
+import { BookmarkIcon, CheckCircleIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, ArrowUturnLeftIcon, BookmarkIcon as BookmarkSolidIcon } from "@heroicons/react/20/solid";
 import type {
   PatientProfile,
   SafetyVerdict,
@@ -97,9 +98,9 @@ export function TeachBackQuestionStep({
       disabled={saved}
       leftIcon={
         saved ? (
-          <BookmarkCheck aria-hidden="true" className="size-5" />
+          <BookmarkSolidIcon aria-hidden="true" className="size-5" />
         ) : (
-          <BookmarkPlus aria-hidden="true" className="size-5" />
+          <BookmarkIcon aria-hidden="true" className="size-5" />
         )
       }
       onClick={() => onSaveQuestion(question, session)}
@@ -110,11 +111,11 @@ export function TeachBackQuestionStep({
 
   return (
     <Card padding="lg" className="flex flex-col gap-5" data-testid="teach-back-step" data-phase={phase}>
-      <h2 className="text-xl leading-snug font-semibold text-ink sm:text-2xl">{question.prompt}</h2>
+      <h2 className="text-xl leading-snug font-semibold text-gray-90 sm:text-2xl">{question.prompt}</h2>
 
       {document && (
         <div className="flex flex-col gap-1.5">
-          <p className="text-sm font-semibold tracking-wide text-ink-muted uppercase">{t("check.sourcePassage")}</p>
+          <p className="text-sm font-semibold tracking-wide text-gray-70 uppercase">{t("check.sourcePassage")}</p>
           <SourceQuote document={document} sourceRef={question.sourceRef} verification="verified" contextChars={80} />
         </div>
       )}
@@ -132,14 +133,14 @@ export function TeachBackQuestionStep({
       )}
 
       {attempt && !showForm && (
-        <p className="text-base text-ink-muted">{t("check.yourAnswer", { answer: attempt.response })}</p>
+        <p className="text-base text-gray-70">{t("check.yourAnswer", { answer: attempt.response })}</p>
       )}
 
       {phase === "correct" && (
         <Alert
           variant="success"
           live
-          icon={<CircleCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-success" />}
+          icon={<CheckCircleIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-success" />}
           title={(session?.attempts.length ?? 0) > 1 ? t("check.result.correctAfterRetry") : t("check.result.correct")}
         >
           {(session?.attempts.length ?? 0) > 1 ? t("check.encourage") : `${t("check.result.correctDetail")} ${t("check.encourage")}`}
@@ -150,14 +151,14 @@ export function TeachBackQuestionStep({
         <section
           aria-labelledby={`clarify-${question.id}`}
           data-testid="clarification"
-          className="flex flex-col gap-3 rounded-card border border-accent-200 bg-accent-50 p-4"
+          className="flex flex-col gap-3 rounded-3xl bg-accent-50 p-4"
         >
-          <p className="text-base text-ink">{t("check.result.notYet")}</p>
-          <h3 id={`clarify-${question.id}`} className="flex items-center gap-2 text-lg font-semibold text-ink">
-            <Sparkles aria-hidden="true" className="size-5 text-accent-700" />
+          <p className="text-base text-gray-90">{t("check.result.notYet")}</p>
+          <h3 id={`clarify-${question.id}`} className="flex items-center gap-2 text-lg font-semibold text-gray-90">
+            <SparklesIcon aria-hidden="true" className="size-5 text-accent-800" />
             {opener}
           </h3>
-          <p className="text-base leading-relaxed whitespace-pre-line text-ink">
+          <p className="text-base leading-relaxed whitespace-pre-line text-gray-90">
             {stripOpener(clarification.text, opener)}
           </p>
           {clarification.mode && <ModeBadge mode={clarification.mode} compact />}
@@ -197,12 +198,12 @@ export function TeachBackQuestionStep({
 
       <div className="flex flex-wrap gap-3">
         {phase === "clarified" && !retrying && (
-          <Button onClick={() => setRetrying(true)} leftIcon={<RotateCcw aria-hidden="true" className="size-5" />}>
+          <Button onClick={() => setRetrying(true)} leftIcon={<ArrowUturnLeftIcon aria-hidden="true" className="size-5" />}>
             {t("check.tryAgain")}
           </Button>
         )}
         {(phase === "correct" || phase === "unresolved") && (
-          <Button onClick={onNext} rightIcon={<ArrowRight aria-hidden="true" className="size-5" />}>
+          <Button onClick={onNext} rightIcon={<ArrowRightIcon aria-hidden="true" className="size-5" />}>
             {nextLabel}
           </Button>
         )}

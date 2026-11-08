@@ -371,7 +371,24 @@ export function buildActionPlan(input: BuildActionPlanInput): ActionItem[] {
   for (const a of existing) {
     if (emitted.has(a.id)) continue;
     emitted.add(a.id);
-    out.push(a);
+    out.push(reverifyExisting(a, document));
   }
   return out;
+}
+
+/**
+ * Client-supplied items are never trusted to be verified (ARCHITECTURE §2.5):
+ * a clinician-documented item that claims the current document is re-checked
+ * against its text; a failing quote moves to "Needs clarification". Items for
+ * other documents cannot be checked here and are passed through.
+ */
+function reverifyExisting(a: ActionItem, document: VisitDocument | null | undefined): ActionItem {
+  if (a.origin !== "clinician_documented" || a.sourceVerification !== "verified" || !document) return a;
+  if (a.documentId !== document.id && a.sourceRef?.documentId !== document.id) return a;
+  if (isVerifiedRef(document, a.sourceRef)) return a;
+  return {
+    ...a,
+    sourceVerification: "unverified",
+    status: a.status === "completed" ? a.status : "needs_clarification",
+  };
 }

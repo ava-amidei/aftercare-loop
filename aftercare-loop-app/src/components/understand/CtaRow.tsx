@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ClipboardCheck, ListChecks } from "lucide-react";
+import { ClipboardDocumentCheckIcon, ListBulletIcon } from "@heroicons/react/20/solid";
 import { Alert, Button, Card, buttonVariants } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store";
@@ -36,17 +36,17 @@ export function CtaRow({ session, document, interpretation }: CtaRowProps) {
 
   return (
     <Card tone="brand" data-testid="understand-cta">
-      <h2 className="mb-3 text-lg font-semibold text-ink">{t("understand.cta.title")}</h2>
+      <h2 className="mb-3 text-lg font-semibold text-gray-90">{t("understand.cta.title")}</h2>
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link href="/check" className={buttonVariants({ variant: "secondary", className: "gap-2" })}>
-          <ClipboardCheck aria-hidden="true" className="size-5" />
+          <ClipboardDocumentCheckIcon aria-hidden="true" className="size-5" />
           {t("understand.cta.check")}
         </Link>
         <Button
           onClick={() => void buildPlan()}
           loading={status === "loading"}
           loadingLabel={t("understand.cta.planBuilding")}
-          leftIcon={<ListChecks aria-hidden="true" className="size-5" />}
+          leftIcon={<ListBulletIcon aria-hidden="true" className="size-5" />}
         >
           {status === "loading" ? t("understand.cta.planBuilding") : t("understand.cta.plan")}
         </Button>

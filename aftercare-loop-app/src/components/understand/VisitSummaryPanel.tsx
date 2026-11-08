@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState, type ChangeEvent, type ReactNode } from "react";
-import { FileText, FileUp, Sparkles } from "lucide-react";
+import { SparklesIcon } from "@heroicons/react/24/outline";
+import { DocumentArrowUpIcon, DocumentTextIcon, SparklesIcon as SparklesMiniIcon } from "@heroicons/react/20/solid";
 import {
   Alert,
   Button,
@@ -152,7 +153,7 @@ export function VisitSummaryPanel() {
             error={inputError ?? undefined}
             className="font-sans text-base"
           />
-          <p className="text-sm text-ink-muted" aria-live="polite">
+          <p className="text-sm text-gray-70" aria-live="polite">
             {t("understand.input.charCount", {
               count: text.length.toLocaleString(t.lang),
               max: MAX_SUMMARY_CHARS.toLocaleString(t.lang),
@@ -165,7 +166,7 @@ export function VisitSummaryPanel() {
               onClick={() => void explain()}
               loading={status === "loading"}
               loadingLabel={t("understand.generating")}
-              leftIcon={<Sparkles aria-hidden="true" className="size-5" />}
+              leftIcon={<SparklesMiniIcon aria-hidden="true" className="size-5" />}
             >
               {status === "loading" ? t("understand.generating") : t("understand.explain")}
             </Button>
@@ -173,7 +174,7 @@ export function VisitSummaryPanel() {
               <Button
                 variant="secondary"
                 onClick={loadSample}
-                leftIcon={<FileText aria-hidden="true" className="size-5" />}
+                leftIcon={<DocumentTextIcon aria-hidden="true" className="size-5" />}
                 disabled={status === "loading"}
               >
                 {t("understand.input.loadSample")}
@@ -182,7 +183,7 @@ export function VisitSummaryPanel() {
             <Button
               variant="secondary"
               onClick={() => fileRef.current?.click()}
-              leftIcon={<FileUp aria-hidden="true" className="size-5" />}
+              leftIcon={<DocumentArrowUpIcon aria-hidden="true" className="size-5" />}
               disabled={status === "loading"}
               aria-describedby="understand-upload-hint"
             >
@@ -199,7 +200,7 @@ export function VisitSummaryPanel() {
               onChange={(e) => void onFile(e)}
             />
           </div>
-          <p id="understand-upload-hint" className="text-sm text-ink-muted">
+          <p id="understand-upload-hint" className="text-sm text-gray-70">
             {t("understand.input.uploadHint")}
           </p>
         </div>
@@ -236,7 +237,7 @@ export function VisitSummaryPanel() {
 
       {status === "idle" && !showResult && (
         <EmptyState
-          icon={<Sparkles aria-hidden="true" className="size-7" />}
+          icon={<SparklesIcon aria-hidden="true" className="size-7" />}
           title={t("understand.tabs.summary")}
           description={t("understand.emptyResult")}
         />

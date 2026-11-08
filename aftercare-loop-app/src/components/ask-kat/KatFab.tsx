@@ -1,7 +1,8 @@
 "use client";
 
 import type { Ref } from "react";
-import { Heart, MessageCircle } from "lucide-react";
+import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/24/outline";
+import { HeartIcon } from "@heroicons/react/24/solid";
 import { cn } from "@/lib/utils/cn";
 
 export interface KatFabProps {
@@ -15,15 +16,15 @@ export interface KatFabProps {
   ref?: Ref<HTMLButtonElement>;
 }
 
-/** Chat-bubble icon with a small heart overlay (SPEC §12.1). */
+/**
+ * Chat-bubble icon with a small heart overlay (SPEC §12.1): Heroicons
+ * ChatBubbleOvalLeftEllipsis (outline) + a solid HeartIcon badge.
+ */
 export function KatIcon({ className }: { className?: string }) {
   return (
     <span aria-hidden="true" className={cn("relative inline-flex size-6 shrink-0", className)}>
-      <MessageCircle className="size-6" strokeWidth={2.25} />
-      <Heart
-        className="absolute top-1/2 left-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 fill-current"
-        strokeWidth={2.5}
-      />
+      <ChatBubbleOvalLeftEllipsisIcon className="size-6" strokeWidth={1.75} />
+      <HeartIcon className="absolute -top-1 -right-1.5 size-3.5" />
     </span>
   );
 }
@@ -47,13 +48,14 @@ export function KatFab({ label, ariaLabel, onClick, indicator, reducedMotion, re
       className={cn(
         // Icon-only 56px circle below md so it covers as little content as possible
         // (SPEC §12.1); the labelled pill from md up. aria-label names it either way.
-        "fixed z-[45] inline-flex size-14 items-center justify-center rounded-full bg-accent-700",
+        "fixed z-[45] inline-flex size-14 items-center justify-center rounded-full bg-accent",
         "md:size-auto md:min-h-14 md:justify-start md:gap-2 md:py-3 md:pr-5 md:pl-4",
-        "text-base font-semibold text-white shadow-lg ring-1 ring-black/5",
-        "hover:bg-accent-800 hover:shadow-xl active:bg-accent-900",
-        "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+        // Accent #FF9A00 with gray-100 text/icon: 8.66:1 (white would be 2.13:1).
+        "text-base font-bold text-gray-100 shadow-float",
+        "hover:bg-accent-600 active:bg-accent-600",
+        "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary-700",
         !reducedMotion &&
-          "motion-safe:transition-[transform,box-shadow,background-color] motion-safe:duration-200 motion-safe:hover:scale-105 motion-safe:active:scale-100",
+          "motion-safe:transition-[transform,background-color] motion-safe:duration-200 motion-safe:hover:scale-105 motion-safe:active:scale-95",
       )}
     >
       <KatIcon />
@@ -64,9 +66,9 @@ export function KatFab({ label, ariaLabel, onClick, indicator, reducedMotion, re
         <span
           aria-hidden="true"
           data-testid="kat-fab-indicator"
-          className="absolute -top-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-white"
+          className="absolute -top-0.5 -right-0.5 flex size-3.5 items-center justify-center rounded-full bg-gray-0"
         >
-          <span className="size-2.5 rounded-full bg-brand-600" />
+          <span className="size-2.5 rounded-full bg-primary-700" />
         </span>
       )}
     </button>

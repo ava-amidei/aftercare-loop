@@ -2,7 +2,8 @@
 
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { BookOpen, Goal, ListChecks, MessageCircleQuestion, RefreshCw, Stethoscope, X } from "lucide-react";
+import { DocumentCheckIcon, FlagIcon, ListBulletIcon, QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, BookOpenIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import type { ActionCategory, ActionItem, ActionStatus, Reminder, VisitDocument } from "@/lib/types";
 import {
   Alert,
@@ -33,10 +34,10 @@ import {
 import { useDueReminderToast } from "./useDueReminderToast";
 import { useSourceViewer } from "@/components/understand/SourceViewer";
 
-const SECTION_ICONS: Record<ActionCategory, typeof Stethoscope> = {
-  care_plan: Stethoscope,
-  wellness_goal: Goal,
-  provider_question: MessageCircleQuestion,
+const SECTION_ICONS: Record<ActionCategory, typeof DocumentCheckIcon> = {
+  care_plan: DocumentCheckIcon,
+  wellness_goal: FlagIcon,
+  provider_question: QuestionMarkCircleIcon,
 };
 
 function Section({
@@ -54,21 +55,21 @@ function Section({
   return (
     <section aria-labelledby={headingId} data-testid={`section-${category}`} className="flex flex-col gap-3">
       <div className="flex items-start gap-3">
-        <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-50 text-brand-700">
+        <span className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-primary-900">
           <Icon aria-hidden="true" className="size-5" />
         </span>
         <div className="flex min-w-0 flex-col gap-0.5">
-          <h2 id={headingId} className="flex flex-wrap items-center gap-2 text-xl font-semibold text-ink">
+          <h2 id={headingId} className="flex flex-wrap items-center gap-2 text-xl font-semibold text-gray-90">
             {t(actionCategoryKey(category))}
             <span
               data-testid={`count-${category}`}
-              className="inline-flex min-w-8 items-center justify-center rounded-full bg-brand-700 px-2 py-0.5 text-sm font-bold text-white"
+              className="inline-flex min-w-8 items-center justify-center rounded-full bg-primary px-2 py-0.5 text-sm font-bold text-primary-contrast"
             >
               <span aria-hidden="true">{count}</span>
               <span className="sr-only">{t("actionPlan.count", { count })}</span>
             </span>
           </h2>
-          <p className="text-base text-ink-muted">{t(actionCategoryHintKey(category))}</p>
+          <p className="text-base text-gray-70">{t(actionCategoryHintKey(category))}</p>
         </div>
       </div>
       {children}
@@ -79,7 +80,7 @@ function Section({
 function CategoryEmpty() {
   const t = useT();
   return (
-    <p className="rounded-card border border-dashed border-border-strong px-4 py-5 text-center text-base text-ink-muted">
+    <p className="rounded-3xl bg-gray-0 px-4 py-5 text-center text-base text-gray-70">
       {t("actionPlan.categoryEmpty")}
     </p>
   );
@@ -206,7 +207,7 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
     <PageHeader
       title={t("actionPlan.title")}
       description={t("actionPlan.subtitle")}
-      icon={<ListChecks aria-hidden="true" className="size-6" />}
+      icon={<ListBulletIcon aria-hidden="true" className="size-6" />}
       actions={
         hydrated && actions.length > 0 && activeDoc ? (
           <Button
@@ -214,7 +215,7 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
             onClick={rebuild}
             loading={rebuilding}
             loadingLabel={t("actionPlan.generating")}
-            leftIcon={<RefreshCw aria-hidden="true" className="size-5" />}
+            leftIcon={<ArrowPathIcon aria-hidden="true" className="size-5" />}
             title={t("actionPlan.rebuildHint")}
           >
             {t("actionPlan.rebuild")}
@@ -256,7 +257,7 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
         <div className="flex flex-col gap-4">
           {errorAlert}
           <EmptyState
-            icon={<ListChecks aria-hidden="true" className="size-7" />}
+            icon={<ListBulletIcon aria-hidden="true" className="size-7" />}
             title={t("actionPlan.emptyTitle")}
             description={t("actionPlan.empty")}
             action={
@@ -274,7 +275,7 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
                   </Button>
                 )}
                 <Link href="/understand" className={buttonVariants({ variant: activeDoc ? "secondary" : "primary" })}>
-                  <BookOpen aria-hidden="true" className="size-5" />
+                  <BookOpenIcon aria-hidden="true" className="size-5" />
                   {t("actionPlan.goToUnderstand")}
                 </Link>
               </>
@@ -291,11 +292,11 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
       <div className="flex flex-col gap-8">
         {errorAlert}
         <div className="flex flex-col gap-2">
-          <p className="text-base font-medium text-ink" data-testid="plan-progress">
+          <p className="text-base font-medium text-gray-90" data-testid="plan-progress">
             {t("actionPlan.progress", { completed: progress.completed, total: progress.total })}
           </p>
           <div
-            className="h-2 w-full overflow-hidden rounded-full bg-border"
+            className="h-2 w-full overflow-hidden rounded-full bg-gray-10"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={progress.total}
@@ -307,7 +308,7 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
               style={{ width: progress.total ? `${(progress.completed / progress.total) * 100}%` : "0%" }}
             />
           </div>
-          <p className="text-sm text-ink-muted">{t("actionPlan.reminder.inAppOnly")}</p>
+          <p className="text-sm text-gray-70">{t("actionPlan.reminder.inAppOnly")}</p>
         </div>
 
         <Section category="care_plan" count={counts.care_plan}>
@@ -328,7 +329,7 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
 
         <Section category="provider_question" count={counts.provider_question}>
           {interpretation?.meta && grouped.questions.some((q) => q.origin === "ai_suggested") && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-70">
               <span>{t("actionPlan.modeNote")}</span>
               <ModeBadge mode={interpretation.meta.mode} model={interpretation.meta.model} compact />
             </div>
@@ -337,20 +338,20 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
           <NeedsClarification items={grouped.needsClarification} onStatusChange={onStatus} />
           {savedQuestions.length > 0 && (
             <Card tone="muted" className="flex flex-col gap-2" data-testid="saved-questions">
-              <h3 className="text-lg font-semibold text-ink">{t("actionPlan.saved.title")}</h3>
-              <p className="text-sm text-ink-muted">{t("actionPlan.saved.hint")}</p>
+              <h3 className="text-lg font-semibold text-gray-90">{t("actionPlan.saved.title")}</h3>
+              <p className="text-sm text-gray-70">{t("actionPlan.saved.hint")}</p>
               <ul className="flex flex-col gap-1">
                 {savedQuestions.map((q) => (
                   <li key={q} className="flex items-start gap-2">
-                    <MessageCircleQuestion aria-hidden="true" className="mt-3 size-4 shrink-0 text-ink-muted" />
-                    <span className="flex-1 py-2.5 text-base break-words text-ink">{q}</span>
+                    <QuestionMarkCircleIcon aria-hidden="true" className="mt-3 size-4 shrink-0 text-gray-70" />
+                    <span className="flex-1 py-2.5 text-base break-words text-gray-90">{q}</span>
                     <button
                       type="button"
                       onClick={() => removeSavedQuestion(patientId, q)}
                       aria-label={t("actionPlan.saved.remove", { question: q })}
-                      className="inline-flex size-11 shrink-0 items-center justify-center rounded-control text-ink-muted hover:bg-surface"
+                      className="inline-flex size-11 shrink-0 items-center justify-center rounded-full text-gray-70 hover:bg-gray-0"
                     >
-                      <X aria-hidden="true" className="size-4" />
+                      <XMarkIcon aria-hidden="true" className="size-4" />
                     </button>
                   </li>
                 ))}

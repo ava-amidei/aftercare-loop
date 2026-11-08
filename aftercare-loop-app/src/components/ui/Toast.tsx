@@ -1,7 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { CircleAlert, CircleCheck, Info, TriangleAlert, X } from "lucide-react";
+import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/20/solid";
 import { cn } from "@/lib/utils/cn";
 import { createId } from "@/lib/utils/ids";
 
@@ -35,12 +36,12 @@ export function useToast(): ToastApi {
   return useContext(ToastContext) ?? noop;
 }
 
-const icons = { info: Info, success: CircleCheck, warning: TriangleAlert, danger: CircleAlert } as const;
+const icons = { info: InformationCircleIcon, success: CheckCircleIcon, warning: ExclamationTriangleIcon, danger: ExclamationCircleIcon } as const;
 const tones: Record<ToastVariant, string> = {
-  info: "border-info/30 [&_svg.toast-icon]:text-info",
-  success: "border-success/30 [&_svg.toast-icon]:text-success",
-  warning: "border-warning/40 [&_svg.toast-icon]:text-warning",
-  danger: "border-danger/40 [&_svg.toast-icon]:text-danger",
+  info: "[&_svg.toast-icon]:text-info",
+  success: "[&_svg.toast-icon]:text-success",
+  warning: "[&_svg.toast-icon]:text-warning",
+  danger: "[&_svg.toast-icon]:text-danger",
 };
 
 function ToastItem({ toast, onDismiss }: { toast: ToastRecord; onDismiss: (id: string) => void }) {
@@ -54,18 +55,18 @@ function ToastItem({ toast, onDismiss }: { toast: ToastRecord; onDismiss: (id: s
     <li
       role={toast.variant === "danger" ? "alert" : "status"}
       className={cn(
-        "pointer-events-auto flex w-full animate-scale-in items-start gap-3 rounded-card border bg-surface p-4 shadow-lg",
+        "pointer-events-auto flex w-full animate-scale-in items-start gap-3 rounded-3xl bg-gray-0 p-4 shadow-float",
         tones[toast.variant],
       )}
     >
       <Icon aria-hidden="true" className="toast-icon mt-0.5 size-5 shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="font-semibold text-ink">{toast.title}</p>
-        {toast.description && <p className="text-sm text-ink-muted">{toast.description}</p>}
+        <p className="font-semibold text-gray-90">{toast.title}</p>
+        {toast.description && <p className="text-sm text-gray-70">{toast.description}</p>}
         {toast.action && (
           <button
             type="button"
-            className="mt-1 min-h-11 self-start rounded-control px-1 font-semibold text-brand-800 underline underline-offset-4"
+            className="mt-1 min-h-11 self-start rounded-full px-1 font-semibold text-primary-800 underline underline-offset-4"
             onClick={() => {
               toast.action?.onClick();
               onDismiss(toast.id);
@@ -79,9 +80,9 @@ function ToastItem({ toast, onDismiss }: { toast: ToastRecord; onDismiss: (id: s
         type="button"
         aria-label="Dismiss notification"
         onClick={() => onDismiss(toast.id)}
-        className="-mt-2 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-control text-ink-muted hover:bg-surface-muted"
+        className="-mt-2 -mr-2 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-gray-70 hover:bg-gray-10"
       >
-        <X aria-hidden="true" className="size-4" />
+        <XMarkIcon aria-hidden="true" className="size-4" />
       </button>
     </li>
   );

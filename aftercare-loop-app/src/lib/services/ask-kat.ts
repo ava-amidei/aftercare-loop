@@ -107,7 +107,7 @@ export function trimHistory<T extends { role: string; content: string }>(history
 
 function meta(mode: ResponseMode, language: Language, model?: string, deterministic = false): AiMeta {
   const m = makeMeta(mode, model, language);
-  return deterministic ? { ...m, generatedBy: "deterministic" } : { ...m, generatedBy: mode === "live_claude" ? "model" : "scripted" };
+  return deterministic ? { ...m, generatedBy: "deterministic" } : { ...m, generatedBy: mode !== "scripted_demo" ? "model" : "scripted" };
 }
 
 function unique<T>(items: T[], key: (item: T) => string): T[] {
@@ -405,7 +405,7 @@ export async function askKat(
       actions: [],
       suggestedQuestions: [],
     };
-    const message = buildMessage(draft, ctx, req, safety, meta("live_claude", language), deps, {
+    const message = buildMessage(draft, ctx, req, safety, meta(mode, language), deps, {
       error: result.error || AI_ERROR_MESSAGES.api,
     });
     message.actions = [];
@@ -443,7 +443,7 @@ export async function askKat(
     language,
   );
   const allowed = new Set(evidence.map((e) => e.reference.id));
-  const message = buildMessage(draft, ctx, req, safety, meta("live_claude", language, result.model), deps, {
+  const message = buildMessage(draft, ctx, req, safety, meta(mode, language, result.model), deps, {
     allowedReferenceIds: allowed,
   });
   return { message, safety };

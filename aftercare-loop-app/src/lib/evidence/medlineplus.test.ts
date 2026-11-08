@@ -68,7 +68,7 @@ describe("medlineplus connect (offline)", () => {
   });
 
   it("uses an injected fetch when enabled and swallows errors", async () => {
-    const okFetch = vi.fn(async () => ({ ok: true, json: async () => FEED }));
+    const okFetch = vi.fn(async () => new Response(JSON.stringify(FEED), { status: 200 }));
     const refs = await fetchMedlinePlusConnect(
       { topic: "pcos" },
       { env: { AFTERCARE_ENABLE_MEDLINEPLUS_LIVE: "true" }, fetch: okFetch as never, now: () => new Date("2026-11-07T12:00:00Z") },
@@ -88,5 +88,47 @@ describe("medlineplus connect (offline)", () => {
       await fetchMedlinePlusConnect({ topic: "xylophone" }, { env: { AFTERCARE_ENABLE_MEDLINEPLUS_LIVE: "true" }, fetch: spy as never }),
     ).toEqual([]);
     expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("rejects links with credentials, custom ports or excessive length", () => {
+    expect(sanitizeConnectLink("https://user:pw@medlineplus.gov/a.html")).toBeNull();
+    expect(sanitizeConnectLink("https://medlineplus.gov:8443/a.html")).toBeNull();
+    expect(sanitizeConnectLink("https://evilnih.gov/a.html")).toBeNull();
+    expect(sanitizeConnectLink(`https://medlineplus.gov/${"a".repeat(3000)}`)).toBeNull();
+    expect(sanitizeConnectLink("javascript:alert(1)//medlineplus.gov")).toBeNull();
+  });
+
+  it("refuses prototype keys and malformed codes without fetching", async () => {
+    const env = { AFTERCARE_ENABLE_MEDLINEPLUS_LIVE: "true" };
+    const spy = vi.fn();
+    for (const lookup of [
+      { topic: "constructor" },
+      { topic: "__proto__" },
+      { code: "E28.2&x=1" },
+      { code: "../../etc" },
+      { code: "E28.2", language: "fr" as never },
+      { code: "E28.2", codeSystem: "toString" as never },
+    ]) {
+      expect(await fetchMedlinePlusConnect(lookup, { env, fetch: spy as never })).toEqual([]);
+    }
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("disables redirects/credentials and drops oversized or off-origin responses", async () => {
+    const env = { AFTERCARE_ENABLE_MEDLINEPLUS_LIVE: "true" };
+    const okFetch = vi.fn(async () => new Response(JSON.stringify(FEED), { status: 200 }));
+    await fetchMedlinePlusConnect({ topic: "pcos" }, { env, fetch: okFetch as never });
+    const init = (okFetch.mock.calls[0] as unknown as [string, RequestInit])[1];
+    expect(init).toMatchObject({ redirect: "error", credentials: "omit" });
+
+    const big = vi.fn(async () => new Response("x".repeat(600 * 1024), { status: 200 }));
+    expect(await fetchMedlinePlusConnect({ topic: "pcos" }, { env, fetch: big as never })).toEqual([]);
+
+    const offOrigin = vi.fn(async () => {
+      const res = new Response(JSON.stringify(FEED), { status: 200 });
+      Object.defineProperty(res, "url", { value: "https://evil.example.com/service" });
+      return res;
+    });
+    expect(await fetchMedlinePlusConnect({ topic: "pcos" }, { env, fetch: offOrigin as never })).toEqual([]);
   });
 });

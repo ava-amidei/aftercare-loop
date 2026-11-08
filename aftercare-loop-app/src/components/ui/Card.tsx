@@ -8,11 +8,13 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   padding?: "none" | "sm" | "md" | "lg";
 }
 
+// DESIGN: filled surfaces, no borders, flat (no shadow). The page canvas is
+// gray-5, so default cards are gray-0; muted cards sit one step darker.
 const tones = {
-  default: "bg-surface border-border",
-  muted: "bg-surface-muted border-border",
-  brand: "bg-brand-50 border-brand-200",
-  accent: "bg-accent-50 border-accent-200",
+  default: "bg-gray-0",
+  muted: "bg-gray-10",
+  brand: "bg-primary-50",
+  accent: "bg-accent-50",
 } as const;
 
 const paddings = { none: "", sm: "p-3", md: "p-4 sm:p-5", lg: "p-5 sm:p-7" } as const;
@@ -21,10 +23,10 @@ export function Card({ interactive, tone = "default", padding = "md", className,
   return (
     <div
       className={cn(
-        "rounded-card border shadow-[0_1px_2px_rgba(28,25,23,0.04)]",
+        "rounded-3xl",
         tones[tone],
         paddings[padding],
-        interactive && "transition-shadow hover:shadow-md hover:border-brand-300",
+        interactive && "transition-[background-color,transform] hover:bg-primary-50 motion-safe:active:scale-[0.99]",
         className,
       )}
       {...rest}
@@ -41,11 +43,11 @@ export interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
 }
 
 export function CardTitle({ as: Tag = "h2", className, ...rest }: CardTitleProps) {
-  return <Tag className={cn("text-lg font-semibold text-ink", className)} {...rest} />;
+  return <Tag className={cn("text-lg font-bold text-gray-90", className)} {...rest} />;
 }
 
 export function CardDescription({ className, ...rest }: HTMLAttributes<HTMLParagraphElement>) {
-  return <p className={cn("text-base text-ink-muted", className)} {...rest} />;
+  return <p className={cn("text-base text-gray-70", className)} {...rest} />;
 }
 
 export function CardContent({ className, ...rest }: HTMLAttributes<HTMLDivElement>) {

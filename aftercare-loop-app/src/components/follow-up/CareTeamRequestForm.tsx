@@ -1,6 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { Send } from "lucide-react";
+import { PaperAirplaneIcon } from "@heroicons/react/20/solid";
 import type { ActionItem, CareTeamRequestType, PatientProfile, SafetyVerdict } from "@/lib/types";
 import {
   Alert,
@@ -99,7 +99,7 @@ export function CareTeamRequestForm({ profile, actions }: CareTeamRequestFormPro
             ]}
           />
           <p className="text-sm font-semibold text-warning-strong">{t("followUp.simulation.label")}</p>
-          <Button type="submit" leftIcon={<Send aria-hidden="true" className="size-5" />} className="self-start">
+          <Button type="submit" leftIcon={<PaperAirplaneIcon aria-hidden="true" className="size-5" />} className="self-start">
             {t("followUp.request.submit")}
           </Button>
           <SafetyNotice verdict={verdict} />

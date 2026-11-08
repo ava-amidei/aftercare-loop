@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { BookOpen } from "lucide-react";
+import { BookOpenIcon } from "@heroicons/react/24/outline";
 import { Card, LoadingRegion, PageHeader, Skeleton, SkeletonText, Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui";
 import { useT } from "@/lib/i18n";
 import { useActivePatientId, useHasHydrated } from "@/lib/store";
@@ -25,7 +25,7 @@ export function UnderstandView({ defaultTab = "summary" }: UnderstandViewProps) 
       <PageHeader
         title={t("understand.title")}
         description={t("understand.subtitle")}
-        icon={<BookOpen aria-hidden="true" className="size-6" />}
+        icon={<BookOpenIcon aria-hidden="true" className="size-6" />}
       />
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList label={t("understand.tabs.label")}>

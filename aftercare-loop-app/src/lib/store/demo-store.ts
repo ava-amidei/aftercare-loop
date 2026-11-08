@@ -13,6 +13,7 @@ import { create } from "zustand";
 import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type {
   ActionId,
+  AppearancePrefs,
   ActionItem,
   ActionStatus,
   CareTeamRequest,
@@ -34,6 +35,7 @@ import {
   resolveDefaultPatientId,
   type DemoStoreData,
 } from "./initial-state";
+import { mergeAppearance, sanitizeAppearance } from "./appearance";
 
 export const DEMO_STORE_KEY = "aftercare-loop-demo-v1";
 export const DEMO_STORE_VERSION = 1;
@@ -61,6 +63,11 @@ export interface DemoStoreActions {
   addCareTeamRequest(id: PatientId, r: CareTeamRequest): void;
   /** submitted → in_review → responded → closed (closed stays closed). */
   advanceCareTeamRequest(id: PatientId, reqId: string): void;
+  /**
+   * Per-patient appearance (accent + font scale). Merges the patch; a key set
+   * to `undefined` clears it; invalid values are ignored. Reset by resetDemo().
+   */
+  setAppearance(id: PatientId, patch: Partial<AppearancePrefs>): void;
   /** Opening also records katHasOpenedOnce[activePatientId] = true. */
   setKatOpen(open: boolean): void;
   /** Restores fixtures for ALL patients, active = DEFAULT_PATIENT_ID, Kat closed. */
@@ -230,6 +237,18 @@ export const useDemoStore = create<DemoStore>()(
             ),
           })),
 
+        setAppearance: (id, patch) =>
+          updatePatient(id, (s) => {
+            const appearance = mergeAppearance(s.appearance, patch);
+            if (!appearance) {
+              if (!s.appearance) return s;
+              const { appearance: _drop, ...rest } = s;
+              void _drop;
+              return rest;
+            }
+            return { ...s, appearance };
+          }),
+
         setKatOpen: (open) =>
           set((state) => ({
             katOpen: open,
@@ -256,7 +275,13 @@ export const useDemoStore = create<DemoStore>()(
         const p = (persisted ?? {}) as Partial<PersistedDemoState>;
         const patients = { ...current.patients };
         for (const [pid, session] of Object.entries(p.patients ?? {})) {
-          if (patients[pid] && session && typeof session === "object") patients[pid] = session;
+          if (patients[pid] && session && typeof session === "object") {
+            // Drop malformed persisted appearance rather than applying it.
+            const appearance = sanitizeAppearance(session.appearance);
+            const { appearance: _old, ...rest } = session;
+            void _old;
+            patients[pid] = appearance ? { ...rest, appearance } : rest;
+          }
         }
         const activePatientId =
           p.activePatientId && patients[p.activePatientId]

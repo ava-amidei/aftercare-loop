@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
-import { LoaderCircle } from "lucide-react";
+import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { cn } from "@/lib/utils/cn";
 
 export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger" | "accent";
@@ -8,17 +8,24 @@ export type ButtonSize = "sm" | "md" | "lg" | "icon";
 const base =
   // Labels wrap (never whitespace-nowrap) so long/translated labels stay inside
   // narrow mobile columns instead of widening the page; max-w-full caps the box.
-  "inline-flex max-w-full items-center justify-center gap-2 rounded-control text-center leading-snug font-semibold select-none " +
-  "transition-colors duration-150 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600 " +
-  "disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60";
+  // DESIGN: pill shape, filled (never outlined), subtle scale on press.
+  "inline-flex max-w-full items-center justify-center gap-2 rounded-full text-center leading-snug font-semibold select-none " +
+  "transition-[background-color,color,transform] duration-150 motion-safe:active:scale-[0.97] " +
+  "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary-700 " +
+  "disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100 aria-disabled:cursor-not-allowed aria-disabled:opacity-60";
 
+// Text on fills: gray-100 / *-contrast tokens (never white on #FBA17E or #FF9A00).
+// primary: #141414 on #FBA17E 9.21:1, hover #141414 on #EE6200 5.60:1.
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900 shadow-sm",
-  secondary:
-    "bg-surface text-brand-800 border border-border-strong hover:bg-brand-50 hover:border-brand-600 active:bg-brand-100",
-  ghost: "bg-transparent text-ink hover:bg-surface-muted active:bg-border",
-  danger: "bg-danger text-white hover:bg-danger-strong shadow-sm",
-  accent: "bg-accent-700 text-white hover:bg-accent-800 active:bg-accent-900 shadow-sm",
+  primary:
+    "bg-primary text-primary-contrast hover:bg-primary-strong hover:text-primary-strong-contrast active:bg-primary-strong active:text-primary-strong-contrast",
+  // Filled neutral (gray-10), not outlined.
+  secondary: "bg-gray-10 text-gray-90 hover:bg-gray-20 active:bg-gray-20",
+  ghost: "bg-transparent text-gray-90 hover:bg-gray-10 active:bg-gray-20",
+  // White on danger #B42318: 6.57:1.
+  danger: "bg-danger text-white hover:bg-danger-strong",
+  // Ask Kat accent #FF9A00 with gray-100 text: 8.66:1 (hover accent-600 7.02:1).
+  accent: "bg-accent text-gray-100 hover:bg-accent-600 active:bg-accent-600",
 };
 
 // Every size keeps a >= 44px (h-11) touch target.
@@ -81,7 +88,7 @@ export function Button({
     >
       {loading ? (
         <>
-          <LoaderCircle aria-hidden="true" className="size-5 shrink-0 animate-spin" />
+          <ArrowPathIcon aria-hidden="true" className="size-5 shrink-0 animate-spin" />
           <span className="sr-only">{loadingLabel}</span>
         </>
       ) : (

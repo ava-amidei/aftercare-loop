@@ -1,5 +1,5 @@
 "use client";
-import { ArrowRight } from "lucide-react";
+import { ArrowRightIcon } from "@heroicons/react/20/solid";
 import type { ActionItem, CareTeamRequest, CareTeamRequestStatus, Language } from "@/lib/types";
 import { Badge, Button, Card, type BadgeVariant } from "@/components/ui";
 import { careTeamStatusKey, careTeamTypeKey, useT } from "@/lib/i18n";
@@ -45,24 +45,24 @@ export function RequestCard({ request, patientName, language, relatedAction, onA
         </Badge>
       </div>
 
-      <p className="text-base font-medium text-ink">{request.summary}</p>
+      <p className="text-base font-medium text-gray-90">{request.summary}</p>
 
       {relatedAction && (
-        <p className="text-sm text-ink-muted">
+        <p className="text-sm text-gray-70">
           {t("careTeam.relatedAction", { description: relatedAction.description })}
         </p>
       )}
 
       {request.details && (
-        <details className="rounded-control border border-border bg-surface-muted p-3 text-sm">
-          <summary className="min-h-11 cursor-pointer content-center font-semibold text-brand-800">
+        <details className="rounded-2xl bg-gray-5 p-3 text-sm">
+          <summary className="min-h-11 cursor-pointer content-center font-semibold text-primary-800">
             {t("careTeam.showDetails")}
           </summary>
-          <p className="mt-2 whitespace-pre-wrap break-words text-ink">{request.details}</p>
+          <p className="mt-2 whitespace-pre-wrap break-words text-gray-90">{request.details}</p>
         </details>
       )}
 
-      <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-muted">
+      <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-70">
         <span>{t("careTeam.field.submittedAt", { date: formatDateTime(request.createdAt, language) })}</span>
         <span>{t("careTeam.field.updatedAt", { date: formatDateTime(request.updatedAt, language) })}</span>
       </p>
@@ -73,7 +73,7 @@ export function RequestCard({ request, patientName, language, relatedAction, onA
           variant="secondary"
           disabled={closed}
           onClick={() => onAdvance(request)}
-          rightIcon={closed ? undefined : <ArrowRight aria-hidden="true" className="size-4" />}
+          rightIcon={closed ? undefined : <ArrowRightIcon aria-hidden="true" className="size-4" />}
         >
           {closed
             ? t("careTeam.closedFinal")

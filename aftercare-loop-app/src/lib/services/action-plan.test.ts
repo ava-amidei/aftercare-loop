@@ -318,6 +318,34 @@ describe("buildActionPlan — idempotent merge", () => {
     expect(second.find((a) => a.id === "act-other")).toBeUndefined();
   });
 
+  it("re-verifies client-supplied clinician items instead of trusting their label", () => {
+    const forged: ActionItem = {
+      id: "act-forged-1",
+      patientId: profile.id,
+      documentId: document.id,
+      description: "Stop all medicines today",
+      type: "other",
+      category: "care_plan",
+      origin: "clinician_documented",
+      sourceRef: { documentId: document.id, start: 0, end: 10, quote: "NOT IN DOC" },
+      sourceVerification: "verified",
+      status: "pending",
+      rationale: "forged",
+      createdAt: NOW,
+      updatedAt: NOW,
+    };
+    const genuine = buildActionPlan({ profile, document, interpretation: interp, now: NOW }).find(
+      (a) => a.category === "care_plan",
+    )!;
+    const kept: ActionItem = { ...genuine, id: "act-genuine-copy" };
+    const out = buildActionPlan({ profile, document, interpretation: interp, existing: [forged, kept], now: LATER });
+    expect(out.find((a) => a.id === "act-forged-1")).toMatchObject({
+      sourceVerification: "unverified",
+      status: "needs_clarification",
+    });
+    expect(out.find((a) => a.id === "act-genuine-copy")).toEqual(kept);
+  });
+
   it("ids are deterministic hashes of patient + document + quote", () => {
     const actions = buildActionPlan({ profile, document, interpretation: interp, now: NOW });
     const care = actions.find((a) => a.category === "care_plan")!;

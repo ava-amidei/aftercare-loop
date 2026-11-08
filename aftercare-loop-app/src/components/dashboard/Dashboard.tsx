@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { BookOpen, MessageCircleHeart } from "lucide-react";
+import { BookOpenIcon } from "@heroicons/react/24/outline";
+import { ChatBubbleOvalLeftEllipsisIcon } from "@heroicons/react/20/solid";
 import { Alert } from "@/components/ui/Alert";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonVariants } from "@/components/ui/Button";
@@ -42,12 +43,12 @@ function DashboardSkeleton({ label }: { label: string }) {
       <Skeleton className="h-5 w-full max-w-md" />
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-24 rounded-card" />
+          <Skeleton key={i} className="h-24 rounded-3xl" />
         ))}
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {[0, 1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-40 rounded-card" />
+          <Skeleton key={i} className="h-40 rounded-3xl" />
         ))}
       </div>
     </LoadingRegion>
@@ -118,7 +119,7 @@ export function Dashboard({ now: nowProp }: DashboardProps) {
             size="lg"
             onClick={openKat}
             aria-haspopup="dialog"
-            leftIcon={<MessageCircleHeart aria-hidden="true" className="size-6" />}
+            leftIcon={<ChatBubbleOvalLeftEllipsisIcon aria-hidden="true" className="size-6" />}
             className="w-full sm:w-auto"
           >
             {t("dashboard.askKat.cta")}
@@ -127,7 +128,7 @@ export function Dashboard({ now: nowProp }: DashboardProps) {
       />
 
       {profile.scenarioSummary && (
-        <p className="-mt-3 flex flex-wrap items-center gap-2 text-base text-ink-muted">
+        <p className="-mt-3 flex flex-wrap items-center gap-2 text-base text-gray-70">
           <Badge variant="neutral" size="sm">{t("dashboard.scenario")}</Badge>
           <span data-testid="scenario-summary">{profile.scenarioSummary}</span>
         </p>
@@ -135,12 +136,12 @@ export function Dashboard({ now: nowProp }: DashboardProps) {
 
       {!view.interpreted && (
         <Card tone="brand" className="flex flex-col gap-3 sm:flex-row sm:items-center" data-testid="dashboard-start-nudge">
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-surface text-brand-700">
-            <BookOpen aria-hidden="true" className="size-6" />
+          <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gray-0 text-primary-800">
+            <BookOpenIcon aria-hidden="true" className="size-6" />
           </span>
           <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <h2 className="text-lg font-semibold text-ink">{t("dashboard.start.title")}</h2>
-            <p className="text-base text-ink-muted">{t("dashboard.start.body")}</p>
+            <h2 className="text-lg font-semibold text-gray-90">{t("dashboard.start.title")}</h2>
+            <p className="text-base text-gray-70">{t("dashboard.start.body")}</p>
           </div>
           <Link href="/understand" className={buttonVariants({ variant: "primary", className: "w-full sm:w-auto" })}>
             {t("dashboard.start.cta")}

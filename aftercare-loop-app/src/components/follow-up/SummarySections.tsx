@@ -1,7 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ClipboardList } from "lucide-react";
+import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import type { CommunicationSummary, PatientSessionState } from "@/lib/types";
 import {
   Badge,
@@ -27,7 +27,7 @@ export interface SummarySectionsProps {
 
 function SectionHeading({ id, children }: { id: string; children: ReactNode }) {
   return (
-    <h3 id={id} className="text-lg font-semibold text-ink">
+    <h3 id={id} className="text-lg font-semibold text-gray-90">
       {children}
     </h3>
   );
@@ -43,7 +43,7 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
       <Card>
         <EmptyState
           headingLevel="h2"
-          icon={<ClipboardList aria-hidden="true" className="size-7" />}
+          icon={<ClipboardDocumentListIcon aria-hidden="true" className="size-7" />}
           title={t("followUp.sections.emptyTitle")}
           description={t("followUp.sections.emptyDescription")}
           action={
@@ -61,7 +61,7 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
     );
   }
 
-  const none = <p className="text-base text-ink-muted">{t("followUp.section.none")}</p>;
+  const none = <p className="text-base text-gray-70">{t("followUp.section.none")}</p>;
 
   // AI-shaped extraction metadata for documents that contributed instructions.
   const metas = Array.from(
@@ -89,8 +89,8 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
               {summary.questions.map((q) => {
                 const origin = questionOrigin(q, savedQuestions, actions);
                 return (
-                  <li key={q} className="flex flex-col gap-1 rounded-control border border-border p-3">
-                    <span className="text-base text-ink">{q}</span>
+                  <li key={q} className="flex flex-col gap-1 rounded-2xl bg-gray-5 p-3">
+                    <span className="text-base text-gray-90">{q}</span>
                     <OriginBadge origin={origin} label={t(originKey(origin))} size="sm" className="self-start" />
                   </li>
                 );
@@ -106,8 +106,8 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
           ) : (
             <ul className="flex flex-wrap gap-2">
               {summary.barriers.map((b) => (
-                <li key={b} className="flex flex-wrap items-center gap-2 rounded-control border border-border p-2">
-                  <span className="text-base text-ink">{t(barrierKey(b))}</span>
+                <li key={b} className="flex flex-wrap items-center gap-2 rounded-2xl bg-gray-5 p-2">
+                  <span className="text-base text-gray-90">{t(barrierKey(b))}</span>
                   <OriginBadge origin="patient_selected" label={t("followUp.origin.reported")} size="sm" />
                 </li>
               ))}
@@ -124,8 +124,8 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
               {summary.unresolvedItems.map((line) => {
                 const action = findActionForLine(line, actions);
                 return (
-                  <li key={line} className="flex flex-col gap-1 rounded-control border border-border p-3">
-                    <span className="text-base text-ink">{line}</span>
+                  <li key={line} className="flex flex-col gap-1 rounded-2xl bg-gray-5 p-3">
+                    <span className="text-base text-gray-90">{line}</span>
                     {action && (
                       <span className="flex flex-wrap gap-2">
                         <OriginBadge origin={action.origin} label={t(originKey(action.origin))} size="sm" />
@@ -146,7 +146,7 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
         <section aria-labelledby="fu-instructions" className="flex flex-col gap-2">
           <SectionHeading id="fu-instructions">{t("followUp.section.instructions")}</SectionHeading>
           {metas.length > 0 && (
-            <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-70">
               <span>{t("followUp.instructions.extractedWith")}</span>
               {metas.map((m) => (
                 <ModeBadge key={`${m.mode}|${m.model ?? ""}`} mode={m.mode} model={m.model} compact />
@@ -160,8 +160,8 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
               {summary.documentedInstructions.map((d, i) => {
                 const doc = d.sourceRef ? documents.find((x) => x.id === d.sourceRef?.documentId) : undefined;
                 return (
-                  <li key={`${d.description}-${i}`} className="flex flex-col gap-2 rounded-control border border-border p-3">
-                    <span className="text-base font-medium text-ink">{d.description}</span>
+                  <li key={`${d.description}-${i}`} className="flex flex-col gap-2 rounded-2xl bg-gray-5 p-3">
+                    <span className="text-base font-medium text-gray-90">{d.description}</span>
                     <OriginBadge
                       origin="clinician_documented"
                       label={t(originKey("clinician_documented"))}
@@ -176,7 +176,7 @@ export function SummarySections({ summary, session }: SummarySectionsProps) {
                         viewSourceLabel={t("common.viewSource")}
                       />
                     ) : (
-                      <p className="text-sm text-ink-muted">{t("followUp.instructions.noSourceQuote")}</p>
+                      <p className="text-sm text-gray-70">{t("followUp.instructions.noSourceQuote")}</p>
                     )}
                   </li>
                 );

@@ -20,7 +20,7 @@ export function LanguageToggle({ className }: { className?: string }) {
     <div
       role="group"
       aria-label={t("dashboard.language.group")}
-      className={cn("inline-flex rounded-control border border-border-strong bg-surface p-0.5", className)}
+      className={cn("inline-flex rounded-full bg-gray-5 p-0.5", className)}
     >
       {SUPPORTED_LANGUAGES.map((lang) => {
         const active = lang === language;
@@ -34,10 +34,10 @@ export function LanguageToggle({ className }: { className?: string }) {
             disabled={!hydrated}
             onClick={() => !active && setLanguage(lang)}
             className={cn(
-              "min-h-10 min-w-11 rounded-[0.625rem] px-2.5 text-sm font-bold transition-colors",
-              "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+              "min-h-10 min-w-11 rounded-full px-2.5 text-sm font-bold transition-colors",
+              "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary-700",
               "disabled:cursor-wait disabled:opacity-70",
-              active ? "bg-brand-700 text-white" : "text-ink-muted hover:bg-brand-50 hover:text-brand-800",
+              active ? "bg-primary text-primary-contrast" : "text-gray-70 hover:bg-gray-10 hover:text-gray-90",
             )}
           >
             {SHORT[lang]}

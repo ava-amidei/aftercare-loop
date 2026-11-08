@@ -21,6 +21,6 @@ export function makeMeta(mode: ResponseMode, model?: string, language: Language 
     generatedAt: new Date().toISOString(),
     disclaimer: getDisclaimer(language),
   };
-  if (mode === "live_claude" && model) meta.model = model;
+  if (mode !== "scripted_demo" && model) meta.model = model;
   return meta;
 }

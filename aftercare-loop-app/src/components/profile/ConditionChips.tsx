@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, type KeyboardEvent } from "react";
-import { Check, Plus } from "lucide-react";
+import { CheckIcon, PlusIcon } from "@heroicons/react/20/solid";
 import { Button } from "@/components/ui";
 import { controlBase, controlState } from "@/components/ui/field";
 import { useT } from "@/lib/i18n";
@@ -46,13 +46,13 @@ export function ConditionChips({ selected, options, onChange }: ConditionChipsPr
 
   return (
     <fieldset className="flex flex-col gap-3" aria-describedby={hintId}>
-      <legend className="mb-1 text-base font-medium text-ink">{t("profile.field.conditions")}</legend>
-      <p id={hintId} className="-mt-2 text-sm text-ink-muted">
+      <legend className="mb-1 text-base font-medium text-gray-90">{t("profile.field.conditions")}</legend>
+      <p id={hintId} className="-mt-2 text-sm text-gray-70">
         {t("profile.field.conditionsHint")}{" "}
         <span aria-live="polite">{t("profile.conditions.selectedCount", { count: selected.length })}</span>
       </p>
       {options.length === 0 ? (
-        <p className="text-base text-ink-muted">{t("profile.conditions.empty")}</p>
+        <p className="text-base text-gray-70">{t("profile.conditions.empty")}</p>
       ) : (
         <ul aria-label={t("profile.conditions.options")} className="flex flex-wrap gap-2">
           {options.map((label) => {
@@ -64,13 +64,13 @@ export function ConditionChips({ selected, options, onChange }: ConditionChipsPr
                   aria-pressed={on}
                   onClick={() => toggle(label)}
                   className={cn(
-                    "inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full border px-4 text-left text-base font-medium transition-colors",
+                    "inline-flex min-h-11 max-w-full items-center gap-1.5 rounded-full px-4 text-left text-base font-medium transition-[background-color,transform] motion-safe:active:scale-95",
                     on
-                      ? "border-brand-700 bg-brand-700 text-white hover:bg-brand-800"
-                      : "border-border-strong bg-surface text-ink hover:border-brand-600 hover:bg-brand-50",
+                      ? "bg-secondary font-semibold text-gray-100 hover:bg-secondary-200"
+                      : "bg-gray-10 text-gray-90 hover:bg-gray-20",
                   )}
                 >
-                  {on && <Check aria-hidden="true" className="size-4 shrink-0" />}
+                  {on && <CheckIcon aria-hidden="true" className="size-4 shrink-0" />}
                   <span className="break-words">{label}</span>
                 </button>
               </li>
@@ -79,10 +79,10 @@ export function ConditionChips({ selected, options, onChange }: ConditionChipsPr
         </ul>
       )}
       {selected.length === 0 && options.length > 0 && (
-        <p className="text-sm text-ink-muted">{t("profile.conditions.empty")}</p>
+        <p className="text-sm text-gray-70">{t("profile.conditions.empty")}</p>
       )}
       <div className="flex flex-col gap-1.5">
-        <label htmlFor={addId} className="text-sm font-medium text-ink">
+        <label htmlFor={addId} className="text-sm font-medium text-gray-90">
           {t("profile.conditions.addLabel")}
         </label>
         <div className="flex gap-2">
@@ -98,7 +98,7 @@ export function ConditionChips({ selected, options, onChange }: ConditionChipsPr
           <Button
             variant="secondary"
             size="sm"
-            leftIcon={<Plus aria-hidden="true" className="size-4" />}
+            leftIcon={<PlusIcon aria-hidden="true" className="size-4" />}
             onClick={add}
             disabled={!pending.trim()}
           >

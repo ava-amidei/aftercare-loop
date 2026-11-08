@@ -220,7 +220,7 @@ export async function clarify(input: ClarifyInput, deps: ClarifyDeps = {}): Prom
   const finalMisunderstanding = misunderstanding ?? (modelMisunderstanding || undefined);
   return {
     clarification,
-    mode: "live_claude",
+    mode,
     model: result.model,
     ...(finalMisunderstanding ? { misunderstanding: finalMisunderstanding } : {}),
   };

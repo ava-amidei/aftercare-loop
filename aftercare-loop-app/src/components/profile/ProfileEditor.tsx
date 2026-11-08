@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useId, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { RotateCcw, Save, UserRound, X, Plus } from "lucide-react";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
+import { ArrowUturnLeftIcon, CheckCircleIcon, PlusIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import {
   Button,
   Card,
@@ -67,7 +68,7 @@ export function ProfileEditor() {
         <PageHeader title={t("profile.title")} description={t("profile.subtitle")} />
         <LoadingRegion label={t("profile.loading")} className="flex flex-col gap-4">
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} className="h-40 w-full rounded-card" />
+            <Skeleton key={i} className="h-40 w-full rounded-3xl" />
           ))}
         </LoadingRegion>
       </>
@@ -79,7 +80,7 @@ export function ProfileEditor() {
       <>
         <PageHeader title={t("profile.title")} />
         <EmptyState
-          icon={<UserRound aria-hidden="true" className="size-7" />}
+          icon={<UserCircleIcon aria-hidden="true" className="size-7" />}
           title={t("profile.error.title")}
           description={t("profile.error.detail")}
         />
@@ -161,14 +162,14 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
 
   const actions = (
     <>
-      <Button type="submit" form="profile-form" disabled={!dirty} leftIcon={<Save aria-hidden="true" className="size-5" />}>
+      <Button type="submit" form="profile-form" disabled={!dirty} leftIcon={<CheckCircleIcon aria-hidden="true" className="size-5" />}>
         {t("profile.save")}
       </Button>
       <Button
         variant="secondary"
         onClick={discard}
         disabled={!dirty}
-        leftIcon={<RotateCcw aria-hidden="true" className="size-5" />}
+        leftIcon={<ArrowUturnLeftIcon aria-hidden="true" className="size-5" />}
       >
         {t("profile.discard")}
       </Button>
@@ -186,18 +187,18 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
       <PageHeader
         title={t("profile.title")}
         description={t("profile.subtitle")}
-        icon={<UserRound aria-hidden="true" className="size-6" />}
+        icon={<UserCircleIcon aria-hidden="true" className="size-6" />}
         actions={actions}
       />
 
-      <p role="status" className="mb-4 text-sm font-medium text-ink-muted" data-testid="profile-dirty-status">
+      <p role="status" className="mb-4 text-sm font-medium text-gray-70" data-testid="profile-dirty-status">
         {dirty ? t("profile.unsaved") : t("profile.upToDate")}
       </p>
 
       <form id="profile-form" aria-label={t("profile.form.label")} onSubmit={save} className="flex flex-col gap-5">
         <Section title={t("profile.section.about")} description={t("profile.privacyNote")}>
           {profile.scenarioSummary && (
-            <p className="text-sm text-ink-muted">{t("profile.scenario", { summary: profile.scenarioSummary })}</p>
+            <p className="text-sm text-gray-70">{t("profile.scenario", { summary: profile.scenarioSummary })}</p>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Input
@@ -235,8 +236,8 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
             }))}
           />
           <fieldset className="flex flex-col">
-            <legend className="mb-1 text-base font-medium text-ink">{t("profile.field.accessibility")}</legend>
-            <p className="mb-1 text-sm text-ink-muted">{t("profile.field.accessibilityHint")}</p>
+            <legend className="mb-1 text-base font-medium text-gray-90">{t("profile.field.accessibility")}</legend>
+            <p className="mb-1 text-sm text-gray-70">{t("profile.field.accessibilityHint")}</p>
             <div className="grid sm:grid-cols-2">
               {ACCESSIBILITY_PREFERENCES.map((pref) => (
                 <Checkbox
@@ -300,7 +301,7 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
                   variant="ghost"
                   size="sm"
                   className="self-start"
-                  leftIcon={<X aria-hidden="true" className="size-4" />}
+                  leftIcon={<XMarkIcon aria-hidden="true" className="size-4" />}
                   onClick={() => set("pregnancyOrPostpartumContext", undefined)}
                 >
                   {t("profile.pregnancy.remove")}
@@ -308,11 +309,11 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
               </>
             ) : (
               <>
-                <p className="text-sm text-ink-muted">{t("profile.field.pregnancyHint")}</p>
+                <p className="text-sm text-gray-70">{t("profile.field.pregnancyHint")}</p>
                 <Button
                   variant="secondary"
                   className="self-start"
-                  leftIcon={<Plus aria-hidden="true" className="size-5" />}
+                  leftIcon={<PlusIcon aria-hidden="true" className="size-5" />}
                   onClick={() => set("pregnancyOrPostpartumContext", "")}
                 >
                   {t("profile.pregnancy.add")}
@@ -324,8 +325,8 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
 
         <Section title={t("profile.section.access")}>
           <fieldset className="flex flex-col">
-            <legend className="mb-1 text-base font-medium text-ink">{t("profile.field.barriers")}</legend>
-            <p className="mb-1 text-sm text-ink-muted">{t("profile.field.barriersHint")}</p>
+            <legend className="mb-1 text-base font-medium text-gray-90">{t("profile.field.barriers")}</legend>
+            <p className="mb-1 text-sm text-gray-70">{t("profile.field.barriersHint")}</p>
             <div className="grid sm:grid-cols-2">
               {ACCESS_BARRIERS.map((b) => (
                 <Checkbox
@@ -340,7 +341,7 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
         </Section>
 
         <div className="flex flex-col gap-3 pb-4">
-          <p className="text-sm font-medium text-ink-muted">{dirty ? t("profile.unsaved") : t("profile.upToDate")}</p>
+          <p className="text-sm font-medium text-gray-70">{dirty ? t("profile.unsaved") : t("profile.upToDate")}</p>
           <div className="flex flex-wrap gap-3">{actions}</div>
         </div>
       </form>

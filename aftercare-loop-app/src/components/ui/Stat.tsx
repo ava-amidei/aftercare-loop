@@ -17,7 +17,7 @@ export interface StatProps {
 }
 
 const toneClass = {
-  default: "text-ink",
+  default: "text-gray-90",
   success: "text-success-strong",
   warning: "text-warning-strong",
   danger: "text-danger-strong",
@@ -27,13 +27,13 @@ export function Stat({ label, value, numerator, denominator, hint, icon, tone = 
   const missing = value === null || value === undefined || value === "";
   const hasCounts = typeof numerator === "number" && typeof denominator === "number";
   return (
-    <div className={cn("flex flex-col gap-1 rounded-card border border-border bg-surface p-4", className)}>
-      <div className="flex items-center gap-2 text-sm font-medium text-ink-muted">
+    <div className={cn("flex flex-col gap-1 rounded-3xl bg-gray-0 p-4", className)}>
+      <div className="flex items-center gap-2 text-sm font-medium text-gray-70">
         {icon}
         <span>{label}</span>
       </div>
       {missing ? (
-        <p className="text-lg font-semibold text-ink-subtle" data-testid="stat-value">
+        <p className="text-lg font-semibold text-gray-60" data-testid="stat-value">
           {NOT_EVALUATED_LABEL}
         </p>
       ) : (
@@ -42,11 +42,11 @@ export function Stat({ label, value, numerator, denominator, hint, icon, tone = 
         </p>
       )}
       {hasCounts && !missing && (
-        <p className="text-sm text-ink-muted tabular-nums">
+        <p className="text-sm text-gray-70 tabular-nums">
           {numerator} / {denominator}
         </p>
       )}
-      {hint && <p className="text-sm text-ink-muted">{hint}</p>}
+      {hint && <p className="text-sm text-gray-70">{hint}</p>}
     </div>
   );
 }

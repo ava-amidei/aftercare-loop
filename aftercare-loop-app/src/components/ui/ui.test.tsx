@@ -111,8 +111,19 @@ describe("ModeBadge", () => {
 
   it("labels live responses and never shows the scripted text", () => {
     render(<ModeBadge mode="live_claude" model="claude-opus-5-5" />);
-    expect(screen.getByText("Live response from Claude")).toBeInTheDocument();
+    expect(screen.getByText("Live AI (Claude · claude-opus-5-5)")).toBeInTheDocument();
     expect(screen.queryByText(/Scripted Demo Mode/)).not.toBeInTheDocument();
+  });
+
+  it("labels live Gemini responses with provider and model", () => {
+    const { container } = render(<ModeBadge mode="live_gemini" model="gemini-3.8-flash" />);
+    expect(screen.getByText("Live AI (Gemini · gemini-3.8-flash)")).toBeInTheDocument();
+    expect(container.querySelector("[data-mode]")?.getAttribute("title")).toBe("Live AI (Gemini · gemini-3.8-flash)");
+  });
+
+  it("shows only the provider when compact", () => {
+    render(<ModeBadge mode="live_gemini" model="gemini-3.8-flash" compact />);
+    expect(screen.getByText("Live AI (Gemini)")).toBeInTheDocument();
   });
 });
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, CalendarClock } from "lucide-react";
+import { BellIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
 import { Badge } from "@/components/ui/Badge";
 import { OriginBadge } from "@/components/ui/OriginBadge";
 import { originKey, useT } from "@/lib/i18n";
@@ -20,14 +20,14 @@ export function UpcomingList({ items, now }: { items: UpcomingItem[]; now: Date 
     <SectionCard
       id="dashboard-upcoming"
       title={t("dashboard.upcoming.title")}
-      icon={<CalendarClock aria-hidden="true" className="size-5" />}
+      icon={<CalendarDaysIcon aria-hidden="true" className="size-5" />}
     >
       {visible.length === 0 ? (
         <InlineEmpty
           action={
             <Link
               href="/action-plan"
-              className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-800 underline underline-offset-4"
+              className="inline-flex min-h-11 items-center text-sm font-semibold text-primary-800 underline underline-offset-4"
             >
               {t("dashboard.tasks.viewPlan")}
             </Link>
@@ -44,20 +44,20 @@ export function UpcomingList({ items, now }: { items: UpcomingItem[]; now: Date 
               <li
                 key={`${item.action.id}-${item.kind}`}
                 data-testid="upcoming-item"
-                className="flex flex-col gap-1.5 rounded-control border border-border p-3"
+                className="flex flex-col gap-1.5 rounded-2xl bg-gray-5 p-3"
               >
                 <div className="flex flex-wrap items-center gap-2">
                   {item.isToday && <Badge variant="brand" size="sm">{t("dashboard.upcoming.today")}</Badge>}
                   {item.isOverdue && <Badge variant="warning" size="sm">{t("dashboard.upcoming.overdue")}</Badge>}
-                  <span className="inline-flex items-center gap-1 text-sm font-medium text-ink-muted">
-                    {item.kind === "reminder" && <Bell aria-hidden="true" className="size-4" />}
+                  <span className="inline-flex items-center gap-1 text-sm font-medium text-gray-70">
+                    {item.kind === "reminder" && <BellIcon aria-hidden="true" className="size-4" />}
                     {item.kind === "reminder" ? t("dashboard.upcoming.reminder") : t("dashboard.upcoming.due")}
                     {": "}
                     <time dateTime={item.at}>{when}</time>
-                    <span className="text-ink-subtle">· {formatRelativeDay(item.at, lang, now)}</span>
+                    <span className="text-gray-60">· {formatRelativeDay(item.at, lang, now)}</span>
                   </span>
                 </div>
-                <p className="text-base font-medium text-ink">{label}</p>
+                <p className="text-base font-medium text-gray-90">{label}</p>
                 <OriginBadge
                   origin={item.action.origin}
                   label={t(originKey(item.action.origin))}

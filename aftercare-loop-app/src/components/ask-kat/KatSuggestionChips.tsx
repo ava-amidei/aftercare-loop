@@ -27,12 +27,12 @@ export function KatSuggestionChips({ t, onSelect, disabled, compact }: KatSugges
             disabled={disabled && id !== "free_text"}
             onClick={() => onSelect(id)}
             className={cn(
-              "min-h-11 rounded-full border px-3.5 py-2 text-left text-sm font-medium transition-colors",
-              "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-600",
+              "min-h-11 rounded-full px-4 py-2 text-left text-sm font-semibold transition-[background-color,transform] motion-safe:active:scale-95",
+              "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary-700",
               "disabled:cursor-not-allowed disabled:opacity-60",
               id === "free_text"
-                ? "border-dashed border-border-strong bg-surface text-ink-muted hover:bg-surface-muted"
-                : "border-accent-200 bg-accent-50 text-accent-900 hover:border-accent-400 hover:bg-accent-100",
+                ? "bg-gray-10 text-gray-80 hover:bg-gray-20"
+                : "bg-accent-100 text-accent-900 hover:bg-accent-200",
               compact && "whitespace-nowrap",
             )}
           >

@@ -99,7 +99,7 @@ export async function runEvaluation(deps: EvalDeps, data: EvalData): Promise<Eva
   // model_based only when a live model actually produced extraction output.
   const liveSources = extraction.perPatient.filter((p) => p.source === "live");
   const providerReported = extraction.perPatient.some((p) => p.source !== undefined);
-  const live = mode === "live_claude" && (providerReported ? liveSources.length > 0 : true);
+  const live = mode !== "scripted_demo" && (providerReported ? liveSources.length > 0 : true);
   const run: EvalRun = {
     runId: makeRunId(timestamp),
     suiteVersion: EVAL_SUITE_VERSION,

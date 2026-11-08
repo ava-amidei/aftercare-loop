@@ -21,8 +21,9 @@ export class DashboardErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    // Log only the error name/message — never patient content.
-    console.error("[dashboard] render error", error.name, error.message, info.componentStack?.length ?? 0);
+    // Log only the error name/digest — messages can embed rendered patient content.
+    const digest = (error as Error & { digest?: string }).digest ?? "";
+    console.error("[dashboard] render error", error.name, digest, info.componentStack?.length ?? 0);
   }
 
   private retry = () => this.setState({ hasError: false });

@@ -1,6 +1,7 @@
 "use client";
 
-import { ExternalLink, FileText, Plus, Check, ArrowRight, TriangleAlert, ShieldAlert } from "lucide-react";
+import { ArrowTopRightOnSquareIcon, ExclamationTriangleIcon, ShieldExclamationIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, CheckIcon, DocumentTextIcon, PlusIcon } from "@heroicons/react/20/solid";
 import type { ChatMessage, KatContextualAction, SourceRef } from "@/lib/types";
 import { Alert, Button, ModeBadge, OriginBadge } from "@/components/ui";
 import { getReferenceById } from "@/data/evidence";
@@ -22,7 +23,7 @@ export interface KatMessageProps {
 function UserBubble({ message, t }: { message: ChatMessage; t: Translator }) {
   return (
     <li className="flex justify-end" data-role="user">
-      <div className="max-w-[85%] rounded-2xl rounded-br-md bg-brand-700 px-4 py-2.5 text-white shadow-sm">
+      <div className="max-w-[85%] rounded-3xl rounded-br-lg bg-primary px-4 py-2.5 text-primary-contrast">
         <span className="sr-only">{t("askKat.you")}: </span>
         <p className="break-words whitespace-pre-line">{message.content}</p>
       </div>
@@ -50,9 +51,9 @@ function EmergencyMessage({ message, t }: { message: ChatMessage; t: Translator 
       <Alert
         variant="danger"
         live
-        icon={<ShieldAlert aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" />}
+        icon={<ShieldExclamationIcon aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-danger" />}
         title={crisis ? t("safety.crisis.title") : t("safety.emergency.title")}
-        className="border-2"
+        className="ring-2 ring-inset ring-danger"
         data-testid="kat-emergency"
       >
         <p className="font-medium whitespace-pre-line">{guidance}</p>
@@ -66,8 +67,8 @@ function SourcesList({ ids, t }: { ids: readonly string[]; t: Translator }) {
   const refs = ids.map((id) => getReferenceById(id)).filter((r) => r !== undefined);
   if (refs.length === 0) return null;
   return (
-    <div className="mt-3 border-t border-border pt-2">
-      <p className="text-xs font-semibold tracking-wide text-ink-muted uppercase">{t("askKat.sources")}</p>
+    <div className="mt-3 border-t border-gray-10 pt-2">
+      <p className="text-xs font-semibold tracking-wide text-gray-70 uppercase">{t("askKat.sources")}</p>
       <ul className="mt-1 flex flex-col gap-1.5">
         {refs.map((r) => (
           <li key={r.id} className="text-sm">
@@ -75,13 +76,13 @@ function SourcesList({ ids, t }: { ids: readonly string[]; t: Translator }) {
               href={r.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-6 items-start gap-1 font-medium text-brand-800 underline underline-offset-2 hover:text-brand-900"
+              className="inline-flex min-h-6 items-start gap-1 font-medium text-primary-800 underline underline-offset-2 hover:text-primary-900"
             >
               <span>{r.title}</span>
-              <ExternalLink aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+              <ArrowTopRightOnSquareIcon aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
               <span className="sr-only"> {t("common.opensInNewTab")}</span>
             </a>
-            <span className="block text-xs text-ink-muted">
+            <span className="block text-xs text-gray-70">
               {r.organization} · {t(evidenceKindKey(r.kind))}
             </span>
           </li>
@@ -110,17 +111,17 @@ function SourceRefs({
         return (
           <li
             key={`${ref.documentId}:${ref.start}:${ref.end}`}
-            className="rounded-control border border-origin-clinician/30 bg-surface p-2.5"
+            className="rounded-2xl bg-origin-clinician-soft p-2.5"
           >
             <OriginBadge origin="clinician_documented" size="sm" label={t(originKey("clinician_documented"))} />
-            <blockquote className="mt-1.5 line-clamp-3 border-l-2 border-origin-clinician/50 pl-2 text-sm text-ink">
+            <blockquote className="mt-1.5 line-clamp-3 border-l-2 border-origin-clinician/50 pl-2 text-sm text-gray-90">
               “{ref.quote}”
             </blockquote>
             <Button
               variant="ghost"
               size="sm"
               className="mt-1 -ml-2"
-              leftIcon={<FileText aria-hidden="true" className="size-4" />}
+              leftIcon={<DocumentTextIcon aria-hidden="true" className="size-4" />}
               disabled={!available}
               title={available ? undefined : t("askKat.sourceUnavailable")}
               onClick={() => onViewSource(ref)}
@@ -170,16 +171,16 @@ function ActionsList({
             const q = questionOf(a)!;
             const saved = savedQuestions.includes(q);
             return (
-              <li key={q} className="rounded-control border border-dashed border-origin-ai/50 bg-origin-ai-soft/40 p-2.5">
+              <li key={q} className="rounded-2xl border border-dashed border-origin-ai/50 bg-origin-ai-soft p-2.5">
                 <OriginBadge origin="ai_suggested" size="sm" label={t(originKey("ai_suggested"))} />
-                <p className="mt-1.5 text-sm text-ink">{q}</p>
+                <p className="mt-1.5 text-sm text-gray-90">{q}</p>
                 <Button
                   variant="secondary"
                   size="sm"
                   className="mt-1.5"
                   disabled={saved}
                   leftIcon={
-                    saved ? <Check aria-hidden="true" className="size-4" /> : <Plus aria-hidden="true" className="size-4" />
+                    saved ? <CheckIcon aria-hidden="true" className="size-4" /> : <PlusIcon aria-hidden="true" className="size-4" />
                   }
                   onClick={() => onAction(a)}
                 >
@@ -201,7 +202,7 @@ function ActionsList({
                   variant="secondary"
                   size="sm"
                   disabled={!canViewSource(ref)}
-                  leftIcon={<FileText aria-hidden="true" className="size-4" />}
+                  leftIcon={<DocumentTextIcon aria-hidden="true" className="size-4" />}
                   onClick={() => onViewSource(ref)}
                 >
                   {a.label || t("askKat.action.view_source")}
@@ -213,7 +214,7 @@ function ActionsList({
                 key={`${a.kind}-${i}`}
                 variant="secondary"
                 size="sm"
-                rightIcon={<ArrowRight aria-hidden="true" className="size-4" />}
+                rightIcon={<ArrowRightIcon aria-hidden="true" className="size-4" />}
                 onClick={() => onAction(a)}
                 data-action={a.kind}
               >
@@ -239,18 +240,18 @@ export function KatMessage({ message, t, savedQuestions, canViewSource, onViewSo
       <Avatar />
       <div
         className={cn(
-          "min-w-0 max-w-[90%] flex-1 rounded-2xl rounded-tl-md border px-4 py-3 shadow-sm",
-          welcome ? "border-accent-200 bg-accent-50" : "border-border bg-surface",
+          "min-w-0 max-w-[90%] flex-1 rounded-3xl rounded-tl-lg px-4 py-3",
+          welcome ? "bg-accent-50" : "bg-gray-5",
         )}
       >
         <span className="sr-only">{t("askKat.kat")}: </span>
         {concerning && (
           <p className="mb-2 flex items-start gap-1.5 text-sm font-semibold text-warning-strong">
-            <TriangleAlert aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+            <ExclamationTriangleIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
             {t("safety.concerning.title")}
           </p>
         )}
-        <p className="break-words whitespace-pre-line text-ink">{message.content}</p>
+        <p className="break-words whitespace-pre-line text-gray-90">{message.content}</p>
         <SourceRefs refs={sourceRefs} t={t} canViewSource={canViewSource} onViewSource={onViewSource} />
         <SourcesList ids={message.referenceIds ?? []} t={t} />
         <ActionsList
@@ -266,10 +267,10 @@ export function KatMessage({ message, t, savedQuestions, canViewSource, onViewSo
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <ModeBadge mode={message.meta.mode} model={message.meta.model} compact className="text-xs" />
             {message.meta.generatedBy === "deterministic" && (
-              <span className="text-xs text-ink-muted">{t("askKat.deterministicNote")}</span>
+              <span className="text-xs text-gray-70">{t("askKat.deterministicNote")}</span>
             )}
             {message.meta.disclaimer?.trim() && (
-              <p className="w-full text-xs text-ink-muted">{message.meta.disclaimer}</p>
+              <p className="w-full text-xs text-gray-70">{message.meta.disclaimer}</p>
             )}
           </div>
         )}

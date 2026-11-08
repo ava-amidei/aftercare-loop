@@ -1,4 +1,4 @@
-import { CircleCheck, FileText, TriangleAlert } from "lucide-react";
+import { CheckCircleIcon, DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import type { SourceRef, SourceVerification, VisitDocument } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 import { excerptAround } from "@/lib/utils/text";
@@ -45,15 +45,15 @@ export function SourceQuote({
   const caption = documentTitle ?? document?.title;
 
   return (
-    <figure className={cn("flex flex-col gap-2 rounded-control border border-border bg-surface-muted p-3", className)}>
-      <blockquote className="border-l-4 border-brand-600 pl-3 text-base leading-relaxed text-ink">
+    <figure className={cn("flex flex-col gap-2 rounded-2xl bg-gray-5 p-3", className)}>
+      <blockquote className="border-l-4 border-primary pl-3 text-base leading-relaxed text-gray-90">
         {excerpt ? (
           <p>
-            {excerpt.truncatedStart && <span className="text-ink-subtle">…</span>}
-            <span className="text-ink-muted">{excerpt.before}</span>
+            {excerpt.truncatedStart && <span className="text-gray-60">…</span>}
+            <span className="text-gray-70">{excerpt.before}</span>
             <mark data-testid="source-highlight">{excerpt.match}</mark>
-            <span className="text-ink-muted">{excerpt.after}</span>
-            {excerpt.truncatedEnd && <span className="text-ink-subtle">…</span>}
+            <span className="text-gray-70">{excerpt.after}</span>
+            {excerpt.truncatedEnd && <span className="text-gray-60">…</span>}
           </p>
         ) : (
           <p>
@@ -61,29 +61,29 @@ export function SourceQuote({
           </p>
         )}
       </blockquote>
-      <figcaption className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink-muted">
+      <figcaption className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-70">
         {caption && (
           <span className="inline-flex items-center gap-1">
-            <FileText aria-hidden="true" className="size-4" />
+            <DocumentTextIcon aria-hidden="true" className="size-4" />
             {caption}
           </span>
         )}
         {status === "verified" && (
           <span className="inline-flex items-center gap-1 font-medium text-success-strong">
-            <CircleCheck aria-hidden="true" className="size-4" />
+            <CheckCircleIcon aria-hidden="true" className="size-4" />
             Matches your document
           </span>
         )}
         {status === "unverified" && (
           <span className="inline-flex items-center gap-1 font-medium text-warning-strong">
-            <TriangleAlert aria-hidden="true" className="size-4" />
+            <ExclamationTriangleIcon aria-hidden="true" className="size-4" />
             Not verified — needs clarification
           </span>
         )}
         {viewSourceHref ? (
           <a
             href={viewSourceHref}
-            className="ml-auto inline-flex min-h-11 items-center font-semibold text-brand-800 underline underline-offset-4 hover:text-brand-900"
+            className="ml-auto inline-flex min-h-11 items-center font-semibold text-primary-800 underline underline-offset-4 hover:text-primary-900"
           >
             {viewSourceLabel}
           </a>
@@ -91,7 +91,7 @@ export function SourceQuote({
           <button
             type="button"
             onClick={onViewSource}
-            className="ml-auto inline-flex min-h-11 items-center rounded-control px-1 font-semibold text-brand-800 underline underline-offset-4 hover:text-brand-900"
+            className="ml-auto inline-flex min-h-11 items-center rounded-full px-1 font-semibold text-primary-800 underline underline-offset-4 hover:text-primary-900"
           >
             {viewSourceLabel}
           </button>

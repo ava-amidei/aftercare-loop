@@ -18,7 +18,7 @@ export function Checkbox({ label, description, id, className, disabled, ref, ...
     <label
       htmlFor={controlId}
       className={cn(
-        "flex min-h-11 items-start gap-3 rounded-control py-2.5 pr-2",
+        "flex min-h-11 items-start gap-3 rounded-2xl py-2.5 pr-2",
         disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
         className,
       )}
@@ -29,13 +29,13 @@ export function Checkbox({ label, description, id, className, disabled, ref, ...
         type="checkbox"
         disabled={disabled}
         aria-describedby={descId}
-        className="mt-0.5 size-5 shrink-0 cursor-[inherit] rounded accent-brand-700"
+        className="mt-0.5 size-5 shrink-0 cursor-[inherit] rounded accent-primary-700"
         {...rest}
       />
       <span className="flex flex-col">
-        <span className="text-base text-ink">{label}</span>
+        <span className="text-base text-gray-90">{label}</span>
         {description && (
-          <span id={descId} className="text-sm text-ink-muted">
+          <span id={descId} className="text-sm text-gray-70">
             {description}
           </span>
         )}

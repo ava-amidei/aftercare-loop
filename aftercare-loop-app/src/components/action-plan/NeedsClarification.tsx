@@ -1,6 +1,6 @@
 "use client";
 
-import { TriangleAlert } from "lucide-react";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import type { ActionItem, ActionStatus } from "@/lib/types";
 import { Card, OriginBadge } from "@/components/ui";
 import { originKey, useT } from "@/lib/i18n";
@@ -22,15 +22,15 @@ export function NeedsClarification({ items, onStatusChange }: NeedsClarification
     <section
       aria-labelledby="needs-clarification-title"
       data-testid="needs-clarification"
-      className="flex flex-col gap-3 rounded-card border border-warning/40 bg-warning-soft/50 p-4 sm:p-5"
+      className="flex flex-col gap-3 rounded-3xl bg-warning-soft p-4 sm:p-5"
     >
       <div className="flex items-start gap-3">
-        <TriangleAlert aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-warning" />
+        <ExclamationTriangleIcon aria-hidden="true" className="mt-0.5 size-6 shrink-0 text-warning" />
         <div className="flex flex-col gap-1">
-          <h3 id="needs-clarification-title" className="text-lg font-semibold text-ink">
+          <h3 id="needs-clarification-title" className="text-lg font-semibold text-gray-90">
             {t("actionPlan.needsClarification.title")}
           </h3>
-          <p className="text-base text-ink">
+          <p className="text-base text-gray-90">
             <span className="font-semibold">{t("actionPlan.needsClarification.what")}: </span>
             {t("actionPlan.needsClarification.explainer")}
           </p>
@@ -44,8 +44,8 @@ export function NeedsClarification({ items, onStatusChange }: NeedsClarification
               <p className="text-sm font-medium text-warning-strong">
                 {t("common.verification.unverified")}
               </p>
-              <p className="text-base font-semibold break-words text-ink">{item.description}</p>
-              <p className="text-sm text-ink-muted">{item.rationale}</p>
+              <p className="text-base font-semibold break-words text-gray-90">{item.description}</p>
+              <p className="text-sm text-gray-70">{item.rationale}</p>
               <StatusControl
                 value={item.status}
                 onChange={(s) => onStatusChange(item, s)}

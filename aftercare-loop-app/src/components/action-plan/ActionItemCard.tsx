@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { BellPlus, BellRing, CalendarClock, FileSearch, X } from "lucide-react";
+import { BellAlertIcon, CalendarDaysIcon } from "@heroicons/react/24/outline";
+import { BellIcon, DocumentMagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import type { ActionItem, ActionStatus, Reminder } from "@/lib/types";
 import { Badge, Button, Card, OriginBadge } from "@/components/ui";
 import { actionTypeKey, originKey, useT } from "@/lib/i18n";
@@ -47,11 +48,11 @@ export function ActionItemCard({
       data-testid="action-card"
       data-action-id={action.id}
       data-status={action.status}
-      className={cn(action.status === "completed" && "bg-surface-muted", className)}
+      className={cn(action.status === "completed" && "bg-gray-5", className)}
     >
       <div className="flex items-start gap-3">
         <span
-          className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-control bg-brand-50 text-brand-700"
+          className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-primary-900"
           title={t(actionTypeKey(action.type))}
         >
           <Icon aria-hidden="true" className="size-5" />
@@ -64,8 +65,8 @@ export function ActionItemCard({
           </div>
           <h4
             className={cn(
-              "text-lg leading-snug font-semibold break-words text-ink",
-              action.status === "completed" && "text-ink-muted line-through decoration-1",
+              "text-lg leading-snug font-semibold break-words text-gray-90",
+              action.status === "completed" && "text-gray-70 line-through decoration-1",
             )}
           >
             {action.description}
@@ -73,20 +74,20 @@ export function ActionItemCard({
           <dl className="flex flex-col gap-1 text-base">
             <div>
               <dt className="sr-only">{t("actionPlan.field.rationale")}</dt>
-              <dd className="text-ink-muted">{action.rationale}</dd>
+              <dd className="text-gray-70">{action.rationale}</dd>
             </div>
             {action.category === "care_plan" && (
               <div className="flex items-center gap-1.5 text-sm">
-                <CalendarClock aria-hidden="true" className="size-4 text-ink-muted" />
-                <dt className="font-medium text-ink">{t("actionPlan.field.dueDate")}:</dt>
-                <dd className="text-ink-muted">{dueLabel ?? t("actionPlan.field.noDueDate")}</dd>
+                <CalendarDaysIcon aria-hidden="true" className="size-4 text-gray-70" />
+                <dt className="font-medium text-gray-90">{t("actionPlan.field.dueDate")}:</dt>
+                <dd className="text-gray-70">{dueLabel ?? t("actionPlan.field.noDueDate")}</dd>
               </div>
             )}
             {action.category !== "care_plan" && dueLabel && (
               <div className="flex items-center gap-1.5 text-sm">
-                <CalendarClock aria-hidden="true" className="size-4 text-ink-muted" />
-                <dt className="font-medium text-ink">{t("actionPlan.field.dueDate")}:</dt>
-                <dd className="text-ink-muted">{dueLabel}</dd>
+                <CalendarDaysIcon aria-hidden="true" className="size-4 text-gray-70" />
+                <dt className="font-medium text-gray-90">{t("actionPlan.field.dueDate")}:</dt>
+                <dd className="text-gray-70">{dueLabel}</dd>
               </div>
             )}
           </dl>
@@ -95,18 +96,18 @@ export function ActionItemCard({
             <div className="flex flex-wrap items-center gap-1">
               <span
                 data-testid="reminder-chip"
-                className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-info/30 bg-info-soft px-3 text-sm font-medium text-info-strong"
+                className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-info-soft px-3 text-sm font-medium text-info-strong"
               >
-                <BellRing aria-hidden="true" className="size-4" />
+                <BellAlertIcon aria-hidden="true" className="size-4" />
                 {t("actionPlan.reminder.set", { date: formatDateTime(reminder.at, lang) })}
               </span>
               <button
                 type="button"
                 onClick={() => onReminderChange({ ...reminder, dismissed: true })}
                 aria-label={t("actionPlan.reminder.dismiss")}
-                className="inline-flex size-11 items-center justify-center rounded-control text-ink-muted hover:bg-surface-muted"
+                className="inline-flex size-11 items-center justify-center rounded-full text-gray-70 hover:bg-gray-5"
               >
-                <X aria-hidden="true" className="size-4" />
+                <XMarkIcon aria-hidden="true" className="size-4" />
               </button>
             </div>
           )}
@@ -120,7 +121,7 @@ export function ActionItemCard({
               <Button
                 variant="secondary"
                 size="sm"
-                leftIcon={<FileSearch aria-hidden="true" className="size-4" />}
+                leftIcon={<DocumentMagnifyingGlassIcon aria-hidden="true" className="size-4" />}
                 onClick={onViewSource}
               >
                 {t("common.viewSource")}
@@ -129,7 +130,7 @@ export function ActionItemCard({
             <Button
               variant="ghost"
               size="sm"
-              leftIcon={<BellPlus aria-hidden="true" className="size-4" />}
+              leftIcon={<BellIcon aria-hidden="true" className="size-4" />}
               onClick={() => setReminderOpen(true)}
             >
               {reminder ? t("actionPlan.reminder.change") : t("actionPlan.reminder.add")}

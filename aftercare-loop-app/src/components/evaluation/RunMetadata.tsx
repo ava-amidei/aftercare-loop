@@ -28,7 +28,7 @@ export function RunMetadata({ run }: { run: EvalRun }) {
       value: run.modelId ? (
         <span className="font-mono text-sm">{run.modelId}</span>
       ) : (
-        <span className="text-ink-muted">{t("evaluation.run.modelNone")}</span>
+        <span className="text-gray-70">{t("evaluation.run.modelNone")}</span>
       ),
     },
     {
@@ -44,7 +44,7 @@ export function RunMetadata({ run }: { run: EvalRun }) {
       value: (
         <span>
           <span className="font-semibold tabular-nums">{run.caseCount}</span>{" "}
-          <span className="text-ink-muted">
+          <span className="text-gray-70">
             ({t("evaluation.run.passedSummary", { passed: counts.passed, failed: counts.failed })})
           </span>
         </span>
@@ -55,7 +55,7 @@ export function RunMetadata({ run }: { run: EvalRun }) {
       value: run.errors.length ? (
         <span className="font-semibold text-danger-strong tabular-nums">{run.errors.length}</span>
       ) : (
-        <span className="text-ink-muted">{t("evaluation.run.noErrors")}</span>
+        <span className="text-gray-70">{t("evaluation.run.noErrors")}</span>
       ),
     },
   ];
@@ -68,8 +68,8 @@ export function RunMetadata({ run }: { run: EvalRun }) {
       <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
         {rows.map((r) => (
           <div key={r.label} className="flex min-w-0 flex-col gap-1">
-            <dt className="text-sm font-medium text-ink-muted">{r.label}</dt>
-            <dd className="min-w-0 text-base text-ink">{r.value}</dd>
+            <dt className="text-sm font-medium text-gray-70">{r.label}</dt>
+            <dd className="min-w-0 text-base text-gray-90">{r.value}</dd>
           </div>
         ))}
       </dl>

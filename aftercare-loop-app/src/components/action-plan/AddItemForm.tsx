@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Plus } from "lucide-react";
+import { PlusIcon } from "@heroicons/react/20/solid";
 import { Button, Input } from "@/components/ui";
 
 export interface AddItemFormProps {
@@ -45,7 +45,7 @@ export function AddItemForm({ label, hint, placeholder, submitLabel, requiredMes
         }}
         wrapperClassName="flex-1"
       />
-      <Button type="submit" variant="secondary" leftIcon={<Plus aria-hidden="true" className="size-5" />}>
+      <Button type="submit" variant="secondary" leftIcon={<PlusIcon aria-hidden="true" className="size-5" />}>
         {submitLabel}
       </Button>
     </form>

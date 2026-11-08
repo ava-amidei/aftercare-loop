@@ -9,7 +9,7 @@ export default function Loading() {
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {[0, 1].map((i) => (
-          <div key={i} className="rounded-card border border-border bg-surface p-5">
+          <div key={i} className="rounded-3xl bg-gray-0 p-5">
             <Skeleton className="mb-4 h-6 w-40" />
             <SkeletonText lines={3} />
           </div>

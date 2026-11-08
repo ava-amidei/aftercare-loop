@@ -5,7 +5,7 @@
  * refills or changes prescriptions.
  */
 import { useState } from "react";
-import { Inbox, ShieldAlert, Users } from "lucide-react";
+import { InboxIcon, ShieldExclamationIcon, UsersIcon } from "@heroicons/react/24/outline";
 import type { CareTeamRequest, PatientSessionState } from "@/lib/types";
 import {
   Alert,
@@ -44,7 +44,7 @@ function SimulationBanner() {
   return (
     <Alert
       variant="warning"
-      icon={<ShieldAlert aria-hidden="true" className="mt-0.5 size-5 shrink-0" />}
+      icon={<ShieldExclamationIcon aria-hidden="true" className="mt-0.5 size-5 shrink-0" />}
       title={t("careTeam.banner")}
       data-testid="care-team-banner"
       className="mb-6"
@@ -64,7 +64,7 @@ export function CareTeamView() {
       eyebrow={t("careTeam.staffView")}
       title={t("careTeam.title")}
       description={session ? t("careTeam.description", { name: session.profile.displayName }) : undefined}
-      icon={<Users aria-hidden="true" className="size-6" />}
+      icon={<UsersIcon aria-hidden="true" className="size-6" />}
     />
   );
 
@@ -153,7 +153,7 @@ function CareTeamContent({ session }: { session: PatientSessionState }) {
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-start">
       <section aria-labelledby="ct-queue" className="flex flex-col gap-4">
-        <h2 id="ct-queue" className="text-xl font-semibold text-ink">
+        <h2 id="ct-queue" className="text-xl font-semibold text-gray-90">
           {t("careTeam.queue.title")}
         </h2>
         <div role="group" aria-label={t("careTeam.filter.label")} className="flex flex-wrap gap-2">
@@ -173,7 +173,7 @@ function CareTeamContent({ session }: { session: PatientSessionState }) {
         {visible.length === 0 ? (
           <Card>
             <EmptyState
-              icon={<Inbox aria-hidden="true" className="size-7" />}
+              icon={<InboxIcon aria-hidden="true" className="size-7" />}
               title={queue.length === 0 ? t("careTeam.empty") : t("careTeam.emptyFiltered")}
               description={t("careTeam.emptyDescription")}
               headingLevel="h3"
@@ -182,14 +182,14 @@ function CareTeamContent({ session }: { session: PatientSessionState }) {
         ) : (
           groups.map(({ status, requests }) => (
             <section key={status} aria-labelledby={`ct-status-${status}`} className="flex flex-col gap-3">
-              <h3 id={`ct-status-${status}`} className="flex items-center gap-2 text-lg font-semibold text-ink">
+              <h3 id={`ct-status-${status}`} className="flex items-center gap-2 text-lg font-semibold text-gray-90">
                 {t(careTeamStatusKey(status))}
                 <Badge variant="neutral" size="sm">
                   {requests.length}
                 </Badge>
               </h3>
               {requests.length === 0 ? (
-                <p className="text-sm text-ink-muted">{t("careTeam.group.empty")}</p>
+                <p className="text-sm text-gray-70">{t("careTeam.group.empty")}</p>
               ) : (
                 <ul className="flex flex-col gap-3">
                   {requests.map((r) => (
@@ -226,19 +226,19 @@ function CareTeamContent({ session }: { session: PatientSessionState }) {
           </CardHeader>
           <CardContent>
             {followUps.length === 0 ? (
-              <p className="text-base text-ink-muted">{t("careTeam.followUps.empty")}</p>
+              <p className="text-base text-gray-70">{t("careTeam.followUps.empty")}</p>
             ) : (
               <ul className="flex flex-col gap-3" data-testid="care-team-followups">
                 {followUps.map((a) => (
-                  <li key={a.id} className="flex flex-col gap-1.5 rounded-control border border-border p-3">
-                    <span className="text-base text-ink">{a.description}</span>
+                  <li key={a.id} className="flex flex-col gap-1.5 rounded-2xl bg-gray-5 p-3">
+                    <span className="text-base text-gray-90">{a.description}</span>
                     <span className="flex flex-wrap items-center gap-2">
                       <OriginBadge origin={a.origin} label={t(originKey(a.origin))} size="sm" />
                       <Badge variant={a.status === "needs_clarification" ? "warning" : "neutral"} size="sm">
                         {t(actionStatusKey(a.status))}
                       </Badge>
                       {a.dueDate && (
-                        <span className="text-sm text-ink-muted">
+                        <span className="text-sm text-gray-70">
                           {t("common.dueDate", { date: formatDate(a.dueDate, profile.language) })}
                         </span>
                       )}
@@ -264,12 +264,12 @@ function CareTeamContent({ session }: { session: PatientSessionState }) {
           </CardHeader>
           <CardContent>
             {profile.barriers.length === 0 ? (
-              <p className="text-base text-ink-muted">{t("careTeam.barriers.empty")}</p>
+              <p className="text-base text-gray-70">{t("careTeam.barriers.empty")}</p>
             ) : (
               <ul className="flex flex-col gap-2" data-testid="care-team-barriers">
                 {profile.barriers.map((b) => (
-                  <li key={b} className="flex flex-wrap items-center gap-2 rounded-control border border-border p-2">
-                    <span className="text-base text-ink">{t(barrierKey(b))}</span>
+                  <li key={b} className="flex flex-wrap items-center gap-2 rounded-2xl bg-gray-5 p-2">
+                    <span className="text-base text-gray-90">{t(barrierKey(b))}</span>
                     <OriginBadge origin="patient_selected" label={t("careTeam.barriers.reported")} size="sm" />
                   </li>
                 ))}

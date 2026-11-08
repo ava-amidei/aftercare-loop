@@ -15,3 +15,4 @@ export {
 } from "./initial-state";
 export { useHasHydrated, ensureDemoStoreHydrated } from "./hydration";
 export * from "./selectors";
+export * from "./appearance";

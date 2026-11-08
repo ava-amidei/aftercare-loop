@@ -18,5 +18,8 @@ export default defineConfig({
     url: "http://localhost:3000",
     reuseExistingServer: true,
     timeout: 120_000,
+    // The journey asserts the deterministic demo flow; keep it off the network
+    // even when .env.local holds a provider key (set =false to test live).
+    env: { AFTERCARE_FORCE_SCRIPTED: process.env.AFTERCARE_FORCE_SCRIPTED ?? "true" },
   },
 });

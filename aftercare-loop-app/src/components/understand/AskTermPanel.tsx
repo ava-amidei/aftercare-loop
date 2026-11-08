@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState, type FormEvent } from "react";
-import { MessageCircleQuestion, Search } from "lucide-react";
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 import {
   Alert,
   Button,
@@ -101,7 +102,7 @@ export function AskTermPanel() {
               type="submit"
               loading={status === "loading"}
               loadingLabel={t("understand.topic.asking")}
-              leftIcon={<Search aria-hidden="true" className="size-5" />}
+              leftIcon={<MagnifyingGlassIcon aria-hidden="true" className="size-5" />}
             >
               {status === "loading" ? t("understand.topic.asking") : t("understand.topic.ask")}
             </Button>
@@ -134,7 +135,7 @@ export function AskTermPanel() {
 
       {entries.length === 0 && status !== "loading" && status !== "error" && (
         <EmptyState
-          icon={<MessageCircleQuestion aria-hidden="true" className="size-7" />}
+          icon={<QuestionMarkCircleIcon aria-hidden="true" className="size-7" />}
           title={t("understand.tabs.topic")}
           description={t("understand.topic.empty")}
         />
@@ -180,8 +181,8 @@ function AnswerCard({
   return (
     <Card data-testid="term-answer">
       <article className="flex flex-col gap-3">
-        <p className="text-sm text-ink-muted">
-          {t("understand.topic.youAsked")}: <span className="font-medium text-ink">{entry.question}</span>
+        <p className="text-sm text-gray-70">
+          {t("understand.topic.youAsked")}: <span className="font-medium text-gray-90">{entry.question}</span>
         </p>
         {urgent && safety.guidance && (
           <Alert variant={safety.level === "emergency" ? "danger" : "warning"} title={t("understand.safety.title")}>
@@ -189,15 +190,15 @@ function AnswerCard({
           </Alert>
         )}
         <div className="flex flex-wrap items-center gap-2">
-          <h2 className="text-lg font-semibold text-ink">{t("understand.topic.answerFromKat")}</h2>
+          <h2 className="text-lg font-semibold text-gray-90">{t("understand.topic.answerFromKat")}</h2>
           {message.meta && <ModeBadge mode={message.meta.mode} model={message.meta.model} compact />}
         </div>
         {message.content ? (
-          <p className="text-base leading-relaxed whitespace-pre-line text-ink">{message.content}</p>
+          <p className="text-base leading-relaxed whitespace-pre-line text-gray-90">{message.content}</p>
         ) : (
-          <p className="text-base text-ink-muted">{t("understand.topic.error")}</p>
+          <p className="text-base text-gray-70">{t("understand.topic.error")}</p>
         )}
-        {message.meta?.disclaimer && <p className="text-sm text-ink-muted">{message.meta.disclaimer}</p>}
+        {message.meta?.disclaimer && <p className="text-sm text-gray-70">{message.meta.disclaimer}</p>}
 
         {sourceRefs.length > 0 && (
           <div className="flex flex-wrap gap-2">
@@ -216,7 +217,7 @@ function AnswerCard({
               const done = isSavedQuestion(saved, q);
               return (
                 <li key={i} className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <span className="text-base text-ink">{q}</span>
+                  <span className="text-base text-gray-90">{q}</span>
                   <Button variant="ghost" size="sm" disabled={done} onClick={() => onAddQuestion(q)}>
                     {done ? t("understand.discuss.added") : t("understand.topic.addQuestion")}
                   </Button>
@@ -227,8 +228,8 @@ function AnswerCard({
         )}
 
         {!urgent && (
-          <div className="flex flex-col gap-2 border-t border-border pt-3">
-            <h3 className="text-base font-semibold text-ink">{t("understand.section.sources")}</h3>
+          <div className="flex flex-col gap-2 border-t border-gray-10 pt-3">
+            <h3 className="text-base font-semibold text-gray-90">{t("understand.section.sources")}</h3>
             <SourceList referenceIds={message.referenceIds} />
           </div>
         )}

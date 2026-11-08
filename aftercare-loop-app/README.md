@@ -23,7 +23,7 @@ Requirements: Node.js 20+ and npm. Run every command from this folder.
 ```bash
 cd aftercare-loop-app
 npm install
-cp .env.example .env.local   # optional: add ANTHROPIC_API_KEY for live Claude responses
+cp .env.example .env.local   # optional: add GEMINI_API_KEY or ANTHROPIC_API_KEY for live responses
 npm run dev                  # http://localhost:3000
 ```
 
@@ -31,9 +31,12 @@ npm run dev                  # http://localhost:3000
 
 | Variable | Default | Effect |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | empty | Server-side only (read in `src/lib/ai/client.ts`). Empty → Scripted Demo Mode. |
+| `AFTERCARE_PROVIDER` | `auto` | `auto` \| `gemini` \| `anthropic` \| `scripted` — see "AI providers" below. |
+| `GEMINI_API_KEY` | empty | Server-side only (read in `src/lib/ai/providers/gemini.ts`). |
+| `AFTERCARE_GEMINI_MODEL` | `gemini-3.8-flash` | Gemini model id used for live responses. |
+| `ANTHROPIC_API_KEY` | empty | Server-side only (read by the SDK in `src/lib/ai/providers/anthropic.ts`). |
 | `AFTERCARE_MODEL` | `claude-opus-5-5` | Claude model id used for live responses. |
-| `AFTERCARE_FORCE_SCRIPTED` | `false` | `true` forces Scripted Demo Mode even when a key is set. |
+| `AFTERCARE_FORCE_SCRIPTED` | `false` | `true` forces Scripted Demo Mode even when a key is set (wins over `AFTERCARE_PROVIDER`). |
 | `AFTERCARE_ENABLE_MEDLINEPLUS_LIVE` | `false` | `true` enables the optional MedlinePlus Connect client in `src/lib/evidence/medlineplus.ts`. |
 
 Never put secrets in `NEXT_PUBLIC_*` variables. `.env.local` is git-ignored.
@@ -58,11 +61,45 @@ Never put secrets in `NEXT_PUBLIC_*` variables. `.env.local` is git-ignored.
   is labeled "Scripted Demo Mode — Responses are predefined for demonstration purposes." Questions
   outside the script get: "This scripted demonstration can't answer that question. Add an
   ANTHROPIC_API_KEY to enable live responses."
-- **Live mode** (`ANTHROPIC_API_KEY` set): server routes under `src/app/api/` call Claude with
-  structured outputs validated by zod. The UI labels these responses as live.
+- **Live mode** (a provider key set, see below): server routes under `src/app/api/` call the
+  active provider with structured outputs validated by zod. The UI labels these responses
+  "Live AI (Gemini · gemini-3.8-flash)" or "Live AI (Claude · <model>)" (`ResponseMode`
+  `live_gemini` / `live_claude`; `AiMeta.model` carries the model id).
 - In both modes, deterministic safety rules (`src/lib/safety/`) run before any model call, and a
   clinician-documented instruction is shown as verified only when its quote matches the document
   text at the stored offsets.
+
+## AI providers
+
+`src/lib/ai/client.ts` keeps the original API (`getAiMode`, `getModelId`, `generateStructured`,
+`generateText`, …) and routes each call to a provider in `src/lib/ai/providers/`:
+
+| `AFTERCARE_PROVIDER` | Behavior |
+|---|---|
+| `auto` (default) | Gemini if `GEMINI_API_KEY` is set, else Claude if `ANTHROPIC_API_KEY` is set, else Scripted Demo Mode. |
+| `gemini` / `anthropic` | Only that provider; Scripted Demo Mode if its key is unset. |
+| `scripted` | Always Scripted Demo Mode. |
+
+`AFTERCARE_FORCE_SCRIPTED=true` overrides all of the above.
+
+- **Gemini** (`providers/gemini.ts`): `@google/genai` v3 `client.interactions.create` with
+  `system_instruction`, `input` steps, `response_format` (JSON Schema generated from the zod
+  schema via `z.toJSONSchema`), `generation_config.thinking_level` (`low` for chat/teach-back,
+  `medium` for document interpretation) and `store: false`. Output is parsed and validated with
+  zod (retried once when malformed). If the SDK answers 400/404 the same body is sent over REST
+  (`POST /v1beta/interactions`, `Api-Revision: 2026-05-20`). Errors map to `auth` (401/403),
+  `rate_limit` (429; the free tier is rate-limited) and `api`. Calls time out after 120 s
+  (`AFTERCARE_GEMINI_TIMEOUT_MS`). On the free tier, expect 30–80 s per call.
+- **Claude** (`providers/anthropic.ts`): `messages.parse` + `zodOutputFormat`, effort-based, as before.
+- Any live failure makes the services fall back to scripted or deterministic output, labeled
+  Scripted Demo Mode.
+
+Live smoke test (makes real calls and uses quota). It reads `.env.local` and prints only the
+provider, model, ok/error kind, token usage and duration:
+
+```bash
+node scripts/ai-smoke.mjs
+```
 
 ## Evaluation and tests
 
