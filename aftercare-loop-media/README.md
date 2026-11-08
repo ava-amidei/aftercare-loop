@@ -6,7 +6,7 @@ Demo-video pipeline for Aftercare Loop: narration audio (Gemini TTS), Playwright
 
 | File | What it is |
 |---|---|
-| `video/out/aftercare-loop-demo.mp4` | 1920×1080, 30 fps, H.264 High (crf 18) + AAC 192 kbps 48 kHz stereo, faststart, about 2:13. Captions burned in, loudness −16 LUFS. |
+| `video/out/aftercare-loop-demo.mp4` | 1920×1080, 30 fps, H.264 High (crf 18) + AAC 192 kbps 48 kHz stereo, faststart, about 2:00 (119.7 s). Captions burned in, loudness −16 LUFS. |
 | `video/out/aftercare-loop-demo.srt` | English captions (a copy of `narration.srt`) for upload to YouTube. |
 | `video/youtube-description.md` | Title, description (team, disclaimer) and chapters. |
 
@@ -40,7 +40,7 @@ Prerequisites: Node 20+, `npm install` in this folder (`@playwright/test`, `@goo
    ```sh
    DEMO_BASE_URL=http://localhost:3100 npx playwright test -c video/playwright.config.ts
    ```
-   This renders the cards for shots 1, 2 and 10 and records shots 3–9 for fictional patient `pt-a-pcos` (Maya Thompson): dashboard → Understand (paste, explain, scroll sections) → View source highlight → Ask Kat "What should I ask my doctor?" → /check wrong answer → clarification → retry → /action-plan with the transportation/telehealth suggestion → /follow-up Copy summary → /evaluation (Safety filter).
+   This renders the cards for shots 1, 2 and 10 and records shots 3–9 for fictional patient `pt-a-pcos` (Maya Thompson): dashboard → Understand (paste, explain, scroll sections) → View source highlight, then a switch to `pt-c-endometriosis` (Priya Shah) whose paraphrased step lands under "Needs clarification" → back to Maya → Ask Kat "What should I ask my doctor?" → /check wrong answer → clarification → retry → /action-plan with the transportation/telehealth suggestion → /follow-up Copy summary → /evaluation (Safety filter).
    Each shot starts from a clean demo state carried forward via `storageState`, so always run the whole file. The tests run serially, and later shots depend on earlier ones. Each clip holds at least the segment duration + 0.6 s after its lead-in. A visible cursor and click ripple are injected, and the Next.js dev indicator is hidden.
 3. **Assemble** (about 1.5 min):
    ```sh

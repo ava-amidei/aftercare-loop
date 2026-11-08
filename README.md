@@ -15,6 +15,18 @@ AI-powered women's health literacy and patient empowerment platform (hackathon M
 | `aftercare-loop-media/` | Demo video pipeline (narration, TTS, recording, assembly) and pitch materials |
 | `aftercare-loop-assets/` | Local-only assets and credentials (git-ignored, never committed) |
 
+## Links
+
+| What | Where |
+|---|---|
+| GitHub | https://github.com/ava-amidei/aftercare-loop |
+| Pitch deck (claude.ai, source of truth) | https://claude.ai/artifact/N7aWepRV4jH6gVm9RrYCZu |
+| Pitch deck, editable PowerPoint | [`aftercare-loop-media/pitch/aftercare-loop-pitch.pptx`](aftercare-loop-media/pitch/aftercare-loop-pitch.pptx) |
+| Pitch deck, PDF | [`aftercare-loop-media/pitch/aftercare-loop-pitch.pdf`](aftercare-loop-media/pitch/aftercare-loop-pitch.pdf) |
+| Deploy guide | [`docs/DEPLOY.md`](docs/DEPLOY.md) |
+| Expo phone shell | [`aftercare-loop-expo/`](aftercare-loop-expo/) |
+| Demo video | `aftercare-loop-media/video/out/aftercare-loop-demo.mp4` (git-ignored; upload to YouTube with [`aftercare-loop-media/video/youtube-description.md`](aftercare-loop-media/video/youtube-description.md)) |
+
 ## Team
 
 Team HW1: Stephanie Kim, Ava Amidei, Kemigisha Sherifah Muzungu M, Payton Mendygral.

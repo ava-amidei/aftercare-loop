@@ -39,7 +39,7 @@ b85773e Add pitch deck link and align narration patient name with fixture
   Spanish-language), each with one after-visit summary and a matching ground-truth record in
   `src/data/ground-truth/` (expected instructions, teach-back questions, safety considerations,
   forbidden actions). `safety-cases.ts` holds the 48-case safety suite.
-- Curated evidence index of 50 references (`src/data/evidence/references.ts`) with tag/keyword
+- Curated evidence index of 54 references (`src/data/evidence/references.ts`) with tag/keyword
   retrieval (`src/lib/evidence/retriever.ts`) and an optional MedlinePlus Connect client that is off
   by default.
 - Deterministic safety layer (`src/lib/safety/`): `evaluateSafety` regex/phrase rules with negation,
@@ -301,7 +301,7 @@ Human-reviewed results, genuine user testing, usability metrics and follow-throu
   not clinician-reviewed, and was not exercised in the final check run.
 - Safety detection is rule-based for six predefined scenarios in English and Spanish; unusual
   wording or other urgent situations can be missed. Emergency guidance is US-centric (911, 988).
-- Curated evidence index of 50 references; Spanish synonym coverage is thin (the Spanish anemia
+- Curated evidence index of 54 references; Spanish synonym coverage is thin (the Spanish anemia
   fixture retrieves fewer matches than English fixtures). Live MedlinePlus is off by default.
 - Evaluation is automated and deterministic on synthetic cases; in scripted mode extraction scores
   measure the traceability pipeline, not model accuracy. No human review, user testing, usability or
@@ -469,3 +469,91 @@ Playwright notes:
   runs; with tracing off it passed 3/3 in 1.4–1.5 s, and a standalone WebKit probe loaded `/`,
   `/understand` and `/check` in under 0.4 s five times out of five. The mobile project now sets
   `trace: "off"`; desktop (Chromium) keeps traces.
+
+## 11. Polish round
+
+Run on 2026-11-08 after the judge panel (`docs/VALIDATION-REPORT.md`). All patients are fictional;
+nothing below is clinical validation.
+
+### Gate C (commit `3acd328`)
+
+Commit `3acd328` "Ship phase gate C: judge-panel polish (safety, copy/i18n, UX, eval honesty,
+business docs)", 85 files. Later commits on top: `55d7f90` (editable pitch deck PPTX/PDF/markdown),
+`334ef9e` (root firebase package files, ignore root `node_modules`), `292eecc` (presentation script).
+
+| Check | Result |
+|---|---|
+| `npm run lint` | pass. `.vercel/**` added to `globalIgnores` in `eslint.config.mjs`; a git-ignored Vercel CLI build output (`aftercare-loop-app/.vercel/output`) had produced 19 errors in generated bundles |
+| `npm run typecheck` | pass (`tsc --noEmit`, exit 0) |
+| `npx vitest run` | pass: 78 files, 1587/1587. Two stale assertions fixed first: `ask-kat.test.ts:634` (pt-k fever now `concerning` after fix 6; scenario still `severe_postpartum_warning`) and `Dashboard.test.tsx:102` (caption "Matches the text of your summary" after fix 22) |
+| `npm run build` | pass, 16 routes. Warning: multiple lockfiles (root firebase `package.json`/`package-lock.json` and `node_modules`), so Next picked the repo root as workspace root and wrote a stray root `.next/` (now git-ignored) |
+| `npm run eval` | pass: run `eval-2026-11-08T14-56-33-016Z`, 189 cases, 0 not passed, 0 errors. Safety 83/83 (40/40 emergencies caught, 43/43 non-emergencies not escalated); extraction F1 100%; citations 58/58; comprehension 36/36. `latest.json` has since been regenerated as `eval-2026-11-08T14-59-30-916Z` (same 189 cases; only run id and timestamp differ) |
+| Playwright | pass: `journey.spec.ts` on desktop and mobile; 16 live-journey tests skipped. Run against `AFTERCARE_FORCE_SCRIPTED=true npx next start -p 3100` with `PLAYWRIGHT_BASE_URL=http://[::1]:3100`, because an unrelated `next-server` already held `127.0.0.1:3100`. `playwright.config.ts` now leaves `webServer` undefined when `PLAYWRIGHT_BASE_URL` is set |
+
+Extra fixes in the gate: `pt-e-multi.ts` limitation no longer claims the library lacks heart
+failure/kidney material; empty `AppearanceSection` placeholder deleted and unmounted from Profile
+(`AppearancePanel` stays); `LanguageToggle` `min-h-11`; `ResetDemoButton` `cn("min-w-11", className)`.
+
+### Demo video
+
+- Re-rendered `aftercare-loop-media/video/out/aftercare-loop-demo.mp4` (git-ignored) with burned-in
+  captions and a matching `.srt`.
+- `ffprobe`: 119.666667 s, 20,447,547 bytes; video h264 High, 1920x1080, 30/1 fps; audio AAC LC,
+  48000 Hz, 2 channels. Loudness normalized to -16 LUFS (measured -17.48 before).
+- Narration v2 (`video/narration.md`): segments 2, 5, 8 and 9 regenerated (same lite TTS model and
+  Sulafat voice). Shot 5 switches to Priya Shah and shows the "Needs clarification" / "Not verified"
+  card; shot 9 says the metrics come from tests "on fictional patients, not clinical validation".
+  Shot 9 was also shortened (9.96 s to 8.36 s) to get under 120 s. Shot 10 (team credits, mentors)
+  unchanged.
+- Segment start times (s): 1 at 0.00, 2 at 9.40, 3 at 16.72, 4 at 31.04, 5 at 45.28, 6 at 62.56,
+  7 at 74.56, 8 at 87.64, 9 at 95.84, 10 at 104.80.
+- `video/youtube-description.md` updated: 2:00 (119.7 s), Priya bullet, new chapters (action plan
+  and evaluation merged because YouTube needs at least 10 s per chapter).
+- Open: the name is spelled "Muzungu M" on the closing card and in the YouTube description; confirm
+  the spelling with the team.
+
+### Head-judge re-score
+
+| Criterion | Before | After |
+|---|---|---|
+| Problem clarity | 17/20 | 18/20 |
+| Technical execution | 17/20 | 18/20 |
+| Demo & pitch readiness | 13/20 | 17/20 |
+| Safety & honesty | 31/40 combined (split not recorded) | 18/20 |
+| Impact & feasibility | (see above) | 15/20 |
+| **Total** | **78/100** | **86/100** |
+
+- Fixes confirmed: 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 13, 15, 16, 17, 18, 19, 20, 21, 22, 24.
+- Not confirmed: 10 (no `model_based` eval run), 11 (the judge measured the old 132.7 s video;
+  the 119.67 s re-render above landed afterwards), 14 (care-team workload strip), 23.
+- Top risks the judge named:
+  1. Deck evaluation slide 11 still says 154 cases / 48 of 48 safety in all four copies (claude.ai
+     artifact, `aftercare-loop-pitch.pptx`, `aftercare-loop-pitch.pdf`, `pitch/README.md`), while
+     `latest.json` and `/evaluation` say 189 cases / 83 of 83. Re-fill slide 11 before the event.
+  2. Scripted Demo Mode depends on `AFTERCARE_FORCE_SCRIPTED=true` in the git-ignored `.env.local`;
+     a fresh clone or swapped laptop falls into live Gemini (35–98 s per call, now fast-failing at
+     15 s). Confirm the yellow badge before the clock starts (DEMO-SCRIPT step 2).
+  3. No `model_based` eval run is archived; expect "is the AI real?" and have
+     `scripts/ai-smoke.mjs` output or a recorded live clip ready.
+  4. The demo video was still the 132.7 s render when judged (since re-rendered to 119.67 s).
+  5. Spanish on an English-fixture patient gives mixed-language screens, and the badge keeps an
+     English line; demo Spanish only on Ana Lucia Morales.
+- Demo advice: open on the evaluation page's own disclosure ("No model-based run has been recorded
+  yet"); spend the middle 90 s on Priya's "Not verified" card, the metformin double-dose redirect and
+  the teach-back "Let me explain that another way." moment; keep the phone view pre-scrolled
+  (Understand's explanation starts about 1,350 px down, Plan is about 6,700 px tall); use
+  "¿Puedo tomar agua antes del análisis?" on Ana Lucia; update slide 11 to 189 cases / 83 of 83.
+
+### Model-based eval status
+
+`aftercare-loop-app/eval-results/latest-live.json` does not exist. No `model_based` run has been
+archived; the evaluation dashboard says "No model-based run has been recorded yet". Every number
+above is from the `scripted_demo` / `deterministic_synthetic` suite.
+
+### Still open
+
+- Deck slide 11 numbers (see risk 1).
+- Fix 10 (model-based eval run), fix 14 (care-team workload strip), fix 23 (move `TOPIC_SYNONYMS`
+  to `src/data`; it also lacks heart failure, CKD, furosemide and potassium entries).
+- `ActionItemCard` "View source" / "Add a reminder" as inline links; Spanish nav label
+  "Seguimiento" wraps mid-word; required-concept data for `tb-pt-b-3` and `tb-pt-e-3`.

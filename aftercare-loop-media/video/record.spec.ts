@@ -3,7 +3,8 @@
  *
  * One browser context per shot, so Playwright writes one .webm per shot on
  * context close. Demo state (localStorage) is carried from shot to shot with
- * storageState, so the journey stays continuous for fictional patient pt-a-pcos.
+ * storageState, so the journey stays continuous for fictional patient pt-a-pcos
+ * (shot 5 briefly switches to pt-c-endometriosis; shot 6 switches back).
  *
  * Everything a shot does before ctl.ready() (navigation, loading, hidden prep)
  * is "lead-in"; its length is written to out/clips/clips.json and assemble.mjs
@@ -29,6 +30,8 @@ const STATE = path.join(CLIPS, "state.json");
 const MANIFEST = path.join(CLIPS, "clips.json");
 const BASE = process.env.DEMO_BASE_URL ?? "http://localhost:3100";
 const PATIENT_ID = "pt-a-pcos";
+/** Fictional patient with a deliberately unverifiable step (shot 5). */
+const PRIYA_ID = "pt-c-endometriosis";
 const VIEWPORT = { width: 1920, height: 1080 };
 /** Extra hold after duration + gap, so trimming never runs out of frames. */
 const END_MARGIN = 0.9;
@@ -292,7 +295,7 @@ test("shot 4: understand, paste summary and explain", async ({ browser }) => {
   });
 });
 
-test("shot 5: view source highlight on a next step", async ({ browser }) => {
+test("shot 5: view source highlight, then Priya's needs-clarification step", async ({ browser }) => {
   await recordShot(browser, 5, async (page, ctl) => {
     await page.goto(BASE + "/understand");
     await expect(page.getByRole("textbox", { name: /Paste your after-visit summary/i })).toBeVisible();
@@ -301,31 +304,56 @@ test("shot 5: view source highlight on a next step", async ({ browser }) => {
     await steps.evaluate((el) => el.scrollIntoView({ block: "center", behavior: "instant" as ScrollBehavior }));
     await ctl.ready();
 
+    // Maya: one documented next step, traced to its exact sentence.
     const instructions = steps.getByTestId("verified-instruction");
     expect(await instructions.count()).toBeGreaterThanOrEqual(3);
-    await ctl.hover(instructions.first(), 26);
-    await ctl.until(1.8);
+    await ctl.hover(instructions.first(), 24);
+    await ctl.until(1.2);
     await ctl.click(instructions.first().getByRole("button", { name: "View source" }));
     const hl = page.getByTestId("source-viewer-highlight");
     await expect(hl).toBeVisible({ timeout: 10_000 });
     await hl.evaluate((el) => el.scrollIntoView({ behavior: "smooth", block: "center" }));
-    await ctl.until(3.2);
-    await ctl.hover(hl, 30);
-    await ctl.until(8.4);
-    // Second documented step, to show it is per-instruction, not a one-off.
+    await ctl.until(2.4);
+    await ctl.hover(hl, 26);
+    await ctl.until(4.2);
     await page.keyboard.press("Escape");
     await expect(hl).toHaveCount(0);
-    await ctl.until(9.0);
-    await ctl.click(instructions.nth(1).getByRole("button", { name: "View source" }));
-    await expect(page.getByTestId("source-viewer-highlight")).toBeVisible({ timeout: 10_000 });
-    await page.getByTestId("source-viewer-highlight").evaluate((el) => el.scrollIntoView({ behavior: "smooth", block: "center" }));
+
+    // Priya (pt-c-endometriosis): her scripted interpretation carries one paraphrased
+    // instruction, so the "Needs clarification" card with a "Not verified" step renders.
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+    await page.waitForTimeout(500);
+    const select = page.getByTestId("patient-switcher").locator("select");
+    await ctl.click(select, { steps: 22 });
+    await page.waitForTimeout(250);
+    await select.selectOption(PRIYA_ID);
+    const load = page.getByRole("button", { name: "Load my sample summary" });
+    await expect(load).toBeVisible({ timeout: 10_000 });
+    await ctl.until(6.6);
+    await ctl.click(load, { steps: 22 });
+    await ctl.until(7.8);
+    await ctl.click(page.getByRole("button", { name: "Explain this to me" }), { steps: 20 });
+    const result = page.getByTestId("interpretation-result");
+    await expect(result).toBeVisible({ timeout: 30_000 });
+    const clar = result.getByTestId("needs-clarification");
+    await expect(clar).toBeVisible({ timeout: 10_000 });
+    await expect(clar).toContainText("Not verified");
+    await ctl.until(9.4);
+    await scrollTopTo(page, clar, 160);
+    // Hover the step text, not the badge, so the "Not verified" label stays readable.
+    await ctl.hover(clar.locator("li p").first(), 26);
   });
 });
 
 test("shot 6: Ask Kat, what should I ask my doctor", async ({ browser }) => {
   await recordShot(browser, 6, async (page, ctl) => {
     await page.goto(BASE + "/");
+    // Hidden prep: shot 5 ended on Priya; back to Maya for the rest of the journey.
+    const select = page.getByTestId("patient-switcher").locator("select");
+    await expect(select).toBeEnabled();
+    if ((await select.inputValue()) !== PATIENT_ID) await select.selectOption(PATIENT_ID);
     await expect(page.getByTestId("dashboard")).toHaveAttribute("data-patient-id", PATIENT_ID);
+    await page.waitForTimeout(3300); // let the "switched to" toast clear before footage starts
     await jumpTop(page);
     await ctl.ready();
 
@@ -406,20 +434,20 @@ test("shot 8: action plan with barrier suggestion, then follow-up copy", async (
     }
     const clinicianCards = page.getByTestId("action-card").filter({ hasText: "From your clinician" });
     await expect(clinicianCards.first()).toBeVisible({ timeout: 30_000 });
-    await ctl.until(1.6);
+    await ctl.until(0.8);
     await ctl.scrollTo(clinicianCards.first(), "start");
-    await ctl.hover(clinicianCards.first(), 24);
-    await ctl.until(4.0);
+    await ctl.hover(clinicianCards.first(), 20);
+    await ctl.until(2.0);
     const barriers = page.getByTestId("barrier-suggestions");
     await scrollTopTo(page, barriers, 260);
-    await ctl.hover(barriers.getByText(/telehealth/i).first(), 28);
-    await ctl.until(9.4);
+    await ctl.hover(barriers.getByText(/telehealth/i).first(), 22);
+    await ctl.until(4.6);
     // Client-side nav to Follow Up.
-    await ctl.click(page.getByRole("link", { name: "Follow Up" }).first(), { steps: 26 });
+    await ctl.click(page.getByRole("link", { name: "Follow Up" }).first(), { steps: 20 });
     const copy = page.getByRole("button", { name: "Copy summary" });
     await expect(copy).toBeVisible({ timeout: 30_000 });
-    await ctl.until(11.6);
-    await ctl.click(copy, { steps: 26 });
+    await ctl.until(6.4);
+    await ctl.click(copy, { steps: 20 });
   });
 });
 
@@ -432,14 +460,15 @@ test("shot 9: evaluation dashboard", async ({ browser }) => {
     await ctl.ready();
 
     await ctl.hover(page.getByTestId("eval-disclaimer"), 26);
-    await ctl.until(2.4);
+    await ctl.until(2.0);
     const safety = page.getByText(/^Safety/).first();
     await ctl.scrollTo(safety, "center");
-    await ctl.hover(safety, 24);
-    await ctl.until(6.0);
+    await ctl.hover(safety, 22);
+    await ctl.until(4.8);
     // Individual results filtered to the Safety suite: per-case outcomes.
     const suiteFilter = page.getByLabel("Suite", { exact: true });
-    await ctl.scrollTo(suiteFilter, "start");
+    // Not "start": the sticky header would cover the filter and take the click.
+    await scrollTopTo(page, suiteFilter, 220);
     await ctl.click(suiteFilter, { steps: 20 });
     await suiteFilter.selectOption({ label: "Safety" });
     await expect(page.getByTestId("eval-case-row").first()).toContainText(/safety/i);
