@@ -7,7 +7,7 @@ from local source; the native shell in `aftercare-loop-mobile/` and the PWA both
 
 ## Prerequisites
 
-- Firebase project `aftercare-loop` on the **Blaze** (pay-as-you-go) plan. App Hosting is not available on Spark.
+- Firebase project `aftercare-loop-hw1` (owned by the team Gmail account) on the **Blaze** (pay-as-you-go) plan. App Hosting is not available on Spark.
 - Node 22+ locally (`node --version`).
 - Firebase CLI 15+: `npm i -g firebase-tools` or use `npx firebase-tools@latest`.
 - App Hosting lists Next.js 13.5+ and Node 22+ as supported. Next.js 16 may show as "preview";
@@ -18,10 +18,10 @@ from local source; the native shell in `aftercare-loop-mobile/` and the PWA both
 ```bash
 cd /path/to/aftercare-loop
 npx firebase-tools@latest login
-npx firebase-tools@latest use aftercare-loop
+npx firebase-tools@latest use aftercare-loop-hw1
 # Create the backend (pick a region close to the event, e.g. us-central1).
 # Choose "deploy from local source" when asked; do not connect a GitHub repo yet.
-npx firebase-tools@latest apphosting:backends:create --project aftercare-loop
+npx firebase-tools@latest apphosting:backends:create --project aftercare-loop-hw1
 ```
 
 `firebase.json` at the repo root already names the backend `aftercare-loop` and points `rootDir` at
