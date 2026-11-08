@@ -128,8 +128,17 @@ describe("scripted content wiring", () => {
   it("keeps the required labels verbatim", () => {
     expect(SCRIPTED_MODE_LABEL).toBe("Scripted Demo Mode — Responses are predefined for demonstration purposes.");
     expect(SCRIPTED_UNSUPPORTED).toBe(
-      "This scripted demonstration can't answer that question. Add an ANTHROPIC_API_KEY to enable live responses.",
+      "This scripted demonstration can't answer that question. Add a provider key (GEMINI_API_KEY or ANTHROPIC_API_KEY) to enable live responses.",
     );
+  });
+
+  it("keeps the primary patient's explanation short and plain (8–10 sentences, ≤14 words each)", () => {
+    const text = getScriptedContent("pt-a-pcos")!.interpretation.whatThisMeans;
+    const sentences = text.split(/(?<=[.?!])\s+/).filter(Boolean);
+    expect(sentences.length).toBeGreaterThanOrEqual(8);
+    expect(sentences.length).toBeLessThanOrEqual(10);
+    for (const s of sentences) expect(s.split(/\s+/).length, s).toBeLessThanOrEqual(14);
+    expect(text).not.toMatch(/clinician/i);
   });
 });
 

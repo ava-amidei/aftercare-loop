@@ -1,14 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { EvalRun } from "@/lib/types";
-import { EvalRunSchema } from "@/lib/eval/schema";
+import { EvalRunSchema, type StoredEvalRun } from "@/lib/eval/schema";
 
 export const EVAL_LATEST_URL = "/api/eval/latest";
 
 export type LatestEvalState =
   | { status: "loading" }
-  | { status: "ready"; run: EvalRun }
+  /**
+   * `run` = the scripted run (eval-results/latest.json); `live` = the model-based
+   * run (eval-results/latest-live.json). Either may be null, never both.
+   */
+  | { status: "ready"; run: StoredEvalRun | null; live: StoredEvalRun | null; liveError?: string }
   /** 404 from the route: no run has been written yet. */
   | { status: "not_evaluated" }
   | { status: "error"; message?: string };
@@ -32,12 +35,38 @@ export async function parseLatestEvalResponse(res: Response): Promise<LatestEval
         : undefined;
     return { status: "error", message };
   }
-  const parsed = EvalRunSchema.safeParse(body);
-  if (!parsed.success) return { status: "error", message: "The evaluation results do not match the expected format." };
-  return { status: "ready", run: parsed.data };
+  const invalid: LatestEvalState = { status: "error", message: "The evaluation results do not match the expected format." };
+  if (!body || typeof body !== "object") return invalid;
+
+  // Current shape: { scripted, live, liveError? }.
+  if ("scripted" in body || "live" in body) {
+    const b = body as { scripted?: unknown; live?: unknown; liveError?: unknown };
+    const parseSlot = (v: unknown) => (v === null || v === undefined ? { ok: true as const, run: null } : parseRun(v));
+    const scripted = parseSlot(b.scripted);
+    const live = parseSlot(b.live);
+    if (!scripted.ok) return invalid;
+    if (!scripted.run && !live.ok) return invalid;
+    const liveRun = live.ok ? live.run : null;
+    if (!scripted.run && !liveRun) return { status: "not_evaluated" };
+    const liveError =
+      typeof b.liveError === "string" ? b.liveError : live.ok ? undefined : "The model-based results do not match the expected format.";
+    return { status: "ready", run: scripted.run, live: liveRun, ...(liveError ? { liveError } : {}) };
+  }
+
+  // Legacy shape: a bare EvalRun, slotted by its kind.
+  const single = parseRun(body);
+  if (!single.ok) return invalid;
+  return single.run.kind === "model_based"
+    ? { status: "ready", run: null, live: single.run }
+    : { status: "ready", run: single.run, live: null };
 }
 
-/** Fetches the latest evaluation run once on mount; `reload()` refetches. */
+function parseRun(v: unknown): { ok: true; run: StoredEvalRun } | { ok: false } {
+  const parsed = EvalRunSchema.safeParse(v);
+  return parsed.success ? { ok: true, run: parsed.data } : { ok: false };
+}
+
+/** Fetches the latest evaluation runs once on mount; `reload()` refetches. */
 export function useLatestEval(fetchImpl: typeof fetch = globalThis.fetch): LatestEvalState & { reload: () => void } {
   const [state, setState] = useState<LatestEvalState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);

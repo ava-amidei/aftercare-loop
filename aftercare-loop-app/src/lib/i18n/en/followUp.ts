@@ -71,7 +71,7 @@ export const followUp = {
   "followUp.request.submit": "Add to simulated queue",
   "followUp.request.added": "Request added to the simulated queue. Nothing was transmitted.",
   "followUp.request.refillNote":
-    "Aftercare Loop never authorizes refills or changes prescriptions. Only your clinician can decide that.",
+    "Aftercare Loop never authorizes refills or changes prescriptions. Only your care team can decide that.",
   "followUp.request.urgentTitle": "This may need urgent attention",
   "followUp.request.urgentQueue":
     "This simulated queue is not monitored by anyone. Please don't wait for a reply here.",

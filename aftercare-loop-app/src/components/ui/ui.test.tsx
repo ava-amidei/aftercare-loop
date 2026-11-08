@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   Button,
@@ -19,6 +19,18 @@ import {
   ToastProvider,
   useToast,
 } from "./index";
+import { useDemoStore } from "@/lib/store/demo-store";
+
+/** Switch the UI to Spanish by making the Spanish-preferring fictional patient active. */
+function switchToSpanish() {
+  useDemoStore.getState().resetDemo();
+  useDemoStore.getState().updateProfile(useDemoStore.getState().activePatientId, { language: "es" });
+}
+
+afterEach(() => {
+  cleanup();
+  useDemoStore.getState().resetDemo();
+});
 
 describe("Button", () => {
   it("renders an accessible button and handles clicks", async () => {
@@ -82,6 +94,14 @@ describe("OriginBadge", () => {
     expect(screen.getByText(/not an instruction from your clinician/i)).toBeInTheDocument();
   });
 
+  it("localizes the label and screen-reader description in Spanish", () => {
+    switchToSpanish();
+    const { container } = render(<OriginBadge origin="ai_suggested" />);
+    expect(screen.getByText("Sugerido por Kat")).toBeInTheDocument();
+    expect(container.textContent).toMatch(/No es una indicación de su profesional de salud/);
+    expect(container.textContent).not.toMatch(/[Nn]ot an instruction/);
+  });
+
   it("uses a distinct style for each origin", () => {
     const { container } = render(
       <>
@@ -107,6 +127,26 @@ describe("ModeBadge", () => {
   it("keeps the full scripted sentence for screen readers in compact mode", () => {
     const { container } = render(<ModeBadge mode="scripted_demo" compact />);
     expect(container.textContent).toBe(SCRIPTED_MODE_LABEL);
+  });
+
+  it("keeps the exact English sentence and adds a Spanish second line in Spanish", () => {
+    switchToSpanish();
+    const { container } = render(<ModeBadge mode="scripted_demo" />);
+    expect(container.textContent).toContain(SCRIPTED_MODE_LABEL);
+    expect(screen.getByTestId("mode-translation")).toHaveTextContent(
+      "Modo de demostración con guion — Las respuestas están predefinidas con fines de demostración.",
+    );
+  });
+
+  it("localizes the live label prefix in Spanish but keeps provider and model", () => {
+    switchToSpanish();
+    render(<ModeBadge mode="live_gemini" model="gemini-3.8-flash" />);
+    expect(screen.getByText("IA en vivo (Gemini · gemini-3.8-flash)")).toBeInTheDocument();
+  });
+
+  it("adds no translation line in English", () => {
+    render(<ModeBadge mode="scripted_demo" />);
+    expect(screen.queryByTestId("mode-translation")).not.toBeInTheDocument();
   });
 
   it("labels live responses and never shows the scripted text", () => {
@@ -145,15 +185,23 @@ describe("SourceQuote", () => {
     const onView = vi.fn();
     render(<SourceQuote sourceRef={ref} document={doc} verification="verified" onViewSource={onView} />);
     expect(screen.getByTestId("source-highlight")).toHaveTextContent(quote);
-    expect(screen.getByText("Matches your document")).toBeInTheDocument();
+    expect(screen.getByText("Matches the text of your summary")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "View source" }));
     expect(onView).toHaveBeenCalled();
   });
 
   it("downgrades to unverified when offsets do not match the document", () => {
     render(<SourceQuote sourceRef={{ ...ref, start: 0 }} document={doc} verification="verified" />);
-    expect(screen.queryByText("Matches your document")).not.toBeInTheDocument();
+    expect(screen.queryByText("Matches the text of your summary")).not.toBeInTheDocument();
     expect(screen.getByText(/Not verified/)).toBeInTheDocument();
+  });
+
+  it("localizes the caption and View source in Spanish", () => {
+    switchToSpanish();
+    render(<SourceQuote sourceRef={ref} document={doc} verification="verified" onViewSource={() => {}} />);
+    expect(screen.getByText("Coincide con el texto de su resumen")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ver fuente" })).toBeInTheDocument();
+    expect(screen.queryByText(/Matches/)).not.toBeInTheDocument();
   });
 });
 

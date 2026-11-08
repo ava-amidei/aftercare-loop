@@ -78,7 +78,7 @@ export const followUp = {
   "followUp.request.submit": "Agregar a la cola simulada",
   "followUp.request.added": "La solicitud se agregó a la cola simulada. No se transmitió nada.",
   "followUp.request.refillNote":
-    "Aftercare Loop nunca autoriza resurtidos ni cambia recetas. Solo su profesional de salud puede decidirlo.",
+    "Aftercare Loop nunca autoriza resurtidos ni cambia recetas. Solo su equipo de atención médica puede decidirlo.",
   "followUp.request.urgentTitle": "Esto podría necesitar atención urgente",
   "followUp.request.urgentQueue":
     "Nadie supervisa esta cola simulada. Por favor, no espere una respuesta aquí.",

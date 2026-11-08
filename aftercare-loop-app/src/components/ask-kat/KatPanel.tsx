@@ -179,8 +179,10 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
           if (!o) onClose();
         }}
         modal={!isDesktop}
-        title={t("askKat.panelTitle")}
-        description={<span className="hidden sm:inline">{t("askKat.subtitle")}</span>}
+        // Fix 17: the title may shrink instead of pushing the controls; the subtitle only shows on wide screens.
+        title={<span className="block min-w-0 truncate">{t("askKat.panelTitle")}</span>}
+        description={<span className="hidden xl:inline">{t("askKat.subtitle")}</span>}
+        initialFocusRef={inputRef}
         closeLabel={t("askKat.close")}
         headerIcon={
           <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-accent-100">
@@ -189,7 +191,6 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
         }
         headerActions={
           <>
-            {mode && <ModeBadge mode={mode} compact className="hidden text-xs min-[400px]:inline-flex" />}
             <button
               type="button"
               onClick={onMinimize}
@@ -253,6 +254,8 @@ export function KatPanel({ open, onClose, onMinimize, fetchImpl }: KatPanelProps
             <ModeBadge mode="scripted_demo" className="w-full" />
           </div>
         )}
+        {/* The mode badge lives in the body (not the header) so the header never overflows. */}
+        {mode && mode !== "scripted_demo" && <ModeBadge mode={mode} compact className="self-start text-xs" />}
         {profileName && <p className="text-xs text-gray-70">{t("askKat.contextFor", { name: profileName })}</p>}
 
         {!hydrated ? (

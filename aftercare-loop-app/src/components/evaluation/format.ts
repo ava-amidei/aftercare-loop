@@ -131,3 +131,21 @@ export function formatTimestamp(iso: string, lang: Language): string {
   if (Number.isNaN(date.getTime())) return iso;
   return new Intl.DateTimeFormat(lang, { dateStyle: "medium", timeStyle: "short" }).format(date);
 }
+
+/**
+ * Where each extraction case's instructions came from, read from the stored
+ * case payload (`actual.source`) — "skipped" = the case did not run.
+ */
+export function extractionSourceCounts(run: EvalRun): { live: number; fallback: number; skipped: number; other: number } {
+  const counts = { live: 0, fallback: 0, skipped: 0, other: 0 };
+  for (const c of run.cases) {
+    if (c.suite !== "instruction_extraction") continue;
+    const source =
+      c.actual && typeof c.actual === "object" && "source" in c.actual ? (c.actual as { source?: unknown }).source : undefined;
+    if (source === "live") counts.live++;
+    else if (source === "heuristic") counts.fallback++;
+    else if (c.details.startsWith("Not evaluated")) counts.skipped++;
+    else counts.other++;
+  }
+  return counts;
+}

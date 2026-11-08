@@ -12,7 +12,7 @@ export const dashboard = {
 
   "dashboard.start.title": "Start by understanding your visit summary",
   "dashboard.start.body":
-    "Kat can explain your fictional visit summary in plain language and pull out the follow-up steps your clinician wrote down.",
+    "Kat explains your visit summary in plain words and lists the steps your care team wrote.",
   "dashboard.start.cta": "Understand my visit summary",
 
   "dashboard.askKat.cta": "Ask Kat",

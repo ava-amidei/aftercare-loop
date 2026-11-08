@@ -4,6 +4,7 @@ import {
   askKat,
   filterReferenceIds,
   isMedicationChangeRequest,
+  SCRIPTED_CONCERNING_NO_MATCH,
   SCRIPTED_UNSUPPORTED_ES,
   trimHistory,
   type AskKatDeps,
@@ -381,6 +382,23 @@ describe("askKat — scripted mode free text", () => {
     expect(generateStructured).not.toHaveBeenCalled();
   });
 
+  it("concerning message with no scripted match gets a patient-facing close, never a key hint", async () => {
+    const { deps } = makeDeps();
+    const res = await askKat(req(A, CONCERNING_MSG), ctxFor(A), deps);
+    expect(res.safety.level).toBe("concerning");
+    expect(res.message.content.startsWith(res.safety.guidance!)).toBe(true);
+    expect(res.message.content.endsWith(SCRIPTED_CONCERNING_NO_MATCH.en)).toBe(true);
+    expect(res.message.content).toContain("care team");
+    expect(res.message.content).not.toMatch(/API_KEY|provider key|live responses/i);
+    expect(res.message.meta?.mode).toBe("scripted_demo");
+    expect(res.message.meta?.model).toBeUndefined();
+  });
+
+  it("unsupported text never names a single vendor key", () => {
+    expect(SCRIPTED_UNSUPPORTED).toContain("GEMINI_API_KEY or ANTHROPIC_API_KEY");
+    expect(SCRIPTED_UNSUPPORTED_ES).toContain("GEMINI_API_KEY o ANTHROPIC_API_KEY");
+  });
+
   it("unsupported text is localized for Spanish profiles", async () => {
     const { deps } = makeDeps();
     const res = await askKat(req(ES, "¿Puedo comer plátanos?"), ctxFor(ES), deps);
@@ -613,7 +631,7 @@ describe("askKat — profile safety context is shared (safety review)", () => {
   it("treats a documented pregnancy as maternal context (pt-k)", async () => {
     const { deps } = makeDeps();
     const res = await askKat(req("pt-k-asthma-pregnancy", "I have a fever of 101"), ctxFor("pt-k-asthma-pregnancy"), deps);
-    expect(res.safety.level).toBe("emergency");
+    expect(res.safety.level).toBe("concerning");
     expect(res.safety.scenario).toBe("severe_postpartum_warning");
   });
 });

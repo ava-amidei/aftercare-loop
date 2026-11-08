@@ -1,6 +1,7 @@
 /**
  * Scripted Demo Mode: deterministic, clearly-labeled responses for the fictional
- * demo patients (ARCHITECTURE §2.9). Used when no ANTHROPIC_API_KEY is set.
+ * demo patients (ARCHITECTURE §2.9). Used when no provider key (GEMINI_API_KEY or
+ * ANTHROPIC_API_KEY) is set.
  *
  * Content lives in src/data/scripted (one file per patient). This module only
  * routes lookups: interpretation by patient + document, Ask Kat replies by quick
@@ -202,4 +203,4 @@ export function getScriptedClarification(questionId: QuestionId, attemptNumber: 
 export const SCRIPTED_MODE_LABEL =
   "Scripted Demo Mode — Responses are predefined for demonstration purposes.";
 export const SCRIPTED_UNSUPPORTED =
-  "This scripted demonstration can't answer that question. Add an ANTHROPIC_API_KEY to enable live responses.";
+  "This scripted demonstration can't answer that question. Add a provider key (GEMINI_API_KEY or ANTHROPIC_API_KEY) to enable live responses.";

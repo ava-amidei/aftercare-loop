@@ -238,6 +238,43 @@ function matchVariation(responseTokens: string[], variation: string): VariationM
 // Misconceptions
 // ---------------------------------------------------------------------------
 
+/** Negation words that, right before a misconception phrase, reverse it ("don't wait"). */
+const MISCONCEPTION_NEGATORS = new Set([
+  "not", "dont", "never", "wont", "wouldnt", "shouldnt", "cant", "cannot", "no", "nunca", "sin",
+]);
+/** Tokens scanned before a misconception phrase for a negator ("don't take an extra…"). */
+const MISCONCEPTION_NEGATION_WINDOW = 3;
+/** A new clause or subject ends the negation scan ("won't call, I'd wait" still says wait). */
+const MISCONCEPTION_SCOPE_STOP = new Set([
+  "i", "id", "ill", "im", "ive", "and", "but", "then", "or", "so", "just", "y", "pero", "luego", "solo",
+]);
+
+/** True when `phraseTokens` occurs in `responseTokens` without a negator just before it. */
+function containsUnnegatedPhrase(responseTokens: string[], phraseTokens: string[]): boolean {
+  if (phraseTokens.length === 0 || phraseTokens.length > responseTokens.length) return false;
+  outer: for (let i = 0; i + phraseTokens.length <= responseTokens.length; i++) {
+    for (let j = 0; j < phraseTokens.length; j++) {
+      if (!tokenMatches(responseTokens[i + j]!, phraseTokens[j]!)) continue outer;
+    }
+    let negated = false;
+    for (let k = i - 1; k >= Math.max(0, i - MISCONCEPTION_NEGATION_WINDOW); k--) {
+      const t = responseTokens[k]!;
+      if (MISCONCEPTION_SCOPE_STOP.has(t)) break;
+      if (MISCONCEPTION_NEGATORS.has(t)) {
+        negated = true;
+        break;
+      }
+    }
+    if (negated) continue;
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Clarification for the first misconception pattern present in the response.
+ * A pattern preceded by a negation ("don't wait", "no esperar") does not count.
+ */
 export function detectMisconception(
   question: TeachBackQuestion,
   response: string,
@@ -245,9 +282,39 @@ export function detectMisconception(
   const tokens = tokenize(response);
   for (const m of question.scoring.misconceptions ?? []) {
     const pattern = tokenize(m.pattern);
-    if (pattern.length > 0 && containsPhrase(tokens, pattern)) return m.clarification;
+    if (pattern.length > 0 && containsUnnegatedPhrase(tokens, pattern)) return m.clarification;
   }
   return undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Required concepts
+// ---------------------------------------------------------------------------
+
+/**
+ * Optional `scoring.requiredConcepts`: each entry is "alternative|alternative"
+ * (e.g. "same day|today"); every entry must have at least one alternative in a
+ * free-text answer before key concepts or a fuzzy variation can make it
+ * correct. A choice or an exact accepted variation is not affected.
+ *
+ * The field is read structurally so answer-key records can add it before the
+ * shared TeachBackQuestion type declares it.
+ */
+export type TeachBackScoringWithRequired = TeachBackQuestion["scoring"] & {
+  requiredConcepts?: string[];
+};
+
+export function getRequiredConcepts(question: TeachBackQuestion): string[] {
+  const raw = (question.scoring as TeachBackScoringWithRequired).requiredConcepts;
+  return Array.isArray(raw) ? raw.filter((r): r is string => typeof r === "string" && r.trim().length > 0) : [];
+}
+
+/** Labels (first alternative) of required concepts missing from the response. */
+export function missingRequiredConcepts(question: TeachBackQuestion, responseTokens: string[]): string[] {
+  return getRequiredConcepts(question).filter((raw) => {
+    const alternatives = splitConcept(raw).map(tokenize).filter((t) => t.length > 0);
+    return alternatives.length > 0 && !alternatives.some((alt) => containsPhrase(responseTokens, alt));
+  }).map((raw) => splitConcept(raw)[0] ?? raw);
 }
 
 // ---------------------------------------------------------------------------
@@ -269,11 +336,14 @@ function findChoice(question: TeachBackQuestion, response: string) {
  *
  * - A response equal to a choice id (e.g. "b") or a choice's exact text uses
  *   that choice's `correct` flag.
- * - Otherwise free text: correct iff at least `minKeyConceptsForCorrect`
- *   distinct key concepts are present, or an accepted variation (or the
- *   expected answer) matches — exactly, as a contained phrase, or by content
- *   token overlap ≥ 0.6. Overlap matching is skipped when a misconception
- *   pattern is present.
+ * - A response that exactly restates the expected answer or an accepted
+ *   variation is correct.
+ * - Otherwise free text: a detected misconception ("wait", "extra water pill")
+ *   makes the answer incorrect, even when generic concepts such as "call" and
+ *   "clinic" are present. Without one, the answer is correct iff every
+ *   required concept is present and at least `minKeyConceptsForCorrect`
+ *   distinct key concepts are present, or a variation matches as a contained
+ *   phrase or by content token overlap ≥ 0.6.
  * - `misunderstanding` is the matching misconception's clarification, only
  *   when the answer is not correct.
  */
@@ -310,22 +380,26 @@ export function scoreTeachBack(question: TeachBackQuestion, response: string): T
   const byConcepts = groups.length > 0 && matchedConcepts.length >= min;
 
   const variations = [question.expectedAnswer, ...question.acceptedVariations];
-  const byVariation = variations.some((v) => {
-    const m = matchVariation(tokens, v);
-    return m === "exact" || m === "includes" || (m === "overlap" && !misconception);
-  });
+  const matches = variations.map((v) => matchVariation(tokens, v));
+  if (matches.includes("exact")) {
+    return { correct: true, matchedConcepts, matchedBy: "accepted_variation" };
+  }
 
-  if (byVariation || byConcepts) {
+  // A misconception vetoes generic-concept and fuzzy matches: "take an extra
+  // water pill and call the clinic" must not be affirmed.
+  if (misconception) {
+    return { correct: false, matchedConcepts, matchedBy: "none", misunderstanding: misconception };
+  }
+
+  const requiredOk = missingRequiredConcepts(question, tokens).length === 0;
+  const byVariation = requiredOk && matches.some((m) => m === "includes" || m === "overlap");
+
+  if (byVariation || (requiredOk && byConcepts)) {
     return {
       correct: true,
       matchedConcepts,
       matchedBy: byConcepts ? "key_concepts" : "accepted_variation",
     };
   }
-  return {
-    correct: false,
-    matchedConcepts,
-    matchedBy: "none",
-    ...(misconception ? { misunderstanding: misconception } : {}),
-  };
+  return { correct: false, matchedConcepts, matchedBy: "none" };
 }

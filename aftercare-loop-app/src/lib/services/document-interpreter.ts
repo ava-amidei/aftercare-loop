@@ -80,7 +80,7 @@ const NOTES: Record<
     liveUnavailable: "Live AI unavailable; showing extracted instructions only.",
     liveUnavailableScripted: "Live AI unavailable; showing Scripted Demo Mode content instead.",
     noScripted:
-      "Scripted Demo Mode has no prepared explanation for this document; showing extracted instructions only. Add an ANTHROPIC_API_KEY to enable live explanations.",
+      "Scripted Demo Mode has no prepared explanation for this document; showing extracted instructions only. Add a provider key (GEMINI_API_KEY or ANTHROPIC_API_KEY) to enable live explanations.",
     heuristicOverview:
       "A plain-language explanation is not available right now. The next steps below were copied word for word from your document. Please review them with your care team if anything is unclear.",
     heuristicOverviewNone:
@@ -102,7 +102,7 @@ const NOTES: Record<
     liveUnavailableScripted:
       "La IA en vivo no está disponible; en su lugar se muestra contenido del Modo de demostración con guion.",
     noScripted:
-      "El Modo de demostración con guion no tiene una explicación preparada para este documento; solo se muestran las instrucciones extraídas. Agregue una ANTHROPIC_API_KEY para activar explicaciones en vivo.",
+      "El Modo de demostración con guion no tiene una explicación preparada para este documento; solo se muestran las instrucciones extraídas. Agregue una clave de proveedor (GEMINI_API_KEY o ANTHROPIC_API_KEY) para activar explicaciones en vivo.",
     heuristicOverview:
       "En este momento no hay una explicación en lenguaje sencillo. Los próximos pasos de abajo se copiaron palabra por palabra de su documento. Revíselos con su equipo de atención médica si algo no está claro.",
     heuristicOverviewNone:

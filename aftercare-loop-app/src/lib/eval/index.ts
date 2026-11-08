@@ -34,6 +34,8 @@ export interface EvalDeps {
   getAiMode: () => ResponseMode;
   getModelId: () => string;
   now?: () => Date;
+  /** Extractor calls in flight at once (default 1). See ExtractionSuiteOptions. */
+  extractionConcurrency?: number;
 }
 
 export interface EvalData {
@@ -70,7 +72,9 @@ export async function runEvaluation(deps: EvalDeps, data: EvalData): Promise<Eva
   const { cases: extractionCases, errors: pairingErrors } = buildExtractionCases(data);
   errors.push(...pairingErrors);
 
-  const extraction = await runExtractionSuite(extractionCases, deps.extractInstructions);
+  const extraction = await runExtractionSuite(extractionCases, deps.extractInstructions, {
+    concurrency: deps.extractionConcurrency,
+  });
   errors.push(...extraction.errors);
 
   const citationInputs: CitationInput[] = extraction.perPatient.flatMap((p) => {
@@ -127,10 +131,10 @@ export async function runEvaluation(deps: EvalDeps, data: EvalData): Promise<Eva
 export { runExtractionSuite, matchInstructions, locateSpan, extractedSpan, spanIoU } from "./extraction";
 export { runCitationSuite, citationProblem } from "./citations";
 export { runSafetySuite } from "./safety";
-export { runComprehensionSuite, evaluateQuestion, pickDistractor, defaultClarifyTemplate } from "./comprehension";
+export { runComprehensionSuite, evaluateQuestion, pickDistractor, pickRetryAnswer, defaultClarifyTemplate } from "./comprehension";
 export { ratioMetric, countMetric, precisionRecallF1, tokenJaccard, normalizeText } from "./metrics";
 export { EvalRunSchema, EvalMetricSchema, EvalCaseResultSchema } from "./schema";
-export type { ExtractFn, ExtractionOutput, ExtractionCase, ExtractionSuiteResult, PatientExtractionResult } from "./extraction";
+export type { ExtractionSuiteOptions, ExtractFn, ExtractionOutput, ExtractionCase, ExtractionSuiteResult, PatientExtractionResult } from "./extraction";
 export type { EvaluateSafetyFn, SafetySuiteResult } from "./safety";
-export type { ScoreTeachBackFn, ClarifyTemplateFn, TeachBackScore, ComprehensionSuiteResult } from "./comprehension";
+export type { ScoreTeachBackFn, ClarifyTemplateFn, TeachBackScore, ComprehensionSuiteResult, RetrySource } from "./comprehension";
 export type { CitationInput, CitationSuiteResult } from "./citations";

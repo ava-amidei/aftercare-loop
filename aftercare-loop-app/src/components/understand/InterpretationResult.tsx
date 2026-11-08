@@ -87,7 +87,7 @@ const FLAG_VARIANT: Record<SafetyFlag["level"], AlertVariant> = {
   info: "info",
 };
 
-export function SafetyFlagsBanner({ flags }: { flags: SafetyFlag[] }) {
+export function SafetyFlagsBanner({ flags, testId = "safety-flags" }: { flags: SafetyFlag[]; testId?: string }) {
   const t = useT();
   if (flags.length === 0) return null;
   const sorted = sortSafetyFlags(flags);
@@ -98,7 +98,7 @@ export function SafetyFlagsBanner({ flags }: { flags: SafetyFlag[] }) {
         ? t("understand.safety.clarify")
         : t("understand.safety.info");
   return (
-    <div className="flex flex-col gap-3" data-testid="safety-flags">
+    <div className="flex flex-col gap-3" data-testid={testId}>
       {sorted.map((flag, i) => (
         <Alert key={`${flag.level}-${i}`} variant={FLAG_VARIANT[flag.level]} title={levelLabel(flag.level)} live={flag.level === "urgent"}>
           {flag.message}
@@ -236,47 +236,59 @@ export function InterpretationResult({
   const { verified, needsClarification } = partitionInstructions(interpretation.instructions, document);
   const { suggested, unanswered } = discussionItems(interpretation);
   const referenceIds = collectReferenceIds(interpretation);
+  const urgentFlags = interpretation.safetyFlags.filter((f) => f.level === "urgent");
+  const otherFlags = interpretation.safetyFlags.filter((f) => f.level !== "urgent");
 
   return (
     <div className="flex flex-col gap-4" data-testid="interpretation-result">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-1.5">
         <p className="text-sm text-gray-70">{t("understand.resultFor", { title: document.title })}</p>
-        <ModeBadge mode={interpretation.meta.mode} model={interpretation.meta.model} className="self-start" />
-        {interpretation.meta.disclaimer && <p className="text-sm text-gray-70">{interpretation.meta.disclaimer}</p>}
+        {/* Fix 8: compact mode badge + one-line caption keeps the mode visible above the fold at 375px;
+            the full per-response disclaimer stays available as a tooltip and to screen readers. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1" data-testid="result-mode-row">
+          <ModeBadge mode={interpretation.meta.mode} model={interpretation.meta.model} compact />
+          <p className="text-sm text-gray-70" title={interpretation.meta.disclaimer || undefined} data-testid="result-disclaimer">
+            {t("common.footerDisclaimer")}
+            {interpretation.meta.disclaimer && <span className="sr-only"> {interpretation.meta.disclaimer}</span>}
+          </p>
+        </div>
       </div>
 
-      <SafetyFlagsBanner flags={interpretation.safetyFlags} />
+      {/* Emergency-level flags never wait behind education (ARCHITECTURE §2.6). */}
+      <SafetyFlagsBanner flags={urgentFlags} testId="safety-flags-urgent" />
+
+      <SectionCard
+        testId="card-what-this-means"
+        icon={<BookOpenIcon aria-hidden="true" className="size-5" />}
+        title={t("understand.section.whatThisMeans")}
+      >
+        <p className="text-base leading-relaxed whitespace-pre-line text-gray-90">{interpretation.whatThisMeans}</p>
+        {interpretation.terms.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-base font-semibold text-gray-90">{t("understand.section.terms")}</h3>
+            <p className="text-sm text-gray-70">{t("understand.terms.expandHint")}</p>
+            <ul className="flex flex-col gap-2">
+              {interpretation.terms.map((term, i) => (
+                <TermItem key={`${term.term}-${i}`} term={term} document={document} onViewSource={onViewSource} />
+              ))}
+            </ul>
+          </div>
+        )}
+        {interpretation.limitations.length > 0 && (
+          <div className="flex flex-col gap-2">
+            <h3 className="text-base font-semibold text-gray-90">{t("understand.section.limitations")}</h3>
+            <ul className="list-disc space-y-1 pl-5 text-base text-gray-90">
+              {interpretation.limitations.map((l, i) => (
+                <li key={i}>{l}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </SectionCard>
+
+      <SafetyFlagsBanner flags={otherFlags} />
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <SectionCard
-          testId="card-what-this-means"
-          icon={<BookOpenIcon aria-hidden="true" className="size-5" />}
-          title={t("understand.section.whatThisMeans")}
-        >
-          <p className="text-base leading-relaxed whitespace-pre-line text-gray-90">{interpretation.whatThisMeans}</p>
-          {interpretation.terms.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h3 className="text-base font-semibold text-gray-90">{t("understand.section.terms")}</h3>
-              <p className="text-sm text-gray-70">{t("understand.terms.expandHint")}</p>
-              <ul className="flex flex-col gap-2">
-                {interpretation.terms.map((term, i) => (
-                  <TermItem key={`${term.term}-${i}`} term={term} document={document} onViewSource={onViewSource} />
-                ))}
-              </ul>
-            </div>
-          )}
-          {interpretation.limitations.length > 0 && (
-            <div className="flex flex-col gap-2">
-              <h3 className="text-base font-semibold text-gray-90">{t("understand.section.limitations")}</h3>
-              <ul className="list-disc space-y-1 pl-5 text-base text-gray-90">
-                {interpretation.limitations.map((l, i) => (
-                  <li key={i}>{l}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </SectionCard>
-
         <SectionCard
           testId="card-what-to-know"
           icon={<AcademicCapIcon aria-hidden="true" className="size-5" />}

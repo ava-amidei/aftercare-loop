@@ -21,3 +21,6 @@ aftercare-loop-media/**/out/
 aftercare-loop-media/**/*.wav
 aftercare-loop-media/**/*.mp4
 aftercare-loop-media/**/*.webm
+# Stray build/dependency output at the repo root
+/node_modules/
+/.next/

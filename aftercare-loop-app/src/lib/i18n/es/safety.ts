@@ -15,10 +15,10 @@ export const safety = {
   "safety.crisis.title": "No tiene que enfrentar esto sin ayuda",
   "safety.crisis.call988":
     "En EE. UU., llame o envíe un mensaje de texto al 988 para comunicarse con la Línea 988 de Prevención del Suicidio y Crisis (hay atención en español). Si está en peligro inmediato, llame al 911.",
-  "safety.concerning.title": "Consulte pronto con un profesional de salud",
+  "safety.concerning.title": "Consulte pronto con su equipo de atención médica",
   "safety.concerning.body":
     "Kat no puede evaluar síntomas. Comuníquese pronto con su equipo de atención médica o con un centro de atención de urgencias.",
-  "safety.clarify.title": "Consulte esto con su profesional de salud",
+  "safety.clarify.title": "Consulte esto con su equipo de atención médica",
   "safety.info.title": "Información útil",
   "safety.documentFlag": "Su documento menciona algo que podría requerir atención pronto.",
   "safety.limits":

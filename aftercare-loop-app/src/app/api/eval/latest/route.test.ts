@@ -35,12 +35,37 @@ describe("GET /api/eval/latest", () => {
     expect(await res.json()).toEqual({ notEvaluated: true });
   });
 
-  it("returns the stored run", async () => {
+  it("returns the stored scripted run with live: null when no model-based run exists", async () => {
     await mkdir(path.join(dir, "eval-results"));
     await writeFile(path.join(dir, "eval-results", "latest.json"), JSON.stringify(sample));
     const res = await GET();
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual(sample);
+    expect(await res.json()).toEqual({ scripted: sample, live: null });
+  });
+
+  it("returns both latest.json and latest-live.json when present", async () => {
+    const live: EvalRun = { ...sample, runId: "eval-live", mode: "live_gemini", kind: "model_based", modelId: "gemini-test" };
+    await mkdir(path.join(dir, "eval-results"));
+    await writeFile(path.join(dir, "eval-results", "latest.json"), JSON.stringify(sample));
+    await writeFile(path.join(dir, "eval-results", "latest-live.json"), JSON.stringify({ ...live, partial: true }));
+    const res = await GET();
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ scripted: sample, live: { ...live, partial: true } });
+  });
+
+  it("returns the live run alone, and flags an unreadable live file without failing", async () => {
+    await mkdir(path.join(dir, "eval-results"));
+    await writeFile(path.join(dir, "eval-results", "latest-live.json"), JSON.stringify(sample));
+    expect(await (await GET()).json()).toEqual({ scripted: null, live: sample });
+
+    await writeFile(path.join(dir, "eval-results", "latest.json"), JSON.stringify(sample));
+    await writeFile(path.join(dir, "eval-results", "latest-live.json"), "{not json");
+    const res = await GET();
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.scripted).toEqual(sample);
+    expect(body.live).toBeNull();
+    expect(body.liveError).toMatch(/unreadable/);
   });
 
   it("500 without echoing content when the file is not a valid EvalRun", async () => {

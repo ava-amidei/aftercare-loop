@@ -644,6 +644,62 @@ export const references: EvidenceReference[] = [
   },
 
   // -------------------------------------------------------------------------
+  // Heart failure, chronic kidney disease, diuretics, potassium (validation fix #22)
+  // -------------------------------------------------------------------------
+  {
+    id: "ref-medlineplus-heart-failure",
+    title: "Heart Failure",
+    organization: MEDLINEPLUS,
+    publisherType: "government",
+    url: "https://medlineplus.gov/heartfailure.html",
+    kind: "patient_education",
+    topics: ["heart failure", "fluid buildup", "daily weights"],
+    accessedAt: ACCESSED,
+    summary:
+      "Plain-language overview of heart failure: what it means when the heart does not pump as well as the body needs, common symptoms such as swelling and shortness of breath, and how it is treated and managed.",
+    language: "en",
+  },
+  {
+    id: "ref-niddk-chronic-kidney-disease",
+    title: "Chronic Kidney Disease (CKD)",
+    organization: "National Institute of Diabetes and Digestive and Kidney Diseases (NIDDK, NIH)",
+    publisherType: "government",
+    url: "https://www.niddk.nih.gov/health-information/kidney-disease/chronic-kidney-disease-ckd",
+    kind: "patient_education",
+    topics: ["chronic kidney disease", "kidney function"],
+    accessedAt: ACCESSED,
+    summary:
+      "NIH health information on chronic kidney disease covering what it is, common causes such as diabetes and high blood pressure, how kidney function is tested, and ways to manage it with a care team.",
+    language: "en",
+  },
+  {
+    id: "ref-medlineplus-furosemide",
+    title: "Furosemide (Drug Information)",
+    organization: MEDLINEPLUS,
+    publisherType: "government",
+    url: "https://medlineplus.gov/druginfo/meds/a682858.html",
+    kind: "patient_education",
+    topics: ["furosemide", "diuretic", "heart failure", "medication"],
+    accessedAt: ACCESSED,
+    summary:
+      "Drug information page for furosemide, a diuretic (water pill), describing what it is used for, how it is usually taken, precautions, and possible side effects; dosing decisions belong to the prescriber.",
+    language: "en",
+  },
+  {
+    id: "ref-medlineplus-potassium",
+    title: "Potassium",
+    organization: MEDLINEPLUS,
+    publisherType: "government",
+    url: "https://medlineplus.gov/potassium.html",
+    kind: "patient_education",
+    topics: ["potassium", "kidney function"],
+    accessedAt: ACCESSED,
+    summary:
+      "Overview of potassium, a mineral the body needs for nerves, muscles and the heart, including food sources and why some health conditions and medicines can make levels too high or too low.",
+    language: "en",
+  },
+
+  // -------------------------------------------------------------------------
   // Spanish-language MedlinePlus (language "es")
   // -------------------------------------------------------------------------
   {

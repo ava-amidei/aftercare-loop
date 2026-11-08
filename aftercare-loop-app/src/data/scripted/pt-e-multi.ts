@@ -46,14 +46,14 @@ export const scriptedPtE: ScriptedPatientContent = {
         find: "heart failure",
         definition:
           "A condition in which the heart does not pump as well as the body needs. It does not mean the heart has stopped. Fluid can build up in the body, which is why weight and fluids are tracked.",
-        referenceIds: [],
+        referenceIds: ["ref-medlineplus-heart-failure"],
       },
       {
         term: "Chronic kidney disease stage 3",
         find: "chronic kidney disease stage 3",
         definition:
           "Long-term reduced kidney function. Stages go from 1 to 5; stage 3 means moderately reduced function. Your summary says yours is reduced and stable.",
-        referenceIds: [],
+        referenceIds: ["ref-niddk-chronic-kidney-disease"],
       },
       {
         term: "A1C",
@@ -65,14 +65,14 @@ export const scriptedPtE: ScriptedPatientContent = {
         term: "Furosemide",
         find: "furosemide",
         definition: "A “water pill” (diuretic) that helps the body get rid of extra fluid through urine.",
-        referenceIds: [],
+        referenceIds: ["ref-medlineplus-furosemide"],
       },
       {
         term: "Potassium",
         find: "potassium",
         definition:
           "A mineral in the blood that helps muscles and the heart work. Some heart and kidney medicines can change potassium levels, which is one reason it is checked.",
-        referenceIds: [],
+        referenceIds: ["ref-medlineplus-potassium"],
       },
       {
         term: "Insulin glargine",
@@ -100,7 +100,7 @@ export const scriptedPtE: ScriptedPatientContent = {
     limitations: [
       "Your summary does not say how to handle thirst or high blood sugar within your fluid limit; ask your care team.",
       "Your summary does not say which medicine became expensive or what the lower-cost options are.",
-      "Your summary does not link to education materials about heart failure or kidney disease, and this demo's reference library does not include one yet — ask your care team for trusted materials.",
+      "Your summary does not link to education materials about heart failure or kidney disease; the general references shown here are not specific to you, so ask your care team which materials fit your situation.",
     ],
     safetyFlags: [
       {
@@ -119,7 +119,14 @@ export const scriptedPtE: ScriptedPatientContent = {
           "Your summary's “When to seek care” section says to call 911 for chest pain, severe shortness of breath, trouble breathing when lying flat that does not improve when sitting up, or coughing up pink, frothy mucus.",
       },
     ],
-    referenceIds: ["ref-medlineplus-type2-diabetes", "ref-medlineplus-a1c-test", "ref-medlineplus-save-money-medicines"],
+    referenceIds: [
+      "ref-medlineplus-heart-failure",
+      "ref-niddk-chronic-kidney-disease",
+      "ref-medlineplus-type2-diabetes",
+      "ref-medlineplus-a1c-test",
+      "ref-medlineplus-furosemide",
+      "ref-medlineplus-save-money-medicines",
+    ],
   },
 
   quickPrompts: {
@@ -137,21 +144,21 @@ export const scriptedPtE: ScriptedPatientContent = {
       content:
         "Your summary documents three conditions:\n\n• Heart failure — “improving since your hospital stay, and your lungs sounded clear today.”\n• Chronic kidney disease stage 3 — kidney function “reduced and stable.”\n• Type 2 diabetes, listed in your health profile; your summary notes a most recent A1C of 7.6%.\n\nBecause you have heart failure and kidney disease together, your summary says the amount of fluid you drink matters more for you than for most people. Your clinician can explain how these conditions affect each other for you.",
       sourceQuotes: [Q.improving, Q.kidney, Q.a1c, Q.matters],
-      referenceIds: ["ref-medlineplus-type2-diabetes"],
+      referenceIds: ["ref-medlineplus-heart-failure", "ref-niddk-chronic-kidney-disease", "ref-medlineplus-type2-diabetes"],
       actions: [{ kind: "view_source", label: "View original source", payload: { quote: Q.matters } }],
     },
     understand_my_results: {
       content:
         "Here is what your summary says about your results:\n\n• Weight: 168 pounds, 9 pounds less than in the hospital.\n• Kidney function: reduced and stable, consistent with chronic kidney disease stage 3.\n• A1C: 7.6% (this reflects average blood sugar over the past few months).\n• Lungs: sounded clear today.\n\nYour kidney function and potassium blood work is due by October 30, 2026.",
       sourceQuotes: [Q.weight, Q.kidney, Q.a1c, Q.improving, Q.labs],
-      referenceIds: ["ref-medlineplus-a1c-test"],
+      referenceIds: ["ref-medlineplus-a1c-test", "ref-niddk-chronic-kidney-disease", "ref-medlineplus-potassium"],
       actions: [{ kind: "view_source", label: "View original source", payload: { quote: Q.a1c } }],
     },
     plan_next_steps: {
       content:
         "Your summary lists five clinician-documented steps:\n\n1. Take furosemide 40 mg once each morning.\n2. Limit total fluids to 1.5 liters (about 6 cups) per day, including soups and drinks.\n3. Weigh yourself every morning and write it down.\n4. Call the clinic if your weight goes up by more than 2 pounds in one day or 5 pounds in one week.\n5. Get kidney function and potassium blood work by October 30, 2026.\n\nYou mentioned a medicine has become expensive. Your summary says the clinic pharmacist can review lower-cost options and patient assistance programs with you — and asks you to tell the clinic before skipping or stretching any medicine.",
       sourceQuotes: [Q.furosemide, Q.fluidLimit, Q.weigh, Q.callWeight, Q.labs, Q.pharmacist, Q.tellCost],
-      referenceIds: ["ref-medlineplus-save-money-medicines"],
+      referenceIds: ["ref-medlineplus-furosemide", "ref-medlineplus-save-money-medicines"],
       actions: [
         { kind: "view_action_plan", label: "View my action plan" },
         { kind: "add_question", label: "Ask about lower-cost options", payload: { question: "Can I meet with the clinic pharmacist about lower-cost options for my medicine?" } },
@@ -220,7 +227,7 @@ export const scriptedPtE: ScriptedPatientContent = {
         content:
           "Your summary says: “Weigh yourself every morning after using the bathroom and before breakfast, and write down your weight.” and “Call the clinic if your weight goes up by more than 2 pounds in one day or 5 pounds in one week.”\n\nIn general, quick weight gain can be a sign of fluid buildup, which is why daily weights are part of many heart failure plans.",
         sourceQuotes: [Q.weigh, Q.callWeight],
-        referenceIds: [],
+        referenceIds: ["ref-medlineplus-heart-failure"],
         actions: [{ kind: "check_understanding", label: "Check my understanding", payload: { questionId: "tb-pt-e-3" } }],
       },
     },
@@ -232,7 +239,7 @@ export const scriptedPtE: ScriptedPatientContent = {
         content:
           "Your summary says: “Get blood work for kidney function and potassium at the lab by October 30, 2026.” It doesn't give a date for your next visit, but it asks you to bring your weight log and diabetes class handout to it.",
         sourceQuotes: [Q.labs, Q.bring],
-        referenceIds: [],
+        referenceIds: ["ref-niddk-chronic-kidney-disease", "ref-medlineplus-potassium"],
         actions: [{ kind: "view_action_plan", label: "View my action plan" }],
       },
     },

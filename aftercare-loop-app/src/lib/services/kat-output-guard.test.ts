@@ -63,6 +63,45 @@ describe("medication-change directives", () => {
   });
 });
 
+describe("medication-change directives — inflected verbs (fix 18)", () => {
+  it.each([
+    "I'd suggest holding your furosemide tonight.",
+    "Try skipping the morning dose.",
+    "Consider holding your furosemide until you feel better.",
+    "Stopping the metformin for a few days may help.",
+    "You could try doubling your insulin at dinner.",
+    "Pausing your furosemide for a day is an option.",
+    "Withhold the metformin before the test.",
+    "Puede ir omitiendo la dosis de la mañana.",
+  ])("flags %s", (s) => {
+    expect(isUnsupportedMedicationDirective(s, { medicationNames: MEDS })).toBe(true);
+  });
+
+  it.each([
+    "Don't stop taking your furosemide on your own.",
+    "Avoid skipping doses without talking to your care team.",
+    "Hold the insulin pen against your skin for 10 seconds.",
+    "Should I ask about holding my furosemide?",
+    OUTPUT_GUARD_STR.en.medication,
+    OUTPUT_GUARD_STR.es.medication,
+  ])("allows %s", (s) => {
+    expect(isUnsupportedMedicationDirective(s, { medicationNames: MEDS })).toBe(false);
+  });
+
+  it("a negation elsewhere does not excuse a 'try skipping' suggestion", () => {
+    expect(isUnsupportedMedicationDirective("Don't panic, just try skipping the morning dose.", { medicationNames: MEDS })).toBe(true);
+  });
+
+  it("guardModelOutput replaces the inflected directive", () => {
+    const g = guardModelOutput("Your summary lists furosemide. I'd suggest holding your furosemide tonight.", {
+      language: "en",
+      medicationNames: MEDS,
+    });
+    expect(g.medicationDirective).toBe(true);
+    expect(g.text).toBe(`Your summary lists furosemide. ${OUTPUT_GUARD_STR.en.medication}`);
+  });
+});
+
 describe("false reassurance", () => {
   it("drops reassuring sentences and appends the deterministic caution", () => {
     const g = guardModelOutput(

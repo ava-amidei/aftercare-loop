@@ -33,7 +33,16 @@ export const scriptedPtA: ScriptedPatientContent = {
   language: "en",
   interpretation: {
     whatThisMeans:
-      "Your after-visit summary says your symptoms, lab results, and ultrasound together fit polycystic ovary syndrome (PCOS). It describes PCOS as a common hormone condition that can affect periods, skin, hair growth, and how the body uses insulin. Your testosterone level was mildly elevated, and your fasting insulin was elevated, which your clinician wrote suggests insulin resistance. The many small follicles seen on your ultrasound are described as not dangerous cysts, and your thyroid and prolactin tests came back in the normal range. Your clinician started metformin and asked you to get a fasting blood test, track your periods, and come back in 3 months. This explains what your summary says; it is not a new diagnosis or medical advice.",
+      "Your summary says your symptoms, labs, and ultrasound fit polycystic ovary syndrome (PCOS). " +
+      "PCOS is a common hormone condition. " +
+      "It can affect periods, skin, hair growth, and how your body uses insulin. " +
+      "Your testosterone was slightly high, and your fasting insulin was high. " +
+      "Your care team wrote that this suggests insulin resistance. " +
+      "Your ultrasound showed many small follicles, which are not dangerous cysts. " +
+      "Your thyroid and prolactin tests were in the normal range. " +
+      "Your care team started metformin and asked for a fasting blood test. " +
+      "They also asked you to track your periods and return in 3 months. " +
+      "This explains your summary; it is not a new diagnosis or medical advice.",
     terms: [
       {
         term: "Polycystic ovary syndrome (PCOS)",

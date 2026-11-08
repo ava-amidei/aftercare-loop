@@ -9,10 +9,10 @@ export const safety = {
   "safety.crisis.title": "You don't have to face this alone",
   "safety.crisis.call988":
     "In the US, call or text 988 to reach the 988 Suicide & Crisis Lifeline. If you are in immediate danger, call 911.",
-  "safety.concerning.title": "Please check with a clinician soon",
+  "safety.concerning.title": "Please check with your care team soon",
   "safety.concerning.body":
     "Kat can't assess symptoms. Please contact your care team or an urgent care provider promptly.",
-  "safety.clarify.title": "Check this with your clinician",
+  "safety.clarify.title": "Check this with your care team",
   "safety.info.title": "Good to know",
   "safety.documentFlag": "Your document mentions something that may need prompt attention.",
   "safety.limits":

@@ -125,7 +125,11 @@ export function ActionPlanView({ fetchImpl }: ActionPlanViewProps = {}) {
   const actions = useMemo(() => session?.actions ?? [], [session]);
   const grouped = useMemo(() => groupActionPlan(actions), [actions]);
   const counts = sectionCounts(grouped);
-  const progress = actionProgress(actions);
+  // Fix 13: AI suggestions are optional ideas, not steps — they never inflate the progress count.
+  const progress = useMemo(
+    () => actionProgress(actions.filter((a) => a.origin === "clinician_documented" || a.origin === "patient_selected")),
+    [actions],
+  );
   const docsById = useMemo(
     () => new Map<string, VisitDocument>((session?.documents ?? []).map((d) => [d.id, d])),
     [session],

@@ -10,7 +10,7 @@ import type { understand as en } from "../en/understand";
 export const understand = {
   "understand.title": "Entender mi salud",
   "understand.subtitle":
-    "Pregunte sobre un tema de salud o pegue el resumen de su consulta para recibir una explicación en lenguaje sencillo.",
+    "Pregunte sobre un tema de salud o pegue el resumen de su consulta para que se lo expliquemos.",
 
   "understand.input.topicLabel": "Pregunte sobre una condición, un término o una duda",
   "understand.input.topicPlaceholder": "Escriba una palabra o pregunta de su consulta",

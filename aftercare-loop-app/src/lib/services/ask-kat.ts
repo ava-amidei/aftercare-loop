@@ -61,7 +61,16 @@ export const MAX_HISTORY_TURNS = 10;
 const EVIDENCE_LIMIT = 5;
 
 export const SCRIPTED_UNSUPPORTED_ES =
-  "Esta demostración con respuestas predefinidas no puede responder esa pregunta. Agregue una ANTHROPIC_API_KEY para habilitar respuestas en vivo.";
+  "Esta demostración con respuestas predefinidas no puede responder esa pregunta. Agregue una clave de proveedor (GEMINI_API_KEY o ANTHROPIC_API_KEY) para habilitar respuestas en vivo.";
+
+/**
+ * Patient-facing close for a safety-`concerning` message with no scripted
+ * match. Replaces the unsupported text so patients never see a developer hint.
+ */
+export const SCRIPTED_CONCERNING_NO_MATCH = {
+  en: "I don't have more on this in your summary; please contact your care team.",
+  es: "No tengo más información sobre esto en su resumen; comuníquese con su equipo de atención médica.",
+} as const;
 
 const STR = {
   en: {
@@ -422,7 +431,12 @@ export async function askKat(
     const scripted = deps.getScriptedKatReply(req.patientId, req.message, req.quickPrompt);
     if (!scripted) {
       const draft: KatDraft = {
-        content: language === "es" ? SCRIPTED_UNSUPPORTED_ES : SCRIPTED_UNSUPPORTED,
+        content:
+          safety.level === "concerning"
+            ? SCRIPTED_CONCERNING_NO_MATCH[language === "es" ? "es" : "en"]
+            : language === "es"
+              ? SCRIPTED_UNSUPPORTED_ES
+              : SCRIPTED_UNSUPPORTED,
         sourceRefs: [],
         referenceIds: [],
         actions: [],

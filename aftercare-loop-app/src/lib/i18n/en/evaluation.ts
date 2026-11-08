@@ -140,4 +140,30 @@ export const evaluation = {
   "evaluation.case.failed": "Failed",
   "evaluation.case.expected": "Expected",
   "evaluation.case.actual": "Actual",
+  // Honesty captions (VALIDATION-REPORT fix 4): what each suite really measures in this run.
+  "evaluation.honesty.label": "What this measures",
+  "evaluation.honesty.instruction_extraction":
+    "Scripted patients use predefined instructions, so their results match by construction. Only heuristic-extracted patients (no scripted response) measure extraction.",
+  "evaluation.honesty.citation_validity":
+    "This checks the source-verification pipeline (each quote must equal the document text at its offsets), not a model's citation accuracy.",
+  "evaluation.honesty.comprehension":
+    "Simulated answers taken from the question record (accepted variations and wrong choices), not answers from real patients.",
+  "evaluation.card.runLine": "Run {runId} · suite {suiteVersion} · {kind}",
+
+  // Scripted vs model-based runs (VALIDATION-REPORT fix 10)
+  "evaluation.runs.title": "Runs on record",
+  "evaluation.runs.scripted.title": "Scripted run (deterministic, no model calls)",
+  "evaluation.runs.scripted.file": "From eval-results/latest.json, written by npm run eval.",
+  "evaluation.runs.scripted.missing": "No scripted run has been recorded yet. Run npm run eval.",
+  "evaluation.runs.live.title": "Model-based run (live provider)",
+  "evaluation.runs.live.file": "From eval-results/latest-live.json, written by npm run eval -- --mode live --out latest-live.json.",
+  "evaluation.runs.live.missing": "No model-based run has been recorded yet.",
+  "evaluation.runs.live.notModel":
+    "No extraction in this file came from the live model, so it is recorded as a deterministic run.",
+  "evaluation.runs.liveSources": "Extraction source per patient: {live} from the live model, {fallback} fell back to the heuristic extractor, {skipped} not run.",
+  "evaluation.runs.partial":
+    "Partial run: the time budget ran out before every case was executed. Cases that did not run are shown as not evaluated.",
+  "evaluation.results.label": "Show results for",
+  "evaluation.results.scripted": "Scripted run",
+  "evaluation.results.live": "Model-based run",
 } satisfies Namespaced<"evaluation">;

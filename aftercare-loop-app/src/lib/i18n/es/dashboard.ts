@@ -20,7 +20,7 @@ export const dashboard = {
 
   "dashboard.start.title": "Comience por entender el resumen de su consulta",
   "dashboard.start.body":
-    "Kat puede explicarle en lenguaje sencillo el resumen ficticio de su consulta y señalar los pasos de seguimiento que anotó su profesional de salud.",
+    "Kat le explica su resumen con palabras sencillas y le muestra los pasos que anotó su equipo de atención.",
   "dashboard.start.cta": "Entender el resumen de mi consulta",
 
   "dashboard.askKat.cta": "Ask Kat",

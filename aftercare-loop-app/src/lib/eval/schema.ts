@@ -52,7 +52,15 @@ export const EvalRunSchema = z.object({
     .optional(),
   cases: z.array(EvalCaseResultSchema),
   errors: z.array(z.string()),
+  /**
+   * true when a model-based run stopped early (time budget) and some cases were
+   * not executed. Absent on complete runs. Not part of the shared EvalRun type.
+   */
+  partial: z.boolean().optional(),
 });
+
+/** An EvalRun as stored on disk (adds the optional `partial` marker). */
+export type StoredEvalRun = z.infer<typeof EvalRunSchema>;
 
 // Compile-time check that the schema output stays assignable to the shared type.
 type _SchemaMatchesType = z.infer<typeof EvalRunSchema> extends EvalRun ? true : never;

@@ -146,4 +146,28 @@ export const evaluation = {
   "evaluation.case.failed": "No aprobado",
   "evaluation.case.expected": "Esperado",
   "evaluation.case.actual": "Obtenido",
+  "evaluation.honesty.label": "Qué mide esto",
+  "evaluation.honesty.instruction_extraction":
+    "Los pacientes con guion usan instrucciones predefinidas, así que sus resultados coinciden por construcción. Solo los pacientes con extracción heurística (sin respuesta con guion) miden la extracción.",
+  "evaluation.honesty.citation_validity":
+    "Esto comprueba el proceso de verificación de fuentes (cada cita debe ser igual al texto del documento en su posición), no la precisión de las citas de un modelo.",
+  "evaluation.honesty.comprehension":
+    "Respuestas simuladas tomadas del registro de la pregunta (variantes aceptadas y opciones incorrectas), no respuestas de pacientes reales.",
+  "evaluation.card.runLine": "Ejecución {runId} · pruebas {suiteVersion} · {kind}",
+
+  "evaluation.runs.title": "Ejecuciones registradas",
+  "evaluation.runs.scripted.title": "Ejecución con guion (determinista, sin llamadas al modelo)",
+  "evaluation.runs.scripted.file": "De eval-results/latest.json, generado con npm run eval.",
+  "evaluation.runs.scripted.missing": "Todavía no hay una ejecución con guion. Ejecute npm run eval.",
+  "evaluation.runs.live.title": "Ejecución basada en el modelo (proveedor en vivo)",
+  "evaluation.runs.live.file": "De eval-results/latest-live.json, generado con npm run eval -- --mode live --out latest-live.json.",
+  "evaluation.runs.live.missing": "Todavía no se ha registrado una ejecución basada en el modelo.",
+  "evaluation.runs.live.notModel":
+    "Ninguna extracción de este archivo provino del modelo en vivo, así que se registra como ejecución determinista.",
+  "evaluation.runs.liveSources": "Origen de la extracción por paciente: {live} del modelo en vivo, {fallback} con el extractor heurístico de respaldo, {skipped} sin ejecutar.",
+  "evaluation.runs.partial":
+    "Ejecución parcial: se agotó el tiempo antes de ejecutar todos los casos. Los casos que no se ejecutaron aparecen como sin evaluar.",
+  "evaluation.results.label": "Mostrar resultados de",
+  "evaluation.results.scripted": "Ejecución con guion",
+  "evaluation.results.live": "Ejecución basada en el modelo",
 } satisfies FeatureTranslation<typeof en>;

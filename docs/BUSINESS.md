@@ -31,26 +31,66 @@ are users, not customers.
 | Phase | Goal | Gate to move on |
 |---|---|---|
 | **0 — Prototype & validation** (current) | Working MVP on synthetic data. Conversations with clinicians, patients and community organizations to test the problem and the workflow. | Clear evidence of need from target organizations. Clinician review of the content approach. |
-| **1 — Pilot** | A small pilot with one partner organization, **only after** privacy, security and clinical review (see `SECURITY-ROADMAP.md`). | HIPAA assessment and BAAs complete. Clinical safety review signed off. Pilot evaluation plan agreed with the partner. |
-| **2 — Facility-based subscriptions** | Tiered subscriptions priced per facility (for example by site or patient panel size), with onboarding and support. | Pilot results reviewed with the partner. Pricing validated with buyers. |
-| **3 — Expansion** | More organizations, languages and integrations (e.g. EHR via standard interfaces). | Proven operations, security posture and partner outcomes measured in practice. |
+| **1 — Pilot** | A pilot with one FQHC partner (see "Pilot design (hypothesis)"), **only after** privacy, security and clinical review (see `SECURITY-ROADMAP.md`). | HIPAA assessment and BAAs complete. Clinical safety review signed off. Pilot evaluation plan agreed with the partner. |
+| **2 — Facility-based subscriptions** | Tiered subscriptions per service site per year, by active panel size (hypothesis, see "Pricing and budget owner"), with onboarding and support. | Pilot results reviewed with the partner. Pricing validated with buyers. |
+| **3 — Expansion** | More organizations, languages and integrations (e.g. SMART on FHIR launch from the EHR). | Proven operations, security posture and partner outcomes measured in practice. |
 
-## Revenue assumptions to validate
+## Why continuity matters to the buyer (cited baseline)
 
-- **Facility subscriptions are the working hypothesis.** Willingness to pay, budget owner (quality,
-  care management, patient experience, grants) and pricing unit are all unvalidated.
+Figures in this section come from `docs/research/EVIDENCE-BRIEF.md`. They describe the problem, not
+anything Aftercare Loop has achieved.
+
+- **Postpartum follow-up:** "Nationally, less than 60% of Medicaid-enrolled women attend their
+  postpartum visit" (Rodin D et al., *J Womens Health* 2019;28(9):1246-1253,
+  https://doi.org/10.1089/jwh.2018.7568; EVIDENCE-BRIEF §4d). The barriers it names include
+  information gaps, transportation, childcare and depression.
+- **Recall after visits:** one week after an outpatient specialty visit, only 49% of
+  recommendations were recalled accurately, and teach-back by providers was "rare" (Laws MB et al.,
+  *PLoS ONE* 2018; EVIDENCE-BRIEF §1c).
+
+## Pilot design (hypothesis)
+
+Nothing here has been agreed with a partner, and no pilot has run. Every number in this section is a
+**planning hypothesis** to validate with the partner site. None of them is a result or a target we
+have evidence for. The pilot only starts after the Phase 1 gate (privacy, security and clinical
+review; see `SECURITY-ROADMAP.md`).
+
+| Element | Hypothesis |
+|---|---|
+| Site | One FQHC service site (hypothesis) |
+| Duration | 8–12 weeks (hypothesis) |
+| Participants | About 50 consenting adult patients, enrolled at a visit (hypothesis) |
+| Primary KPI | Share of clinician-documented next steps completed by the next visit (patient-reported in the app and confirmed by staff at that visit) |
+| Secondary KPIs | Teach-back correct on the first attempt vs after clarification; number of unresolved items handed to the care team; staff minutes spent on follow-up questions per patient; System Usability Scale (SUS) score |
+| Comparison | To agree with the partner (for example, the site's own baseline for the same visit types). No comparison group has been designed yet |
+| Review | Human review of a sample of explanations and summaries by the partner's clinicians before and during the pilot |
+
+The primary KPI uses the product's own unit: every next step in My Care Plan is traceable to the
+exact words of the visit summary, so "completed by the next visit" can be counted per documented
+step. We don't predict an effect size. The Rodin 2019 figure is the reason a postpartum or
+chronic-care program might care, not a benchmark we expect to move.
+
+## Pricing and budget owner (hypotheses to validate)
+
+- **Pricing unit (hypothesis):** a subscription **per service site per year**, tiered by **active
+  patient panel size**. We have no price points. Willingness to pay is untested.
+- **Candidate budget owners (unvalidated):** quality improvement, care management or care
+  coordination, patient experience, and grant-funded maternal health or rural health programs.
+  Which one owns the decision is a question for the first partner conversations.
+- **Patients never pay.** The organization is the buyer. Patients are users, not customers.
 - **Reimbursement is not assumed.** We don't assume that Medicare, Medicaid or any other payer will
   pay for this tool or for related services. Any reimbursement pathway needs validation with
   billing, compliance and legal experts.
 - **Grant and program funding** (for example maternal health or rural health programs) may help
   early pilots. This is unconfirmed.
 
-## What we would measure in a pilot
+## Distribution path
 
-These are pilot hypotheses, not results: patient comprehension of documented instructions
-(teach-back), completion of documented next steps, clarification requests resolved before the next
-visit, staff time spent on follow-up questions, and patient-reported usability. Any claim about
-outcomes would wait for properly designed, human-reviewed evaluation.
+| Stage | How a patient gets the summary into Aftercare Loop |
+|---|---|
+| **Today (MVP)** | Paste the after-visit summary text or upload a `.txt` file; the app installs as a PWA on a phone. Fictional data only. |
+| **Pilot (hypothesis)** | The clinic hands out a QR code or sends an SMS link at check-out. The patient opens the app and adds the summary. Requires the Phase 1 gate. |
+| **Phase 3 (roadmap)** | SMART on FHIR launch from the EHR, so the summary arrives without copy and paste. Not built. |
 
 ## Risks
 

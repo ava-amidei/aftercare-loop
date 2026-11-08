@@ -17,7 +17,7 @@ export const actionPlan = {
 
   "actionPlan.category.care_plan": "Mi plan de cuidado",
   "actionPlan.category.care_planHint":
-    "Pasos que su profesional de salud anotó en el resumen de su consulta.",
+    "Pasos que su equipo de atención anotó en el resumen de su consulta.",
   "actionPlan.category.wellness_goal": "Mis metas de bienestar",
   "actionPlan.category.wellness_goalHint": "Metas que usted eligió.",
   "actionPlan.category.provider_question": "Preguntas para mi profesional de salud",

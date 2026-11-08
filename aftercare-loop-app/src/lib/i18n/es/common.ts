@@ -59,10 +59,10 @@ export const common = {
   "common.mode.scripted":
     "Modo de demostración con guion — Las respuestas están predefinidas con fines de demostración.",
   "common.mode.scriptedShort": "Modo de demostración con guion",
-  "common.mode.live": "Respuestas en vivo generadas por Claude.",
+  "common.mode.live": "Respuestas en vivo generadas por un modelo de IA.",
   "common.mode.liveShort": "IA en vivo",
   "common.mode.unsupported":
-    "Esta demostración con guion no puede responder esa pregunta. Agregue una ANTHROPIC_API_KEY para activar las respuestas en vivo.",
+    "Esta demostración con guion no puede responder esa pregunta. Agregue una clave de proveedor (GEMINI_API_KEY o ANTHROPIC_API_KEY) para activar las respuestas en vivo.",
 
   "common.disclaimer.education":
     "Aftercare Loop ofrece educación sobre la salud, no consejo médico. Siga siempre las indicaciones de su equipo de atención médica.",
@@ -70,7 +70,11 @@ export const common = {
   "common.origin.clinician_documented": "De su profesional de salud",
   "common.origin.patient_selected": "Elegido por usted",
   "common.origin.ai_suggested": "Sugerido por Kat",
-  "common.verification.verified": "Coincide con su documento",
+  "common.origin.clinician_documentedDescription": "Su equipo de atención lo escribió en el documento de su consulta.",
+  "common.origin.patient_selectedDescription": "Una meta que usted eligió.",
+  "common.origin.ai_suggestedDescription": "Una sugerencia de Ask Kat. No es una indicación de su profesional de salud.",
+  "common.verification.verified": "Coincide con el texto de su resumen",
+  "common.verification.needsClarification": "No verificado — necesita aclaración",
   "common.verification.unverified": "No se encontró en su documento",
   "common.verification.not_applicable": "Sin fuente en el documento",
 

@@ -9,7 +9,7 @@ export const actionPlan = {
   "actionPlan.categoryEmpty": "Nothing here yet.",
 
   "actionPlan.category.care_plan": "My Care Plan",
-  "actionPlan.category.care_planHint": "Steps your clinician documented in your visit summary.",
+  "actionPlan.category.care_planHint": "Steps your care team wrote in your visit summary.",
   "actionPlan.category.wellness_goal": "My Wellness Goals",
   "actionPlan.category.wellness_goalHint": "Goals you chose for yourself.",
   "actionPlan.category.provider_question": "Questions for My Provider",

@@ -2,7 +2,7 @@ import type { Namespaced } from "../types";
 
 export const understand = {
   "understand.title": "Understand My Health",
-  "understand.subtitle": "Ask about a health topic, or paste your after-visit summary to get a plain-language explanation.",
+  "understand.subtitle": "Ask about a health topic, or paste your visit summary to have it explained.",
 
   "understand.input.topicLabel": "Ask about a condition, term, or question",
   "understand.input.topicPlaceholder": "Type a word or question from your visit",

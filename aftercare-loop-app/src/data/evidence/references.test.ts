@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { getReferenceById, references, EVIDENCE_ACCESSED_AT } from "@/data/evidence";
 
 describe("curated evidence index", () => {
-  it("has 35–50 references with unique ids and urls", () => {
+  it("has 35–55 references with unique ids and urls", () => {
     expect(references.length).toBeGreaterThanOrEqual(35);
-    expect(references.length).toBeLessThanOrEqual(50);
+    expect(references.length).toBeLessThanOrEqual(55);
     expect(new Set(references.map((r) => r.id)).size).toBe(references.length);
     expect(new Set(references.map((r) => r.url)).size).toBe(references.length);
   });
@@ -74,9 +74,22 @@ describe("curated evidence index", () => {
       "financial assistance",
       "988",
       "emergency warning signs",
+      "heart failure",
+      "chronic kidney disease",
+      "furosemide",
+      "potassium",
     ]) {
       expect(tags.has(t), t).toBe(true);
     }
+  });
+
+  it("includes the heart failure, CKD, furosemide and potassium pages from validation fix #22", () => {
+    expect(getReferenceById("ref-medlineplus-heart-failure")?.url).toBe("https://medlineplus.gov/heartfailure.html");
+    expect(getReferenceById("ref-niddk-chronic-kidney-disease")?.url).toBe(
+      "https://www.niddk.nih.gov/health-information/kidney-disease/chronic-kidney-disease-ckd",
+    );
+    expect(getReferenceById("ref-medlineplus-furosemide")?.url).toBe("https://medlineplus.gov/druginfo/meds/a682858.html");
+    expect(getReferenceById("ref-medlineplus-potassium")?.url).toBe("https://medlineplus.gov/potassium.html");
   });
 
   it("getReferenceById finds known ids and returns undefined otherwise", () => {

@@ -56,13 +56,11 @@ const emergencies: Case[] = [
   { input: "im thinking about sucide", level: "emergency", scenario: "suicidal_ideation_or_self_harm" },
   // postpartum
   { input: "I gave birth 10 days ago and I'm soaking a pad every hour", level: "emergency", scenario: "severe_postpartum_warning" },
-  { input: "Since my delivery I have a fever of 101.2", level: "emergency", scenario: "severe_postpartum_warning" },
   { input: "postpartum: severe headache and blurry vision", level: "emergency", scenario: "severe_postpartum_warning" },
-  { input: "My calf is swollen and painful after my c-section", level: "emergency", scenario: "severe_postpartum_warning" },
   { input: "I have scary thoughts about hurting my baby", level: "emergency", scenario: "severe_postpartum_warning" },
-  { input: "Di a luz hace una semana y tengo fiebre de 38.5", level: "emergency", scenario: "severe_postpartum_warning" },
   { input: "Empapo una toalla cada hora después del parto", level: "emergency", scenario: "severe_postpartum_warning" },
-  { input: "I have a temperature of 100.4", level: "emergency", scenario: "severe_postpartum_warning", postpartumContext: true },
+  { input: "two weeks postpartum and i just had a seizure", level: "emergency", scenario: "severe_postpartum_warning" },
+  { input: "Since my delivery I'm short of breath", level: "emergency", scenario: "severe_postpartum_warning" },
 ];
 
 const concerning: Case[] = [
@@ -438,5 +436,132 @@ describe("evaluateSafety — fix round 2 wording variants", () => {
   ];
   it.each(controls)("control: $input", (c) => {
     check(c);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Judge-panel fixes 6, 12, 19 (docs/VALIDATION-REPORT.md §4).
+// ---------------------------------------------------------------------------
+
+describe("evaluateSafety — postpartum fever and calf follow the 'call the clinic' tier (fix 6)", () => {
+  const PP = "severe_postpartum_warning" as const;
+  const clinicTier: Case[] = [
+    { input: "Since my delivery I have a fever of 101.2", level: "concerning", scenario: PP },
+    { input: "I gave birth 10 days ago and I have a fever of 100.6", level: "concerning", scenario: PP },
+    { input: "My calf is swollen and painful after my c-section", level: "concerning", scenario: PP },
+    { input: "Di a luz hace una semana y tengo fiebre de 38.5", level: "concerning", scenario: PP },
+    { input: "I have a temperature of 100.4", level: "concerning", scenario: PP, postpartumContext: true },
+    { input: "one leg is red and swollen", level: "concerning", scenario: PP, postpartumContext: true },
+  ];
+  it.each(clinicTier)("concerning with postpartum care-team guidance: $input", (c) => {
+    const v = check(c);
+    expect(v.guidance).toMatch(/care team/);
+    expect(v.guidance).toMatch(/after giving birth/);
+  });
+
+  const stillEmergency: Case[] = [
+    { input: "two weeks postpartum and i just had a seizure", level: "emergency", scenario: PP },
+    { input: "I gave birth 10 days ago and I'm soaking a pad every hour", level: "emergency", scenario: PP },
+    { input: "postpartum: severe headache and blurry vision", level: "emergency", scenario: PP },
+    { input: "had my baby last week, one leg is swollen red and painful and now im short of breath", level: "emergency", scenario: PP },
+    { input: "fever of 101 and chest pain since my delivery", level: "emergency" },
+    { input: "I have scary thoughts about hurting my baby", level: "emergency", scenario: PP },
+    { input: "postpartum and I want to kill myself", level: "emergency", scenario: "suicidal_ideation_or_self_harm" },
+    { input: "fever of 102 and I can't breathe", level: "emergency", postpartumContext: true },
+  ];
+  it.each(stillEmergency)("still emergency: $input", (c) => {
+    const v = check(c);
+    expect(v.guidance).toMatch(/911/);
+  });
+
+  it("mild postpartum shortness of breath stays concerning", () => {
+    const v = evaluateSafety("I'm a little short of breath", { postpartumContext: true });
+    expect(v.level).toBe("concerning");
+  });
+
+  it("non-postpartum fever stays concerning without a scenario", () => {
+    const v = evaluateSafety("I have a fever of 101");
+    expect(v.level).toBe("concerning");
+    expect(v.scenario).toBeUndefined();
+  });
+});
+
+describe("evaluateSafety — ambiguous overdose wording (fix 12)", () => {
+  const SELF_HARM = "suicidal_ideation_or_self_harm" as const;
+  const variants: Case[] = [
+    { input: "I took a few extra pills to make it all stop.", level: "concerning", scenario: SELF_HARM },
+    { input: "i took some pills to make everything go away", level: "concerning", scenario: SELF_HARM },
+    { input: "I took too many pills to stop the thoughts.", level: "concerning", scenario: SELF_HARM },
+    { input: "I've taken extra sleeping pills to make the feelings stop.", level: "concerning", scenario: SELF_HARM },
+    { input: "I took all my pills to make it stop", level: "concerning", scenario: SELF_HARM },
+    { input: "Me tomé unas pastillas de más para que todo pare.", level: "concerning", scenario: SELF_HARM },
+  ];
+  it.each(variants)("concerning with crisis line: $input", (c) => {
+    const v = check(c);
+    expect(v.guidance).toMatch(/988/);
+  });
+
+  it("pills taken to end it or not wake up are emergencies", () => {
+    for (const input of ["I took a few pills to end it", "I took some extra pills to not wake up"]) {
+      const v = evaluateSafety(input);
+      expect(v.level).toBe("emergency");
+      expect(v.scenario).toBe(SELF_HARM);
+      expect(v.guidance).toMatch(/988/);
+    }
+  });
+
+  const controls: Case[] = [
+    { input: "I took some extra pills to make up for the dose I missed.", level: "none" },
+    { input: "I took a few ibuprofen pills to stop my headache.", level: "none" },
+    { input: "I took all my pills this morning like I was supposed to.", level: "none" },
+  ];
+  it.each(controls)("control: $input", (c) => {
+    check(c);
+  });
+});
+
+describe("evaluateSafety — postpartum mood distress (fix 12)", () => {
+  const PP = "severe_postpartum_warning" as const;
+  const variants: Case[] = [
+    { input: "I can't bond with my baby", level: "concerning", scenario: PP },
+    { input: "since the baby came i feel like a terrible mother", level: "concerning", scenario: PP },
+    { input: "Three weeks postpartum and I've been crying all day", level: "concerning", scenario: PP },
+    { input: "No quiero a mi bebé", level: "concerning", scenario: PP },
+    { input: "I'm a terrible mom", level: "concerning", scenario: PP, postpartumContext: true },
+    { input: "I don't feel connected to my baby at all", level: "concerning", scenario: PP },
+  ];
+  it.each(variants)("concerning with care-team guidance: $input", (c) => {
+    const v = check(c);
+    expect(v.guidance).toMatch(/care team/);
+    expect(v.guidance).not.toMatch(/911 \(or your local emergency number\) now/);
+  });
+
+  const controls: Case[] = [
+    { input: "My baby has been crying all day, is that normal for a newborn?", level: "none" },
+    { input: "Can I bond with my baby during skin-to-skin after a c-section?", level: "none" },
+    // Outside pregnancy/postpartum context the signal is not counted.
+    { input: "I feel like a terrible mother since my son left for college", level: "none" },
+    { input: "I was crying all day after the movie", level: "none" },
+  ];
+  it.each(controls)("control: $input", (c) => {
+    check(c);
+  });
+});
+
+describe("evaluateSafety — resolved symptoms with time-of-day words (fix 19)", () => {
+  const cases: Case[] = [
+    { input: "I had chest pain this morning but it's gone now.", level: "concerning", scenario: "chest_pain" },
+    { input: "Shortness of breath this morning, but it went away after I sat down.", level: "none" },
+    { input: "I had a fever of 101 last night but it's gone now.", level: "none" },
+    { input: "Ayer me dolió un poco la cabeza, pero ya se me quitó.", level: "none" },
+  ];
+  it.each(cases)("$input", (c) => {
+    check(c);
+  });
+
+  it("an ongoing symptom in the same message is not dampened", () => {
+    expect(evaluateSafety("I had chest pain this morning, it went away but it came back now").level).toBe("emergency");
+    expect(evaluateSafety("It went away this morning but my chest still hurts").level).toBe("emergency");
+    expect(evaluateSafety("crushing chest pain right now").level).toBe("emergency");
   });
 });

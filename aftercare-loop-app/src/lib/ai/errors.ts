@@ -44,7 +44,7 @@ export const AI_ERROR_MESSAGES: Record<AiErrorKind, string> = {
   rate_limit: "Kat is getting a lot of requests right now. Please try again in a moment.",
   api: "Kat couldn't reach the AI service. Please try again.",
   unavailable:
-    "Live AI responses are not enabled. Add an ANTHROPIC_API_KEY to enable live responses.",
+    "Live AI responses are not enabled. Add a provider key (GEMINI_API_KEY or ANTHROPIC_API_KEY) to enable live responses.",
 };
 
 export function aiFailure(kind: AiErrorKind, error: string = AI_ERROR_MESSAGES[kind]): AiFailure {

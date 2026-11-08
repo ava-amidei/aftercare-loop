@@ -41,7 +41,7 @@ describe("dictionaries", () => {
       "Scripted Demo Mode — Responses are predefined for demonstration purposes.",
     );
     expect(t("en", "common.mode.unsupported")).toBe(
-      "This scripted demonstration can't answer that question. Add an ANTHROPIC_API_KEY to enable live responses.",
+      "This scripted demonstration can't answer that question. Add a provider key (GEMINI_API_KEY or ANTHROPIC_API_KEY) to enable live responses.",
     );
     expect(t("en", "check.reexplain")).toBe("Let me explain that another way.");
     expect(t("en", "careTeam.fictional")).toBe("Fictional simulation");

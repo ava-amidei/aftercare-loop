@@ -1,5 +1,6 @@
 import { CheckCircleIcon, DocumentTextIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import type { SourceRef, SourceVerification, VisitDocument } from "@/lib/types";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils/cn";
 import { excerptAround } from "@/lib/utils/text";
 
@@ -17,6 +18,7 @@ export interface SourceQuoteProps {
   contextChars?: number;
   onViewSource?: () => void;
   viewSourceHref?: string;
+  /** Defaults to the localized "View source". */
   viewSourceLabel?: string;
   className?: string;
 }
@@ -31,9 +33,11 @@ export function SourceQuote({
   contextChars = 60,
   onViewSource,
   viewSourceHref,
-  viewSourceLabel = "View source",
+  viewSourceLabel,
   className,
 }: SourceQuoteProps) {
+  const t = useT();
+  const viewLabel = viewSourceLabel ?? t("common.viewSource");
   const text = quote ?? sourceRef?.quote ?? "";
   const offsetsMatch =
     document && sourceRef ? document.text.slice(sourceRef.start, sourceRef.end) === sourceRef.quote : undefined;
@@ -71,13 +75,13 @@ export function SourceQuote({
         {status === "verified" && (
           <span className="inline-flex items-center gap-1 font-medium text-success-strong">
             <CheckCircleIcon aria-hidden="true" className="size-4" />
-            Matches your document
+            {t("common.verification.verified")}
           </span>
         )}
         {status === "unverified" && (
           <span className="inline-flex items-center gap-1 font-medium text-warning-strong">
             <ExclamationTriangleIcon aria-hidden="true" className="size-4" />
-            Not verified — needs clarification
+            {t("common.verification.needsClarification")}
           </span>
         )}
         {viewSourceHref ? (
@@ -85,7 +89,7 @@ export function SourceQuote({
             href={viewSourceHref}
             className="ml-auto inline-flex min-h-11 items-center font-semibold text-primary-800 underline underline-offset-4 hover:text-primary-900"
           >
-            {viewSourceLabel}
+            {viewLabel}
           </a>
         ) : onViewSource ? (
           <button
@@ -93,7 +97,7 @@ export function SourceQuote({
             onClick={onViewSource}
             className="ml-auto inline-flex min-h-11 items-center rounded-full px-1 font-semibold text-primary-800 underline underline-offset-4 hover:text-primary-900"
           >
-            {viewSourceLabel}
+            {viewLabel}
           </button>
         ) : null}
       </figcaption>

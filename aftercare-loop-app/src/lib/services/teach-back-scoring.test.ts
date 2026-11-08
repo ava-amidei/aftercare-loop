@@ -123,3 +123,79 @@ describe("concept matching", () => {
     expect(scoreTeachBack(base, r)).toEqual(scoreTeachBack(base, r));
   });
 });
+
+// ---------------------------------------------------------------------------
+// Judge-panel fix 5 (docs/VALIDATION-REPORT.md §4): misconceptions veto
+// free-text correctness; optional required concepts.
+// ---------------------------------------------------------------------------
+
+describe("misconception veto and required concepts (fix 5)", () => {
+  const q = (id: string): TeachBackQuestion => {
+    const found = allQuestions.find((x) => x.id === id);
+    if (!found) throw new Error(`missing ${id}`);
+    return found;
+  };
+  const withRequired = (question: TeachBackQuestion, requiredConcepts: string[]): TeachBackQuestion => ({
+    ...question,
+    scoring: { ...question.scoring, requiredConcepts } as TeachBackQuestion["scoring"],
+  });
+
+  it("tb-pt-e-3: 'take an extra water pill and call the clinic' is incorrect with the misunderstanding", () => {
+    const r = scoreTeachBack(q("tb-pt-e-3"), "take an extra water pill and call the clinic");
+    expect(r.correct).toBe(false);
+    expect(r.matchedBy).toBe("none");
+    expect(r.misunderstanding).toMatch(/Do not change your medicine/);
+  });
+
+  it("tb-pt-b-3: 'wait and call the clinic tomorrow' is incorrect with the misunderstanding", () => {
+    const r = scoreTeachBack(q("tb-pt-b-3"), "wait and call the clinic tomorrow");
+    expect(r.correct).toBe(false);
+    expect(r.misunderstanding).toMatch(/same-day call/);
+  });
+
+  it("tb-pt-e-3: 'wait and call the clinic next week' is incorrect", () => {
+    expect(scoreTeachBack(q("tb-pt-e-3"), "wait and call the clinic next week").correct).toBe(false);
+  });
+
+  it("a choice or an exact accepted variation is not vetoed", () => {
+    expect(scoreTeachBack(q("tb-pt-b-3"), "a").correct).toBe(true);
+    expect(scoreTeachBack(q("tb-pt-e-3"), "Call the clinic if I gain 2 pounds in a day").correct).toBe(true);
+    expect(scoreTeachBack(q("tb-pt-b-3"), "Call the clinic the same day.").correct).toBe(true);
+  });
+
+  it("a negated misconception phrase does not veto ('don't wait')", () => {
+    const r = scoreTeachBack(q("tb-pt-b-3"), "Don't wait, call the clinic the same day");
+    expect(r.correct).toBe(true);
+    const e = scoreTeachBack(q("tb-pt-e-3"), "I would not take an extra water pill, I'd call the clinic about 2 pounds");
+    expect(e.correct).toBe(true);
+    // A new subject ends the negation: "won't call, I'd wait" still says wait.
+    expect(scoreTeachBack(q("tb-pt-b-3"), "I won't call the clinic, I'd wait").correct).toBe(false);
+  });
+
+  it("every fixture's expected answer and accepted variations still score correct", () => {
+    for (const question of allQuestions) {
+      for (const v of [question.expectedAnswer, ...question.acceptedVariations]) {
+        expect({ id: question.id, v, correct: scoreTeachBack(question, v).correct }).toEqual({ id: question.id, v, correct: true });
+      }
+    }
+  });
+
+  it("required concept 'same day|today' (tb-pt-b-3): generic concepts alone are not enough", () => {
+    const req = withRequired(q("tb-pt-b-3"), ["same day|today"]);
+    expect(scoreTeachBack(req, "call the clinic").correct).toBe(false);
+    expect(scoreTeachBack(req, "call the clinic tomorrow").correct).toBe(false);
+    expect(scoreTeachBack(req, "I'd phone the clinic today").correct).toBe(true);
+    expect(scoreTeachBack(req, "call the clinic on the same day").correct).toBe(true);
+    // Unchanged when the field is absent.
+    expect(scoreTeachBack(q("tb-pt-b-3"), "call the clinic").correct).toBe(true);
+  });
+
+  it("required concept '2 pounds|5 pounds' (tb-pt-e-3)", () => {
+    const req = withRequired(q("tb-pt-e-3"), ["2 pounds|5 pounds"]);
+    expect(scoreTeachBack(req, "call the clinic").correct).toBe(false);
+    expect(scoreTeachBack(req, "call the clinic if I gain two pounds in a day").correct).toBe(true);
+    expect(scoreTeachBack(req, "phone the clinic if I'm up five pounds in a week").correct).toBe(true);
+    // Required concepts never bypass the misconception veto.
+    expect(scoreTeachBack(req, "take an extra water pill and call the clinic about 2 pounds").correct).toBe(false);
+  });
+});

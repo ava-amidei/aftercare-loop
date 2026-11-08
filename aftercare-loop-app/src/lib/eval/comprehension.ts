@@ -4,8 +4,12 @@
  *   2. score one distractor (a wrong choice text, or a misconception phrase)
  *                                                → expect incorrect + misunderstanding identified;
  *   3. clarify via the deterministic template path (never a live model call);
- *   4. retry with the question's expectedAnswer  → finalCorrect.
- * The answer key comes ONLY from the question record (ARCHITECTURE §5).
+ *   4. simulated retry with the LAST accepted variation (the patient's own
+ *      re-phrasing rather than the canonical key; falls back to expectedAnswer
+ *      only when the record has no variations) → finalCorrect. The case records
+ *      which source the retry used.
+ * The answer key comes ONLY from the question record (ARCHITECTURE §5). These
+ * are simulated answers, not real patient responses.
  */
 import type { EvalCaseResult, EvalMetric, Language, TeachBackQuestion, TeachBackScore as FullTeachBackScore } from "@/lib/types";
 import { countMetric, normalizeText, ratioMetric } from "./metrics";
@@ -32,6 +36,16 @@ export interface ComprehensionSuiteResult {
   metrics: EvalMetric[];
   cases: EvalCaseResult[];
   errors: string[];
+}
+
+/** Where the simulated post-clarification retry answer came from. */
+export type RetrySource = "accepted_variation" | "expected_answer";
+
+/** The retry answer: the last accepted variation, else the expected answer. */
+export function pickRetryAnswer(q: TeachBackQuestion): { text: string; source: RetrySource } {
+  const variations = q.acceptedVariations.filter((v) => v.trim().length > 0);
+  const last = variations[variations.length - 1];
+  return last !== undefined ? { text: last, source: "accepted_variation" } : { text: q.expectedAnswer, source: "expected_answer" };
 }
 
 export type DistractorSource = "wrong_choice_with_misconception" | "wrong_choice" | "misconception_phrase";
@@ -76,6 +90,8 @@ interface QuestionOutcome {
   variationResults: (TeachBackScore & { response: string })[];
   distractor: (TeachBackScore & { response: string; source: DistractorSource }) | null;
   clarification: string | null;
+  /** The simulated retry answer and its source; null when no retry ran. */
+  retry: { response: string; source: RetrySource } | null;
   finalCorrect: boolean | null;
 }
 
@@ -89,10 +105,10 @@ export function evaluateQuestion(
   const expectedScore = score(q, q.expectedAnswer);
   const variationResults = q.acceptedVariations.map((v) => ({ response: v, ...score(q, v) }));
   const picked = pickDistractor(q);
-  if (!picked) return { expectedScore, variationResults, distractor: null, clarification: null, finalCorrect: null };
+  if (!picked) return { expectedScore, variationResults, distractor: null, clarification: null, retry: null, finalCorrect: null };
 
   const distractor = { response: picked.text, source: picked.source, ...score(q, picked.text) };
-  if (distractor.correct) return { expectedScore, variationResults, distractor, clarification: null, finalCorrect: null };
+  if (distractor.correct) return { expectedScore, variationResults, distractor, clarification: null, retry: null, finalCorrect: null };
 
   const clarification = clarifyTemplate({
     question: q,
@@ -100,9 +116,10 @@ export function evaluateQuestion(
     misunderstanding: distractor.misunderstanding,
     language,
   });
-  // Simulated retry after the re-explanation, answered from the record's own key.
-  const finalCorrect = score(q, q.expectedAnswer).correct;
-  return { expectedScore, variationResults, distractor, clarification, finalCorrect };
+  // Simulated retry after the re-explanation: the last accepted variation (not the canonical key).
+  const retry = pickRetryAnswer(q);
+  const finalCorrect = score(q, retry.text).correct;
+  return { expectedScore, variationResults, distractor, clarification, retry: { response: retry.text, source: retry.source }, finalCorrect };
 }
 
 export function runComprehensionSuite(
@@ -166,7 +183,7 @@ export function runComprehensionSuite(
       passed: problems.length === 0,
       details:
         problems.length === 0
-          ? "Accepted answers scored correct; wrong answer caught, clarified, and the retry scored correct."
+          ? `Accepted answers scored correct; wrong answer caught, clarified, and the simulated retry (${o.retry?.source === "expected_answer" ? "expected answer" : "last accepted variation"}) scored correct.`
           : problems.join("; "),
       expected: { expectedAnswer: q.expectedAnswer, acceptedVariations: q.acceptedVariations.length },
       actual: {
@@ -183,6 +200,8 @@ export function runComprehensionSuite(
           : null,
         clarification: o.clarification,
         clarificationMode: o.clarification === null ? null : "deterministic_template",
+        retryResponse: o.retry?.response ?? null,
+        retrySource: o.retry?.source ?? null,
         finalCorrect: o.finalCorrect,
       },
     });

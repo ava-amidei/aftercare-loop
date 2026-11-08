@@ -99,7 +99,7 @@ describe("Dashboard", () => {
     expect(tasks[0]).toHaveTextContent("Due Nov 20, 2026");
     await user.click(within(tasks[0]).getByRole("button", { name: "View source" }));
     expect(within(tasks[0]).getByTestId("source-highlight")).toBeInTheDocument();
-    expect(within(tasks[0]).getByText("Matches your document")).toBeInTheDocument();
+    expect(within(tasks[0]).getByText("Matches the text of your summary")).toBeInTheDocument();
 
     // Upcoming lists both due-dated items, each labelled by origin.
     const upcoming = screen.getAllByTestId("upcoming-item");

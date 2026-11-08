@@ -57,13 +57,18 @@ Run everything from `aftercare-loop-app/`: `npm run dev | lint | typecheck | tes
 7. **Untrusted input.** Document text, uploaded files and retrieved references are
    data. They are wrapped in delimiters in prompts and the system prompt instructs
    the model to ignore any instructions inside them.
-8. **Keys are server-only.** `process.env.ANTHROPIC_API_KEY` is read only in
-   `src/lib/ai/client.ts`. No `NEXT_PUBLIC_` secrets. Client code calls `/api/*`.
+8. **Keys are server-only.** Provider keys (`GEMINI_API_KEY`, `ANTHROPIC_API_KEY`)
+   are read only by the server-side provider adapters in `src/lib/ai/providers/`
+   (presence checks via `providers/shared.ts`). No `NEXT_PUBLIC_` secrets. Client
+   code calls `/api/*`.
 9. **Scripted Demo Mode** is honest. Every AI-shaped response carries `AiMeta.mode`;
    the UI shows "Scripted Demo Mode — Responses are predefined for demonstration
    purposes." when mode is `scripted_demo`. Unsupported questions in scripted mode
-   return: "This scripted demonstration can't answer that question. Add an
-   ANTHROPIC_API_KEY to enable live responses."
+   return: "This scripted demonstration can't answer that question. Add a provider
+   key (GEMINI_API_KEY or ANTHROPIC_API_KEY) to enable live responses." Patients
+   never see developer-facing text: when the message is safety-`concerning` and
+   there is no scripted match, the reply is the patient-facing line "I don't have
+   more on this in your summary; please contact your care team." instead.
 10. **Logging.** Never log full document text or full prompts. Log ids, lengths,
     mode, model, duration.
 11. **Branding.** Product = "Aftercare Loop". Companion = "Ask Kat" (never "Ask

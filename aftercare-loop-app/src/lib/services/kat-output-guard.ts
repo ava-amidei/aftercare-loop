@@ -9,6 +9,7 @@
  */
 import { containsFalseReassurance } from "@/lib/safety";
 import type { Language, VisitDocument } from "@/lib/types";
+import { MED_CHANGE_VERB_SOURCE } from "@/lib/safety/advice-guards";
 import { isMedicationChangeDirective } from "./action-plan";
 
 export const OUTPUT_GUARD_STR = {
@@ -62,17 +63,29 @@ export function stripDocumentQuotes(sentence: string, document?: VisitDocument |
   });
 }
 
-const VERB_MATCH =
-  /\b(?:increase|decrease|reduce|raise|lower|double|halve|cut back|stop|skip|change|adjust|switch|taper|discontinue|titrate|aumente|aumentar|disminuya|disminuir|reduzca|reducir|suspenda|suspender|cambie|cambiar|omita|omitir)\b/gi;
-const NEGATED_BEFORE = /(?:\b(?:do not|don't|dont|never|not|no)\s+(?:to\s+)?)$/i;
-const OTHER_TRIGGERS = /\b(?:instead|more often|less often|extra dose|deje de|dejar de|en lugar de|m[aá]s seguido)\b/i;
+/** Same verb list (base + inflected forms) as isMedicationChangeDirective. */
+const VERB_MATCH = new RegExp(`\\b(?:${MED_CHANGE_VERB_SOURCE})\\b`, "gi");
+const NEGATED_BEFORE = /(?:\b(?:do not|don't|dont|never|not|no|avoid|evite|evitar)\s+(?:to\s+)?)$/i;
+/** Wording that makes a sentence a change suggestion even next to a negation. */
+const OTHER_TRIGGERS =
+  /\b(?:instead|more often|less often|extra dose|deje de|dejar de|en lugar de|m[aá]s seguido|(?:try|trying|consider|considering|maybe|could|might|you can|you could|it's ok to|it is ok to|okay to)\s+(?:skipping|holding|withholding|stopping|pausing|lowering|reducing|doubling|halving|cutting back|cutting down|skip|hold|stop|pause|lower|reduce|double|halve))\b/i;
+
+/** "I can't advise changing, skipping or stopping…": every verb after the frame is negated. */
+const NEGATED_FRAME =
+  /\b(?:can't|cannot|can not|won't|will not|don't|do not|never)\s+(?:advise|recommend|suggest|tell you to)\b|\bno (?:puedo|debo) (?:aconsejar\w*|recomendar\w*|sugerir\w*)/i;
 
 /** "Don't change your dose on your own" restates a limit, not a change. */
 function isOnlyNegatedChange(sentence: string): boolean {
   if (OTHER_TRIGGERS.test(sentence)) return false;
   const s = sentence.replace(/[‘’]/g, "'");
   const matches = [...s.matchAll(VERB_MATCH)];
-  return matches.length > 0 && matches.every((m) => NEGATED_BEFORE.test(s.slice(0, m.index)));
+  return (
+    matches.length > 0 &&
+    matches.every((m) => {
+      const before = s.slice(0, m.index);
+      return NEGATED_BEFORE.test(before) || NEGATED_FRAME.test(before);
+    })
+  );
 }
 
 /** "Take an extra 40 mg", "take another pill", "double up" — not covered by the shared verb list. */

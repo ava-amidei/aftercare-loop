@@ -7,10 +7,9 @@ not medical advice, not a medical device, and not HIPAA-compliant (see `SECURITY
 
 - **Synthetic data only.** There are twelve fictional patients (`src/data/patients/`). None are
   based on real people or records.
-- **Scripted Demo Mode covers seven of the twelve patients.** Predefined responses exist for
-  patients A–E and for the two Spanish-language patients F and I (`src/data/scripted/`). The other
-  fixtures need live mode for AI-shaped content. In
-  scripted mode, questions outside the script get a fixed "can't answer that" message instead of a
+- **Scripted Demo Mode covers 7 of the 12 patients (2 in Spanish).** Predefined responses exist
+  for patients A–E and for the two Spanish-language patients F and I (`src/data/scripted/`). The
+  other five fixtures need live mode for AI-shaped content. In scripted mode, questions outside the script get a fixed "can't answer that" message instead of a
   guess.
 - **Live mode depends on an external model.** With `ANTHROPIC_API_KEY` set, output is model
   generated. It is schema-validated and source-checked, but not reviewed by a clinician. Wording
@@ -20,8 +19,8 @@ not medical advice, not a medical device, and not HIPAA-compliant (see `SECURITY
 
 ## Evidence
 
-- **Small curated index.** Retrieval uses tag and keyword scoring over a hand-curated list of about
-  50 references (`src/data/evidence/`). It isn't comprehensive. When nothing relevant is found, the
+- **Small curated index.** Retrieval uses tag and keyword scoring over a hand-curated list of 54
+  references (`src/data/evidence/`). It isn't comprehensive. When nothing relevant is found, the
   app says so instead of citing something loosely related.
 - **Summaries are our own words.** Curated summaries paraphrase each source. Links were checked on
   the accessed date recorded in each reference, but they can change.
@@ -37,7 +36,9 @@ not medical advice, not a medical device, and not HIPAA-compliant (see `SECURITY
   to the rules.
 - **Guidance is US-centric.** Emergency guidance references 911 and the 988 Suicide & Crisis
   Lifeline.
-- **No real escalation.** Nothing reaches a real clinician. The care-team queue is a simulation.
+- **No real escalation.** Nothing reaches a real clinician. The clinician communication summary
+  ships today at `/follow-up`: the patient can review, edit and copy it, but nothing is transmitted.
+  The care-team queue is a simulation.
 
 ## Evaluation
 
@@ -65,10 +66,13 @@ not medical advice, not a medical device, and not HIPAA-compliant (see `SECURITY
 
 ## Roadmap
 
-**P1 (next, within MVP scope):** in-app reminders, the simulated care-team queue, and Spanish are
-partly in place and need polish and broader scripted coverage. Remaining P1 work: PDF extraction,
-better retrieval (more curated sources, optional live MedlinePlus), evaluation dashboard
-improvements, human-reviewed evaluation of a sample of outputs, and moderated usability sessions.
+**Shipped today (MVP):** Understand, Ask Kat, teach-back, the action plan with source links, in-app
+reminders, the clinician communication summary at `/follow-up`, the simulated care-team queue, the
+evaluation dashboard, and Scripted Demo Mode for 7 of 12 patients (2 in Spanish).
+
+**P1 (next):** PDF extraction, broader Spanish, and a human-reviewed sample of outputs. After that:
+better retrieval (more curated sources, optional live MedlinePlus), a recorded model-based
+evaluation run, and moderated usability sessions.
 
 **P2 (roadmap only, not built):** EHR integration, wearables, real clinician messaging, refill
 integration, SMS/push reminders, cloud accounts, predictive models, and any real-PHI deployment.

@@ -52,6 +52,9 @@ describe("AppShell", () => {
     for (const el of labels) {
       expect(el.className).not.toMatch(/\btruncate\b|\bwhitespace-nowrap\b|\btext-ellipsis\b/);
       expect(el.className).toMatch(/\bbreak-words\b/);
+      // Fix 21: no mid-word hyphenation; labels inherit text-xs from the link.
+      expect(el.className).not.toMatch(/\bhyphens-auto\b/);
+      expect(el.closest("a")?.className).toMatch(/\btext-xs\b/);
     }
   });
 

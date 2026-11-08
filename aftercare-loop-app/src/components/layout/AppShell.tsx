@@ -56,7 +56,7 @@ function NavLink({
         href={item.href}
         aria-current={active ? "page" : undefined}
         className={cn(
-          "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-0.5 text-[0.6875rem] font-semibold leading-tight tracking-tight",
+          "flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl px-0 text-xs font-semibold leading-tight tracking-tighter",
           "motion-safe:transition-transform motion-safe:active:scale-95",
           active ? "font-bold text-gray-100" : "text-gray-70 hover:text-gray-90",
         )}
@@ -72,10 +72,10 @@ function NavLink({
         {/*
           Never truncate: at 375px a five-item bar leaves ~70px per label, so
           a long word ("Understand", "Seguimiento") or the larger_text pref
-          would clip. Labels wrap/hyphenate instead (data-nav-label is a
+          would clip. Labels wrap at word boundaries instead (data-nav-label is a
           test hook).
         */}
-        <span data-nav-label className="max-w-full text-center break-words hyphens-auto">
+        <span data-nav-label className="max-w-full text-center break-words">
           {label}
         </span>
       </Link>

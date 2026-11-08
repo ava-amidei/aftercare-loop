@@ -156,7 +156,7 @@ describe("ActionPlanView", () => {
     await hydrated();
 
     const card = await screen.findByTestId("action-card");
-    await userEvent.click(within(card).getByRole("radio", { name: /completed/i }));
+    await userEvent.click(within(card).getByRole("button", { name: /^done/i }));
 
     const stored = useDemoStore.getState().patients[patientId].actions.find((a) => a.id === "act-test-care");
     expect(stored?.status).toBe("completed");
@@ -167,8 +167,34 @@ describe("ActionPlanView", () => {
     cleanup();
     renderView();
     const again = await screen.findByTestId("action-card");
-    expect(within(again).getByRole("radio", { name: /completed/i })).toBeChecked();
+    expect(within(again).getByRole("button", { name: /^done/i })).toHaveAttribute("aria-pressed", "true");
     expect(again).toHaveAttribute("data-status", "completed");
+  });
+
+  it("moves an item to Needs Clarification from the More menu", async () => {
+    const { patientId } = activeFixture();
+    act(() => useDemoStore.getState().upsertActions(patientId, [verifiedCareItem()]));
+    renderView();
+    await hydrated();
+
+    const card = await screen.findByTestId("action-card");
+    const more = within(card).getByRole("button", { name: /^status/i });
+    expect(more).toHaveAttribute("aria-haspopup", "menu");
+    await userEvent.click(more);
+    const item = screen.getByRole("menuitemcheckbox", { name: /needs clarification/i });
+    expect(item).toHaveFocus();
+    await userEvent.click(item);
+    const stored = useDemoStore.getState().patients[patientId].actions.find((a) => a.id === "act-test-care");
+    expect(stored?.status).toBe("needs_clarification");
+    expect(screen.queryByRole("menu")).toBeNull();
+  });
+
+  it("counts only documented and patient-selected items in plan progress", async () => {
+    const { patientId } = activeFixture();
+    act(() => useDemoStore.getState().upsertActions(patientId, [verifiedCareItem(), barrierItem()]));
+    renderView();
+    await hydrated();
+    expect(await screen.findByTestId("plan-progress")).toHaveTextContent("0 of 1 steps completed");
   });
 
   it("shows the exact source passage for verified items", async () => {

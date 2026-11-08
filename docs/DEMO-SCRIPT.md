@@ -6,7 +6,8 @@
 Demo patient: **Maya Thompson** (`pt-a-pcos`), a fictional patient who lives in a rural area and is
 learning about a new PCOS diagnosis. All data is synthetic. Unless an API key is configured, the
 app runs in **Scripted Demo Mode**, and every AI-shaped response is labeled that way. Say so out
-loud.
+loud. Scripted Demo Mode covers 7 of the 12 fictional patients (2 in Spanish); the patients used
+below (Maya Thompson, Priya Shah) are both covered.
 
 Button labels below come from the English UI dictionaries (`aftercare-loop-app/src/lib/i18n/en/`).
 Rehearse once against the current build, because feature screens may still be changing.
@@ -75,7 +76,8 @@ Rehearse once against the current build, because feature screens may still be ch
 
 ## Scene 5 — Follow Up (3:30–4:15)
 
-1. Click **Follow Up** in the navigation.
+1. Click **Follow Up** in the navigation (`/follow-up`). The clinician communication summary ships
+   today; it is not a roadmap item.
 2. Show the summary for the care team: questions (including the one saved in Scene 2), reported
    barriers, unresolved items, and documented instructions with their sources.
 3. Edit a line of the summary text, then click **Copy summary**. Nothing is transmitted.
@@ -102,7 +104,8 @@ understand, verify, and follow through on documented care instructions.*
 
 ## If something goes wrong
 
-- Kat says the scripted demo can't answer: use the exact sample question above, or a suggestion chip.
+- Kat says the scripted demo can't answer: use the exact sample question above ("Can I drink water
+  before my blood test?"), or a suggestion chip. Don't improvise other wording on stage.
 - A judge asks Kat to change a medicine ("Can I double my metformin?", "I missed a dose"): Kat
   doesn't advise a change. She quotes the documented instruction and says the decision belongs to
   the care team. This is expected, so let it play.

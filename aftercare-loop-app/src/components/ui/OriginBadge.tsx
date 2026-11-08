@@ -1,5 +1,6 @@
 import { DocumentCheckIcon, SparklesIcon, UserIcon } from "@heroicons/react/24/outline";
 import type { HeroIcon } from "@/components/ui/icon";
+import { originDescriptionKey, originKey, useT } from "@/lib/i18n";
 import type { ActionOrigin } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -42,9 +43,9 @@ export const ORIGIN_LABELS: Record<ActionOrigin, string> = {
 
 export interface OriginBadgeProps {
   origin: ActionOrigin;
-  /** Override the label (e.g. translated text). */
+  /** Override the label. Default: canonical English label, localized label in other languages. */
   label?: string;
-  /** Override the tooltip / screen-reader description. */
+  /** Override the tooltip / screen-reader description. Default: localized description. */
   description?: string;
   size?: "sm" | "md";
   /** Render the description inline next to the label. */
@@ -60,10 +61,11 @@ export function OriginBadge({
   showDescription = false,
   className,
 }: OriginBadgeProps) {
+  const t = useT();
   const meta = ORIGIN_META[origin];
   const Icon = meta.Icon;
-  const text = label ?? meta.label;
-  const desc = description ?? meta.description;
+  const text = label ?? (t.lang === "en" ? meta.label : t(originKey(origin)));
+  const desc = description ?? (t.lang === "en" ? meta.description : t(originDescriptionKey(origin)));
   return (
     <span
       data-origin={origin}

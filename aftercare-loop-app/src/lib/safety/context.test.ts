@@ -16,10 +16,11 @@ describe("safetyContextOf", () => {
     expect(pregnant).toBeDefined();
     expect(hasDocumentedPregnancyOrPostpartumContext(pregnant)).toBe(true);
     const v = evaluateSafety("I have a fever of 101", { language: pregnant!.language, ...safetyContextOf(pregnant) });
-    expect(v.level).toBe("emergency");
+    // Fever follows the documented "call the clinic" tier (validation fix 6).
+    expect(v.level).toBe("concerning");
     expect(v.scenario).toBe("severe_postpartum_warning");
     // Guidance must not assume a birth has happened.
-    expect(v.guidance).toMatch(/pregnant or have given birth recently/);
+    expect(v.guidance).toMatch(/during pregnancy or after giving birth/);
   });
 
   it("is false for blank, missing or null profiles", () => {

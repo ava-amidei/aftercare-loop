@@ -17,6 +17,8 @@ function renderEditor() {
 }
 
 const store = () => useDemoStore.getState();
+/** Elements outside the Appearance card (its swatches/text-size radios apply immediately, not on Save). */
+const outsideAppearance = <T extends Element>(els: T[]) => els.filter((el) => !el.closest('[data-testid="appearance-section"]'));
 const activeProfile = () => store().patients[store().activePatientId]!.profile;
 
 async function ready() {
@@ -43,11 +45,14 @@ describe("ProfileEditor", () => {
       const { unmount } = renderEditor();
       await screen.findByRole("form");
       expect(screen.getByRole("heading", { level: 1 })).toBeInTheDocument();
-      // Same four sections for every patient.
-      expect(screen.getAllByRole("heading", { level: 2 })).toHaveLength(4);
+      // Same four sections for every patient, plus Appearance right after "How I like information".
+      // (About me, How I like information, Appearance, My health, Getting care — in the patient's language.)
+      const h2 = screen.getAllByRole("heading", { level: 2 });
+      expect(h2).toHaveLength(5);
+      expect(h2[2]).toBe(within(screen.getByTestId("appearance-section")).getByRole("heading", { level: 2 }));
       // All five barriers + four accessibility prefs, regardless of patient.
       expect(screen.getAllByRole("checkbox")).toHaveLength(9);
-      expect(screen.getAllByRole("radio")).toHaveLength(3);
+      expect(outsideAppearance(screen.getAllByRole("radio"))).toHaveLength(3);
       for (const c of p.conditions) {
         expect(screen.getByRole("button", { name: c, pressed: true })).toBeInTheDocument();
       }
@@ -95,7 +100,7 @@ describe("ProfileEditor", () => {
     await user.click(screen.getAllByRole("button", { name: "Discard changes" })[0]!);
     expect(screen.getByLabelText("Name (fictional)")).toHaveValue(activeProfile().displayName);
     const savedLevel = activeProfile().explanationLevel;
-    expect(screen.getByRole("radio", { checked: true })).toHaveAttribute("value", savedLevel);
+    expect(outsideAppearance(screen.getAllByRole("radio", { checked: true }))[0]).toHaveAttribute("value", savedLevel);
     expect(screen.getByTestId("profile-dirty-status")).toHaveTextContent("All changes saved.");
   });
 

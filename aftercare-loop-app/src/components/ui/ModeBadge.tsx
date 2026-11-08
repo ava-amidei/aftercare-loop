@@ -1,4 +1,5 @@
 import { BeakerIcon, SignalIcon } from "@heroicons/react/24/outline";
+import { useT } from "@/lib/i18n";
 import type { ResponseMode } from "@/lib/types";
 import { cn } from "@/lib/utils/cn";
 
@@ -21,9 +22,13 @@ export const MODE_LABELS: Record<ResponseMode, string> = {
 };
 
 /** "Live AI (Gemini · gemini-3.8-flash)" / "Live AI (Claude)" when the model is unknown. */
-export function liveModeLabel(mode: Exclude<ResponseMode, "scripted_demo">, model?: string): string {
+export function liveModeLabel(
+  mode: Exclude<ResponseMode, "scripted_demo">,
+  model?: string,
+  prefix: string = LIVE_MODE_LABEL,
+): string {
   const provider = LIVE_PROVIDER_LABELS[mode] ?? "AI";
-  return model ? `${LIVE_MODE_LABEL} (${provider} · ${model})` : `${LIVE_MODE_LABEL} (${provider})`;
+  return model ? `${prefix} (${provider} · ${model})` : `${prefix} (${provider})`;
 }
 
 export interface ModeBadgeProps {
@@ -39,11 +44,16 @@ export interface ModeBadgeProps {
 }
 
 export function ModeBadge({ mode, model, compact = false, className }: ModeBadgeProps) {
+  const t = useT();
   if (mode === "scripted_demo") {
+    // The English sentence is required verbatim (§2.9); non-English UIs add a
+    // translated second line rather than replacing it.
+    const translated = t.lang === "en" ? null : t("common.mode.scripted");
+    const showTranslation = translated !== null && translated !== SCRIPTED_MODE_LABEL;
     return (
       <span
         data-mode={mode}
-        title={SCRIPTED_MODE_LABEL}
+        title={showTranslation ? `${SCRIPTED_MODE_LABEL}\n${translated}` : SCRIPTED_MODE_LABEL}
         className={cn(
           "inline-flex max-w-full items-start gap-1.5 rounded-2xl bg-warning-soft px-3 py-1 text-sm text-warning-strong",
           className,
@@ -57,11 +67,23 @@ export function ModeBadge({ mode, model, compact = false, className }: ModeBadge
           ) : (
             <span> — {SCRIPTED_MODE_DETAIL}</span>
           )}
+          {showTranslation &&
+            (compact ? (
+              <span className="sr-only" lang={t.lang}>
+                {" "}
+                {translated}
+              </span>
+            ) : (
+              <span className="block" lang={t.lang} data-testid="mode-translation">
+                {translated}
+              </span>
+            ))}
         </span>
       </span>
     );
   }
-  const fullLabel = liveModeLabel(mode, model);
+  const livePrefix = t.lang === "en" ? LIVE_MODE_LABEL : t("common.mode.liveShort");
+  const fullLabel = liveModeLabel(mode, model, livePrefix);
   return (
     <span
       data-mode={mode}
@@ -72,7 +94,7 @@ export function ModeBadge({ mode, model, compact = false, className }: ModeBadge
       )}
     >
       <SignalIcon aria-hidden="true" className="size-4 shrink-0" />
-      <span className="font-semibold">{compact ? liveModeLabel(mode) : fullLabel}</span>
+      <span className="font-semibold">{compact ? liveModeLabel(mode, undefined, livePrefix) : fullLabel}</span>
     </span>
   );
 }

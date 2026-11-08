@@ -1,9 +1,9 @@
 "use client";
 
-import type { EvalRun } from "@/lib/types";
+import type { StoredEvalRun } from "@/lib/eval/schema";
 import { Alert, Badge, Card, CardHeader, CardTitle, ModeBadge } from "@/components/ui";
 import { evalKindKey, useT } from "@/lib/i18n";
-import { countCases, formatTimestamp } from "./format";
+import { countCases, extractionSourceCounts, formatTimestamp } from "./format";
 
 const KIND_VARIANT = {
   deterministic_synthetic: "info",
@@ -11,9 +11,23 @@ const KIND_VARIANT = {
   human_reviewed: "success",
 } as const;
 
+export interface RunMetadataProps {
+  run: StoredEvalRun;
+  /** Card title (defaults to "Run details"). */
+  title?: string;
+  /** One-line note under the title, e.g. which file the run came from. */
+  note?: string;
+  /** Unique id prefix when several RunMetadata blocks share a page. */
+  idPrefix?: string;
+  /** Show the per-patient extraction source line (model-based runs). */
+  showSources?: boolean;
+}
+
 /** Run identity: id, suite version, timestamp, mode, model and kind — straight from the file. */
-export function RunMetadata({ run }: { run: EvalRun }) {
+export function RunMetadata({ run, title, note, idPrefix = "eval-run", showSources = false }: RunMetadataProps) {
   const t = useT();
+  const titleId = `${idPrefix}-title`;
+  const sources = showSources ? extractionSourceCounts(run) : null;
   const counts = countCases(run.cases);
   const rows: { label: string; value: React.ReactNode }[] = [
     { label: t("evaluation.run.runId"), value: <span className="font-mono text-sm break-all">{run.runId}</span> },
@@ -61,10 +75,16 @@ export function RunMetadata({ run }: { run: EvalRun }) {
   ];
 
   return (
-    <Card role="region" aria-labelledby="eval-run-title">
+    <Card role="region" aria-labelledby={titleId} data-run-kind={run.kind}>
       <CardHeader>
-        <CardTitle id="eval-run-title">{t("evaluation.run.title")}</CardTitle>
+        <CardTitle id={titleId}>{title ?? t("evaluation.run.title")}</CardTitle>
+        {note && <p className="text-sm text-gray-70">{note}</p>}
       </CardHeader>
+      {run.partial && (
+        <Alert variant="warning" className="mb-4" data-testid="eval-run-partial">
+          <p>{t("evaluation.runs.partial")}</p>
+        </Alert>
+      )}
       <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
         {rows.map((r) => (
           <div key={r.label} className="flex min-w-0 flex-col gap-1">
@@ -73,6 +93,14 @@ export function RunMetadata({ run }: { run: EvalRun }) {
           </div>
         ))}
       </dl>
+      {sources && (
+        <p className="mt-4 text-sm text-gray-70">
+          {t("evaluation.runs.liveSources", { live: sources.live, fallback: sources.fallback, skipped: sources.skipped })}
+        </p>
+      )}
+      {showSources && run.kind !== "model_based" && (
+        <p className="mt-2 text-sm text-gray-70">{t("evaluation.runs.live.notModel")}</p>
+      )}
       {run.errors.length > 0 && (
         <Alert variant="warning" title={t("evaluation.run.errorsTitle")} className="mt-4">
           <ul className="list-disc pl-5 text-sm">

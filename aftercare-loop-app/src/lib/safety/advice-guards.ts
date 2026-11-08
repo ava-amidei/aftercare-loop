@@ -93,8 +93,22 @@ export function conflictsWithFluidRestriction(
 // Medication-change directives
 // ---------------------------------------------------------------------------
 
-const MED_CHANGE_VERB =
-  /\b(?:increase|decrease|reduce|raise|lower|double|halve|cut back|stop|skip|change|adjust|switch|taper|discontinue|titrate|instead|more often|less often|extra dose|aumente|aumentar|disminuya|disminuir|reduzca|reducir|suspenda|suspender|cambie|cambiar|deje de|dejar de|omita|omitir|en lugar de|m[aá]s seguido)\b/i;
+/**
+ * Medication-change verbs, base and inflected forms ("holding your furosemide",
+ * "try skipping the morning dose"). "hold" is not counted for device handling
+ * ("hold the pen for 10 seconds", "hold your breath").
+ */
+export const MED_CHANGE_VERB_SOURCE =
+  "increas(?:e|es|ing)|decreas(?:e|es|ing)|reduc(?:e|es|ing)|rais(?:e|es|ing)|lower(?:s|ing)?|doubl(?:e|es|ing)|halv(?:e|es|ing)|" +
+  "cut(?:ting)? (?:back|down)|stop(?:s|ping)?|skip(?:s|ping)?|chang(?:e|es|ing)|adjust(?:s|ing)?|switch(?:es|ing)?|" +
+  "taper(?:s|ing)?|discontinu(?:e|es|ing)|titrat(?:e|es|ing)|" +
+  "(?:with)?hold(?:s|ing)?(?!\\s+(?:(?:the|your|it|this)\\s+)?(?:\\w+\\s+)?(?:pen|needle|syringe|inhaler|pressure|breath|it in|in place|still|on|under))|" +
+  "paus(?:e|es|ing)|aumente|aumentar|aumentando|disminuya|disminuir|disminuyendo|reduzca|reducir|reduciendo|" +
+  "suspenda|suspender|suspendiendo|interrump(?:a|ir|iendo)|pausar|cambie|cambiar|cambiando|omita|omitir|omitiendo";
+const MED_CHANGE_VERB = new RegExp(
+  `\\b(?:${MED_CHANGE_VERB_SOURCE}|instead|more often|less often|extra dose|deje de|dejar de|dejando de|en lugar de|m[aá]s seguido)\\b`,
+  "i",
+);
 const MED_CHANGE_OBJECT =
   /\b(?:dose|doses|dosage|mg|mcg|units?|medications?|medicines?|meds|pills?|tablets?|insulin|prescriptions?|dosis|medicamentos?|medicinas?|pastillas?|unidades)\b/i;
 

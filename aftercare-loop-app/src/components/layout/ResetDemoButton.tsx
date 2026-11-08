@@ -7,6 +7,7 @@ import { Dialog } from "@/components/ui/Dialog";
 import { useToast } from "@/components/ui/Toast";
 import { getTranslator, useT } from "@/lib/i18n";
 import { useDemoStore } from "@/lib/store/demo-store";
+import { cn } from "@/lib/utils/cn";
 
 /**
  * Header "Reset Demo": confirm dialog → resetDemo() (restores fixtures for ALL
@@ -32,7 +33,7 @@ export function ResetDemoButton({ className }: { className?: string }) {
       <Button
         variant="ghost"
         size="sm"
-        className={className}
+        className={cn("min-w-11", className)}
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
         leftIcon={<ArrowUturnLeftIcon aria-hidden="true" className="size-4" />}

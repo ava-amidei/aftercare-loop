@@ -211,7 +211,7 @@ function segmentClauses(text: string): Clause[] {
     for (let i = sentenceStart; i < resolvedUpTo; i++) {
       const c = out[i]!;
       // A clause that itself says the symptom is ongoing ("my chest still hurts") is not resolved.
-      if (!ONGOING_MARKERS.test(c.text) && !PRESENT_OVERRIDE.test(c.text)) c.dampened = true;
+      if (!ONGOING_MARKERS.test(c.text) && !STILL_PRESENT.test(c.text)) c.dampened = true;
     }
   }
   return out;
@@ -255,11 +255,14 @@ type Signal =
   | "harm_baby"
   | "seizure_or_unresponsive"
   | "calf"
-  | "fever_mention";
+  | "fever_mention"
+  | "overdose_ambiguous"
+  | "mood_distress";
 
 const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
   chest_core: [
-    /\bchest (?:pain|pains|pressure|tightness|heaviness|discomfort|hurts|hurting|is hurting|squeezing|crushing|burning|feels like)\b/,
+    // "my chest still hurts" / "chest really hurts": an adverb must not defeat the match.
+    /\bchest (?:(?:still|really|also|now|just|so) )?(?:pain|pains|pressure|tightness|heaviness|discomfort|hurts|hurting|is hurting|squeezing|crushing|burning|feels like)\b/,
     // "chest is tight", "chest feels very heavy", "chest has been really tight":
     // intensifiers between the verb and the adjective must not defeat the match.
     /\bchest (?:is |feels |felt |has been |is feeling |keeps feeling |is getting |getting |got |went )?(?:(?:really|very|so|extremely|pretty|super|quite|incredibly|kind of|kinda|a little|a bit) ){0,2}(?:tight|heavy)\b/,
@@ -459,6 +462,9 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\b(?:estarian|estaria|estarias|estaran|estan) mejor sin mi\b/,
     /\bno (?:le )?veo (?:el )?sentido (?:a|de) (?:vivir|la vida|seguir viviendo)\b/,
     /\b(?:thoughts?|thinking) (?:of|about) (?:ending it|dying|death|not being here)\b/,
+    // Pills taken with a stated purpose of ending things (the ambiguous
+    // "to make it stop" wording is the concerning-tier overdose_ambiguous signal).
+    /\b(?:took|taken|swallowed|downed)\b(?: \w+){0,4}? (?:pills|meds|medications?|medicine|tablets)\b(?: \w+){0,3}? to (?:end (?:it|it all|everything|things|my life)|not wake up|never wake up)\b/,
     /\b(?:quiero|quisiera|queria) morir(?:me)?\b/,
     /\bme quiero morir\b/,
     /\b(?:quitarme|quitar mi) la vida\b/,
@@ -499,6 +505,28 @@ const SIGNAL_PATTERNS: Record<Signal, RegExp[]> = {
     /\bpierna (?:hinchada|roja|caliente)\b/,
   ],
   fever_mention: [/\b(?:high fever|very high fever|fiebre (?:muy )?alta)\b/],
+  // Extra pills taken "to make it stop": intent is unclear, so "concerning"
+  // with the crisis line (never silently "none"). "to make up for a missed
+  // dose" is an adherence question, not this signal.
+  overdose_ambiguous: [
+    /\b(?:took|taken|take|taking|swallowed|downed)\b (?:a few|some|extra|too many|all my|a bunch of|a handful of|a lot of)\b(?: \w+){0,3}? (?:pills|meds|medications?|medicine|tablets)\b(?: \w+){0,4}? to (?:make (?:it|it all|everything|this|things|the pain|the thoughts|all of it|the feelings?)(?: all)? (?:stop|go away|end|quiet)|stop (?:it|it all|everything|this|feeling|thinking|the thoughts|the feelings?)|end (?:it|it all|everything|this|things))\b/,
+    /\bme (?:tome|trague) (?:unas|varias|muchas|demasiadas|todas mis|algunas|un monton de)\b(?: \w+){0,3}? (?:pastillas|pildoras|medicinas|medicamentos)\b(?: \w+){0,4}? para (?:que (?:todo |esto |eso )?(?:pare|se acabe|termine|se detenga)|dejar de (?:sentir|pensar)|no sentir nada|olvidar)\b/,
+  ],
+  // Postpartum mood distress (counted only in pregnancy/postpartum context):
+  // "concerning" with care-team guidance.
+  mood_distress: [
+    /\b(?:cant|cannot|couldnt|unable to|not able to) (?:\w+ )?bond (?:with )?(?:my|the|her|him)\b/,
+    /\b(?:not|never) (?:really )?bond(?:ing|ed)? with (?:my|the) (?:baby|newborn|son|daughter)\b/,
+    /\b(?:dont|do not|cant|cannot) (?:\w+ )?(?:feel|feeling) (?:any |anything )?(?:connected|attached|bonded|love|anything) (?:to|for|with) (?:my|the) (?:baby|newborn|son|daughter)\b/,
+    /\b(?:im|i am|i feel like|i feel|feel like) (?:such |a |such a |the )?(?:terrible|horrible|awful|bad|failure of a|worst) (?:mother|mom|mum|parent)\b/,
+    /\b(?:i|im|i am|ive been|i have been|i keep|i just)(?: just| keep| been)? (?:crying|cry) all day\b/,
+    /\bi (?:cant|cannot) stop crying\b/,
+    /\bno quiero a mi (?:bebe|hijo|hija)\b/,
+    /\bno siento nada por mi (?:bebe|hijo|hija)\b/,
+    /\bsoy (?:una )?(?:mala|terrible|pesima|horrible) madre\b/,
+    /\b(?:lloro|llorando) todo el dia\b/,
+    /\bno (?:puedo|paro de) (?:dejar de )?llorar\b/,
+  ],
 };
 
 // Clause-level context markers.
@@ -521,6 +549,13 @@ const RESOLVED_MARKERS =
 /** Words saying a symptom is ongoing or recurring; they cancel a resolution marker. */
 const ONGOING_MARKERS =
   /\b(?:again|still|keeps?|came back|comes back|coming back|returned|worse|tonight|otra vez|de nuevo|todavia|sigo|aun|regreso|volvio)\b/;
+/**
+ * Words saying a symptom is happening now. Unlike PRESENT_OVERRIDE, time-of-day
+ * words ("this morning", "today") are absent: "I had chest pain this morning
+ * but it's gone now" is a resolved symptom.
+ */
+const STILL_PRESENT =
+  /\b(?:now|right now|currently|still|again|keeps?|ahora|ahorita|todavia|sigo|aun|otra vez|de nuevo)\b/;
 const PRESENT_OVERRIDE =
   /\b(?:now|right now|today|tonight|currently|again|this morning|this afternoon|this evening|still|since|keeps?|ahora|hoy|esta noche|otra vez|de nuevo|todavia|sigo|aun|desde)\b/;
 const HYPOTHETICAL_MARKERS =
@@ -581,7 +616,7 @@ const NEG_WINDOW_STOP = new Set(["and", "then", "so", "because", "also", "plus",
 const NEG_WINDOW = 4;
 
 /** Signals where negation only downgrades (never fully suppresses). */
-const NEGATION_DOWNGRADE_ONLY: ReadonlySet<Signal> = new Set<Signal>(["suicidal", "harm_baby"]);
+const NEGATION_DOWNGRADE_ONLY: ReadonlySet<Signal> = new Set<Signal>(["suicidal", "harm_baby", "overdose_ambiguous"]);
 
 // ---------------------------------------------------------------------------
 // 3. Matching with context
@@ -739,6 +774,17 @@ function evaluateHits(hits: Hit[], postpartum: boolean): Candidate[] {
   add("emergency", stateOf(suicidal), "suicidal_ideation_or_self_harm", suicidal, true);
   const hopeless = of("hopeless");
   add("concerning", stateOf(hopeless), "suicidal_ideation_or_self_harm", hopeless, true);
+  // Extra pills "to make it stop": intent unclear → concerning with the crisis line.
+  const overdose = of("overdose_ambiguous");
+  add("concerning", stateOf(overdose), "suicidal_ideation_or_self_harm", overdose, true);
+
+  // Postpartum mood distress ("can't bond", "terrible mother", "crying all day"):
+  // concerning with care-team guidance. Outside pregnancy/postpartum context
+  // these phrases are not escalated.
+  if (postpartum) {
+    const mood = of("mood_distress");
+    add("concerning", stateOf(mood), "severe_postpartum_warning", mood);
+  }
 
   // Thoughts of harming the baby (postpartum warning sign) — include crisis line.
   const harmBaby = of("harm_baby");
@@ -768,7 +814,16 @@ function evaluateHits(hits: Hit[], postpartum: boolean): Candidate[] {
   const breathE = of("breath_emergency");
   add("emergency", stateOf(breathE), "severe_breathing_difficulty", breathE);
   const breathC = of("breath_concerning");
-  add("concerning", stateOf(breathC), "severe_breathing_difficulty", breathC);
+  if (postpartum) {
+    // Pregnancy/postpartum: shortness of breath is a call-911 warning sign
+    // (mild wording such as "a little short of breath" stays concerning).
+    const breathCMild = breathC.filter((h) => h.mild);
+    const breathCFull = breathC.filter((h) => !h.mild);
+    add("emergency", stateOf(breathCFull), "severe_postpartum_warning", breathCFull);
+    add("concerning", stateOf(breathCMild), "severe_postpartum_warning", breathCMild);
+  } else {
+    add("concerning", stateOf(breathC), "severe_breathing_difficulty", breathC);
+  }
 
   // Stroke-like symptoms.
   const strokeE = of("stroke_emergency");
@@ -798,17 +853,15 @@ function evaluateHits(hits: Hit[], postpartum: boolean): Candidate[] {
   const bleedC = of("bleed_concerning");
   add("concerning", stateOf(bleedC), ppScenario("severe_bleeding"), bleedC);
 
-  // Fever ≥ 100.4 °F / 38 °C and calf pain/swelling: emergency-level postpartum
-  // warning signs; outside postpartum context, "concerning" without a scenario.
+  // Fever ≥ 100.4 °F / 38 °C and calf pain/swelling: "concerning" (call the
+  // care team the same day), matching the documented "Call the clinic" tier of
+  // postpartum discharge instructions; postpartum context sets the scenario.
+  // Escalation to emergency comes from co-occurring signals (e.g. shortness of
+  // breath, seizure), not from fever or calf alone.
   const fever = of("fever_mention");
-  const feverNumeric = fever.filter((h) => /\d/.test(h.phrase));
-  if (feverNumeric.length > 0) {
-    add(postpartum ? "emergency" : "concerning", stateOf(feverNumeric), ppScenario(undefined), fever);
-  } else {
-    add("concerning", stateOf(fever), ppScenario(undefined), fever);
-  }
+  add("concerning", stateOf(fever), ppScenario(undefined), fever);
   const calf = of("calf");
-  add(postpartum ? "emergency" : "concerning", stateOf(calf), ppScenario(undefined), calf);
+  add("concerning", stateOf(calf), ppScenario(undefined), calf);
 
   // Seizure / unresponsive.
   const seizure = of("seizure_or_unresponsive");

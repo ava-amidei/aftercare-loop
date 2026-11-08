@@ -30,7 +30,7 @@ const focusRing =
  * preview. Changes apply immediately (ThemeApplier) and are saved per
  * fictional patient; resetDemo() restores the defaults.
  */
-export function AppearanceSection() {
+export function AppearancePanel({ className }: { className?: string }) {
   const s = appearanceStrings(useCurrentLanguage());
   const hydrated = useHasHydrated();
   const headingId = useId();
@@ -41,7 +41,7 @@ export function AppearanceSection() {
   const setAppearance = useDemoStore((st) => st.setAppearance);
 
   if (!hydrated) {
-    return <Skeleton className="mt-4 h-72 w-full rounded-3xl" />;
+    return <Skeleton className={cn("h-72 w-full rounded-3xl", className)} />;
   }
 
   const accent = effectiveAccent(appearance);
@@ -49,7 +49,7 @@ export function AppearanceSection() {
   const scaleFromA11y = !appearance?.fontScale && a11y.includes("larger_text");
 
   return (
-    <section aria-labelledby={headingId} className="mt-4" data-testid="appearance-section">
+    <section aria-labelledby={headingId} className={className} data-testid="appearance-section">
       <Card className="flex flex-col gap-6">
         <CardHeader className="mb-0">
           <CardTitle as="h2" id={headingId}>

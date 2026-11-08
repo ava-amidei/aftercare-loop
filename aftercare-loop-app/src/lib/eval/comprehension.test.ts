@@ -2,7 +2,14 @@ import { describe, expect, it } from "vitest";
 import type { TeachBackQuestion } from "@/lib/types";
 import { groundTruths } from "@/data/ground-truth";
 import { scoreTeachBack } from "@/lib/services/teach-back";
-import { defaultClarifyTemplate, pickDistractor, runComprehensionSuite, type ScoreTeachBackFn } from "./comprehension";
+import {
+  defaultClarifyTemplate,
+  evaluateQuestion,
+  pickDistractor,
+  pickRetryAnswer,
+  runComprehensionSuite,
+  type ScoreTeachBackFn,
+} from "./comprehension";
 
 const base: TeachBackQuestion = {
   id: "tb-x",
@@ -37,6 +44,36 @@ describe("pickDistractor", () => {
     expect(pickDistractor({ ...base, scoring: { minKeyConceptsForCorrect: 1 } })?.source).toBe("wrong_choice");
     expect(pickDistractor({ ...base, choices: undefined })).toEqual({ text: "only if", source: "misconception_phrase" });
     expect(pickDistractor({ ...base, choices: undefined, scoring: { minKeyConceptsForCorrect: 1 } })).toBeNull();
+  });
+});
+
+describe("simulated retry after clarification (fix 19)", () => {
+  it("uses the last accepted variation, falling back to the expected answer", () => {
+    expect(pickRetryAnswer(base)).toEqual({ text: "2 weeks", source: "accepted_variation" });
+    expect(pickRetryAnswer({ ...base, acceptedVariations: [] })).toEqual({ text: "In two weeks", source: "expected_answer" });
+  });
+
+  it("scores the retry with the variation, not q.expectedAnswer, and records the source", () => {
+    const seen: string[] = [];
+    const spy: ScoreTeachBackFn = (q, r) => {
+      seen.push(r);
+      return fakeScore(q, r);
+    };
+    const o = evaluateQuestion(base, "en", spy);
+    expect(o.retry).toEqual({ response: "2 weeks", source: "accepted_variation" });
+    // expected answer once (initial), each variation once, the distractor, then the retry variation.
+    expect(seen).toEqual(["In two weeks", "two weeks", "2 weeks", "Only if I feel sick", "2 weeks"]);
+
+    const r = runComprehensionSuite([{ question: base, language: "en" }], fakeScore);
+    expect(r.cases[0]!.actual).toMatchObject({ retryResponse: "2 weeks", retrySource: "accepted_variation", finalCorrect: true });
+  });
+
+  it("a retry variation the scorer rejects is reported, not masked by the answer key", () => {
+    const q = { ...base, acceptedVariations: ["two weeks", "a fortnight"] };
+    const r = runComprehensionSuite([{ question: q, language: "en" }], fakeScore);
+    expect(r.cases[0]!.passed).toBe(false);
+    expect(r.cases[0]!.details).toContain("retry after clarification still scored incorrect");
+    expect(r.metrics.find((m) => m.name === "Correct after clarification")).toMatchObject({ numerator: 0, denominator: 1 });
   });
 });
 

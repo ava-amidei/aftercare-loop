@@ -52,6 +52,7 @@ import { ProfileOriginBadge } from "./ProfileOriginBadge";
 import { SegmentedControl } from "./SegmentedControl";
 import { TextListEditor } from "./TextListEditor";
 import { useApplyAccessibilityPrefs } from "./use-accessibility-prefs";
+import { AppearancePanel } from "./AppearanceSection";
 
 /**
  * My Health Profile (SPEC §3B). One component for every fictional patient:
@@ -250,6 +251,9 @@ export function ProfileForm({ profile }: { profile: PatientProfile }) {
             </div>
           </fieldset>
         </Section>
+
+        {/* Fix 24: Appearance sits next to the other "how I like information" controls. Changes apply immediately. */}
+        <AppearancePanel />
 
         <Section title={t("profile.section.health")}>
           <ConditionChips

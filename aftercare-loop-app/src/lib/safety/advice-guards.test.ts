@@ -29,4 +29,15 @@ describe("advice guards", () => {
     expect(detectDocumentedRestrictions({ careInstructions: ["Limit total fluids to 1.5 liters per day."] }, null).fluid).toBe(true);
     expect(detectDocumentedRestrictions({ careInstructions: [] }, { text: "Follow a low-sodium diet." }).diet).toBe(true);
   });
+
+  it("matches inflected medication-change verbs (fix 18)", () => {
+    expect(isMedicationChangeDirective("holding your furosemide", ["Furosemide"])).toBe(true);
+    expect(isMedicationChangeDirective("try skipping the morning dose")).toBe(true);
+    expect(isMedicationChangeDirective("Consider pausing the metformin", ["Metformin"])).toBe(true);
+    expect(isMedicationChangeDirective("Discontinuing the pills early")).toBe(true);
+    expect(isMedicationChangeDirective("Siga omitiendo la dosis de la noche")).toBe(true);
+    expect(isMedicationChangeDirective("Hold the insulin pen in place for 10 seconds")).toBe(false);
+    expect(isMedicationChangeDirective("Should I try skipping the morning dose?")).toBe(false);
+    expect(descriptionAddsMedicationChange("Try holding your furosemide", "Take furosemide 40 mg each morning.", ["Furosemide"])).toBe(true);
+  });
 });

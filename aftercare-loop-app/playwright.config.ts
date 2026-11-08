@@ -16,13 +16,20 @@ export default defineConfig({
     // off. Keep traces for the Chromium project only.
     { name: "mobile", use: { ...devices["iPhone 13"], trace: "off" } },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    reuseExistingServer: true,
-    timeout: 120_000,
-    // The journey asserts the deterministic demo flow; keep it off the network
-    // even when .env.local holds a provider key (set =false to test live).
-    env: { AFTERCARE_FORCE_SCRIPTED: process.env.AFTERCARE_FORCE_SCRIPTED ?? "true" },
-  },
+  // With PLAYWRIGHT_BASE_URL set, test the given server and never start or
+  // probe the default dev server on port 3000.
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : {
+        command: "npm run dev",
+        url: "http://localhost:3000",
+        reuseExistingServer: true,
+        timeout: 120_000,
+        // The journey asserts the deterministic demo flow; keep it off the network
+        // even when .env.local holds a provider key (set =false to test live).
+        env: {
+          AFTERCARE_FORCE_SCRIPTED:
+            process.env.AFTERCARE_FORCE_SCRIPTED ?? "true",
+        },
+      },
 });

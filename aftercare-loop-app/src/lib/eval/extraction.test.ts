@@ -119,3 +119,32 @@ describe("runExtractionSuite", () => {
     expect(result.metrics.every((m) => m.value === null)).toBe(true);
   });
 });
+
+describe("runExtractionSuite concurrency", () => {
+  it("bounds calls in flight, keeps case order, and records the source in the case payload", async () => {
+    const cases = ["a", "b", "c", "d", "e"].map((s) => ({
+      profile: { ...profile, id: `pt-${s}` },
+      document: doc,
+      groundTruth: { ...gt, patientId: `pt-${s}` },
+    }));
+    let inFlight = 0;
+    let peak = 0;
+    const r = await runExtractionSuite(
+      cases,
+      async ({ profile: p }) => {
+        inFlight++;
+        peak = Math.max(peak, inFlight);
+        await new Promise((res) => setTimeout(res, p.id === "pt-a" ? 20 : 2));
+        inFlight--;
+        if (p.id === "pt-c") throw new Error("not run: budget");
+        return { instructions: [item("Take the tablet once daily", "Take the tablet once daily with water.")], source: "live", model: "m-1" };
+      },
+      { concurrency: 2 },
+    );
+    expect(peak).toBe(2);
+    expect(r.cases.map((c) => c.caseId)).toEqual(["a", "b", "c", "d", "e"].map((s) => `extraction:pt-${s}`));
+    expect(r.cases[2]!.details).toMatch(/^Not evaluated: extraction failed/);
+    expect(r.cases[0]!.actual).toMatchObject({ source: "live", model: "m-1" });
+    expect(r.errors).toEqual(["extraction:pt-c: Error: not run: budget"]);
+  });
+});

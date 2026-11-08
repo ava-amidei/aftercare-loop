@@ -27,6 +27,7 @@ const k = <K extends TranslationKey>(key: K): K => key;
 
 export const languageNameKey = (v: Language) => k(`common.language.${v}`);
 export const originKey = (v: ActionOrigin) => k(`common.origin.${v}`);
+export const originDescriptionKey = (v: ActionOrigin) => k(`common.origin.${v}Description`);
 export const verificationKey = (v: SourceVerification) => k(`common.verification.${v}`);
 export const explanationLevelKey = (v: ExplanationLevel) => k(`profile.level.${v}`);
 export const explanationLevelHintKey = (v: ExplanationLevel) => k(`profile.level.${v}Hint`);

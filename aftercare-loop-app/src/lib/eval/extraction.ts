@@ -216,10 +216,43 @@ function errorMessage(err: unknown): string {
   return err instanceof Error ? `${err.name}: ${err.message}` : String(err);
 }
 
+export interface ExtractionSuiteOptions {
+  /**
+   * Extractor calls in flight at once (default 1 = sequential). Live model runs
+   * use a small value to fit slow provider calls into a time budget; results are
+   * always scored in case order, so the output does not depend on it.
+   */
+  concurrency?: number;
+}
+
+type ExtractOutcome = { ok: true; out: Awaited<ReturnType<ExtractFn>> } | { ok: false; err: unknown };
+
+/** Run `extract` over every case with bounded concurrency, preserving order. */
+async function extractAll(cases: ExtractionCase[], extract: ExtractFn, concurrency: number): Promise<ExtractOutcome[]> {
+  const outcomes: ExtractOutcome[] = new Array(cases.length);
+  let next = 0;
+  const worker = async () => {
+    while (next < cases.length) {
+      const i = next++;
+      const c = cases[i]!;
+      try {
+        outcomes[i] = { ok: true, out: await extract({ profile: c.profile, document: c.document }) };
+      } catch (err) {
+        outcomes[i] = { ok: false, err };
+      }
+    }
+  };
+  const n = Math.max(1, Math.min(Math.floor(concurrency) || 1, cases.length || 1));
+  await Promise.all(Array.from({ length: n }, worker));
+  return outcomes;
+}
+
 export async function runExtractionSuite(
   cases: ExtractionCase[],
   extract: ExtractFn,
+  options: ExtractionSuiteOptions = {},
 ): Promise<ExtractionSuiteResult> {
+  const outcomes = await extractAll(cases, extract, options.concurrency ?? 1);
   const perPatient: PatientExtractionResult[] = [];
   const evalCases: EvalCaseResult[] = [];
   const errors: string[] = [];
@@ -228,15 +261,17 @@ export async function runExtractionSuite(
   let extractedTotal = 0;
   let optionalTotal = 0;
 
-  for (const c of cases) {
-    const { profile, document: doc, groundTruth: gt } = c;
+  for (const [index, c] of cases.entries()) {
+    const { document: doc, groundTruth: gt } = c;
     const caseId = `extraction:${gt.patientId}`;
     const expectedDescriptions = gt.expectedInstructions.map((e) => e.description);
 
     let extracted: ExtractedInstruction[];
     let provenance: Omit<ExtractionOutput, "instructions"> = {};
     try {
-      const out = await extract({ profile, document: doc });
+      const outcome = outcomes[index]!;
+      if (!outcome.ok) throw outcome.err;
+      const out = outcome.out;
       const list = Array.isArray(out) ? out : out?.instructions;
       if (!Array.isArray(list)) throw new TypeError("extractor did not return an instruction array");
       extracted = list;
@@ -292,6 +327,8 @@ export async function runExtractionSuite(
         (provenance.source ? ` via ${provenance.source}` : ""),
       expected: expectedDescriptions,
       actual: {
+        ...(provenance.source ? { source: provenance.source } : {}),
+        ...(provenance.model ? { model: provenance.model } : {}),
         matches: r.matches.map((m) => ({
           expected: gt.expectedInstructions[m.expectedIndex]!.description,
           extracted: extracted[m.extractedIndex]!.description,
