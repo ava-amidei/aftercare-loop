@@ -9,7 +9,7 @@ Each block = one shot. Timecodes are targets; the assembly script fits video cli
 | 2 | 8–20 | Problem card (stat tiles from the evidence brief) | After a doctor's visit, most of what patients hear is forgotten or remembered incorrectly. For women facing rural distances, caregiving, or cost barriers, that gap turns into missed follow-ups. |
 | 3 | 20–33 | Dashboard, pick Patient A (PCOS) | Here's a fictional patient, Maya, who just received a PCOS after-visit summary. Her dashboard is simple and reassuring, and it adapts to any condition, not just one. |
 | 4 | 33–50 | Understand page: paste summary, "Explain this to me", five sections appear | She pastes her visit summary. Aftercare Loop explains it in plain language, defines the medical terms, separates what her clinician documented from general education, and links every source. |
-| 5 | 50–63 | Click "View source" highlight on a next step | Every documented next step is traced back to the exact sentence in her summary. Nothing is invented. If something can't be verified, it's flagged for clarification instead. |
+| 5 | 50–67 | Click "View source" highlight on a next step, then switch to Patient C (Priya) for ~15 s: Understand → "Explain this to me" → "Needs clarification" card with the "Not verified" step | Every next step is traced to the exact sentence in her summary. For another fictional patient, Priya, one step didn't match her summary word for word, so it's held for clarification. This is how a fabricated instruction is refused. |
 | 6 | 63–78 | Open Ask Kat, click "What should I ask my doctor?" | Meet Kat, her health companion. Kat knows her summary, her plan, and the barriers she reported, and helps her prepare real questions for her care team. |
 | 7 | 78–92 | Check My Understanding: wrong answer → "Let me explain that another way." → retry | Then comes the part most tools skip: a gentle teach-back check. When Maya misunderstands, Kat explains it another way and lets her try again, with no judgment. |
 | 8 | 92–106 | Action plan with clinician items, barrier-aware suggestion, then Follow Up copy summary | Her documented instructions become a source-traceable action plan. Because she reported transportation barriers, it suggests asking about telehealth. And she leaves with a summary ready for her next appointment. |
@@ -17,6 +17,7 @@ Each block = one shot. Timecodes are targets; the assembly script fits video cli
 | 10 | 116–122 | Closing card: team + mentors, "Fictional data. Not medical advice." | Aftercare Loop. Built by Team HW1: Stephanie Kim, Ava Amidei, Kemigisha Sherifah Muzungu, and Payton Mendygral, with mentors Rhea John and Pavel Stepanov. |
 
 Notes
-- Patient name "Maya" matches the pt-a-pcos fixture displayName (Maya Thompson).
+- Patient name "Maya" matches the pt-a-pcos fixture displayName (Maya Thompson). "Priya" matches pt-c-endometriosis (Priya Shah). Her scripted interpretation carries one deliberately paraphrased instruction, so the "Needs clarification" state really renders.
+- Shot 5 is about 4 s longer than v1, so later timecodes shift. Regenerate the audio and re-record the clips before re-assembling. The existing `out/aftercare-loop-demo.mp4` predates this change.
 - Keep all on-screen stats sourced from docs/research/EVIDENCE-BRIEF.md with citation footers.
 - Captions: burn in subtitles from this script for accessibility (YouTube also gets an .srt).

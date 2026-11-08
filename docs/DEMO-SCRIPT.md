@@ -14,7 +14,12 @@ Rehearse once against the current build, because feature screens may still be ch
 ## Before you start (not timed)
 
 1. `cd aftercare-loop-app && npm run eval`. This writes `eval-results/latest.json` for Scene 6.
-2. `npm run dev` and open <http://localhost:3000> (desktop) or the same URL at 375 px for mobile.
+2. Pin the stage build to Scripted Demo Mode: confirm `aftercare-loop-app/.env.local` contains
+   `AFTERCARE_FORCE_SCRIPTED=true` (and `AFTERCARE_GEMINI_TIMEOUT_MS=15000`, so any live call that
+   does happen fails fast to the scripted fallback). Then `npm run dev` and open
+   <http://localhost:3000> (desktop) or the same URL at 375 px for mobile. Before starting, check
+   that Ask Kat and the Understand result show the yellow **Scripted Demo Mode** badge. If they
+   show a live model badge, stop the server, fix `.env.local`, and restart.
 3. In the header, click **Reset Demo** and confirm. This clears earlier conversations and progress.
 4. In the header patient switcher (**Fictional patient**), choose **Maya Thompson**.
 5. Point out the banner: "Demonstration using fictional patient data."
@@ -56,8 +61,14 @@ Rehearse once against the current build, because feature screens may still be ch
 1. Click **Plan** in the navigation. If the plan is empty, click **Build my action plan**.
 2. Under **My Care Plan**, each item is labeled clinician-documented. Click **View source** on the
    metformin item to highlight the exact passage in the original document.
-3. Point out that anything that couldn't be matched to the document goes to **Needs
-   clarification**, not into the care plan.
+3. Show verification refusing an instruction (about 15 s). In the header patient switcher, choose
+   **Priya Shah**. On **Understand**, click **Load my sample summary**, then **Explain this to me**,
+   and scroll to **What are my next steps?**. One step sits under **Needs clarification**, marked
+   **Not verified**. The text Kat looked for ("Call the clinic right away if the pain medicine stops
+   working…") is a paraphrase that isn't in Priya's summary word for word, so it's kept out of her
+   care plan. Say: "This is how a fabricated instruction is refused. If the exact words aren't in
+   the document, it never becomes an instruction." Switch back to **Maya Thompson**.
+   (The scripted paraphrase is deliberate, in `src/data/scripted/pt-c-endometriosis.ts`.)
 4. Under **Help with getting care**, show the transportation suggestion: "Would you like to ask
    your clinic whether transportation assistance or a telehealth appointment is available?" It is
    labeled AI-suggested and phrased as a question for the clinic, not an instruction.
@@ -92,5 +103,10 @@ understand, verify, and follow through on documented care instructions.*
 ## If something goes wrong
 
 - Kat says the scripted demo can't answer: use the exact sample question above, or a suggestion chip.
+- A judge asks Kat to change a medicine ("Can I double my metformin?", "I missed a dose"): Kat
+  doesn't advise a change. She quotes the documented instruction and says the decision belongs to
+  the care team. This is expected, so let it play.
+- The badge doesn't say Scripted Demo Mode: `AFTERCARE_FORCE_SCRIPTED=true` is missing from
+  `.env.local`. Restart `npm run dev` after fixing it.
 - The Evaluation page says "Not evaluated": run `npm run eval` and reload the page.
 - The state looks stale: click **Reset Demo** and re-select Maya Thompson.

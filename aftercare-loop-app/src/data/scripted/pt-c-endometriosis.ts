@@ -326,7 +326,7 @@ export const scriptedPtC: ScriptedPatientContent = {
     {
       id: "gynecology",
       questions: ["how do i book the gynecology appointment", "what is the referral"],
-      keywords: [["gyn"], ["referral"], ["consult"], ["specialist"]],
+      keywords: [["gyn"], ["gynecolog"], ["referral"], ["consult"], ["specialist"]],
       reply: {
         content:
           "Your summary says: “Call the gynecology office at the number on your referral letter to book a consultation.”\n\nA gynecologist is a doctor who specializes in the reproductive organs. Your summary says hormonal treatment options will be reviewed in more detail with gynecology.",
@@ -372,6 +372,19 @@ export const scriptedPtC: ScriptedPatientContent = {
         referenceIds: ["ref-ahrq-questions-are-the-answer"],
         actions: [{ kind: "prepare_appointment", label: "Prepare for my appointment" }],
       },
+    },
+  ],
+
+  // Demo of the refusal path (DEMO-SCRIPT Scene 4): a paraphrased, more urgent
+  // version of a real sentence. It is NOT in the document, so verification
+  // fails and the item lands in "Needs clarification", not My Care Plan.
+  unverifiableInstructions: [
+    {
+      description:
+        "Call the clinic if your pain is not controlled by the medicine or if you have new pain between periods",
+      type: "other",
+      claimedQuote: "Call the clinic right away if the pain medicine stops working or if you have any pain between periods.",
+      anchor: Q.callClinic,
     },
   ],
 

@@ -206,6 +206,16 @@ export const scriptedPtA: ScriptedPatientContent = {
         ["lower", "dose"],
         ["more", "metformin"],
         ["less", "metformin"],
+        // Missed / doubled doses (judge-panel fix): never routed to another topic.
+        ["double"],
+        ["missed", "dose"],
+        ["missed", "metformin"],
+        ["forgot", "dose"],
+        ["forgot", "metformin"],
+        ["extra", "dose"],
+        ["extra", "metformin"],
+        ["make up", "dose"],
+        ["make up", "metformin"],
       ],
       reply: {
         content:

@@ -91,11 +91,40 @@ const QUICK_PROMPT_BY_SLUG: ReadonlyMap<string, QuickPromptId> = new Map(
   }),
 );
 
+/** Inflectional endings a whole-word keyword may take (en + es). Not derivations: "fast" ≠ "faster". */
+const INFLECTIONS = ["s", "es", "ed", "d", "ing", "a", "o", "as", "os", "ar", "an", "ando", "ado", "ada", "ados", "adas"];
+
+/**
+ * Single-word keyword vs one token. Keywords of 5+ letters are stems and match
+ * by prefix ("medic" → "medication", "pregnan" → "pregnancy"). Shorter keywords
+ * are whole words: equal, or the word plus an inflection ("fast" → "fasting",
+ * "stop" → "stopped", "worry" → "worries") — never a longer, different word
+ * ("fast" ≠ "faster", "off" ≠ "office", "test" ≠ "testosterone").
+ */
+export function tokenMatchesKeyword(token: string, kw: string): boolean {
+  if (token === kw) return true;
+  if (!token.startsWith(kw.slice(0, -1))) return false;
+  if (kw.length >= 5 && token.startsWith(kw)) return true;
+  const rest = token.startsWith(kw) ? token.slice(kw.length) : null;
+  if (rest !== null) {
+    if (INFLECTIONS.includes(rest)) return true;
+    // Doubled final consonant: stop → stopped/stopping, log → logged.
+    const last = kw[kw.length - 1];
+    if (rest.length > 1 && rest[0] === last && !"aeiou".includes(last) && ["ed", "ing"].includes(rest.slice(1))) return true;
+  }
+  // Dropped final e (dose → dosing) or y → ies/ied (worry → worries).
+  const stem = kw.slice(0, -1);
+  const tail = token.slice(stem.length);
+  if (kw.endsWith("e") && ["ing", "ed"].includes(tail)) return true;
+  if (kw.endsWith("y") && ["ies", "ied"].includes(tail)) return true;
+  return false;
+}
+
 function keywordMatches(tokens: string[], slug: string, keyword: string): boolean {
   const kw = slugifyQuestion(keyword);
   if (!kw) return false;
   if (kw.includes(" ")) return ` ${slug} `.includes(` ${kw}`);
-  return tokens.some((t) => t.startsWith(kw));
+  return tokens.some((t) => tokenMatchesKeyword(t, kw));
 }
 
 /**
@@ -139,6 +168,19 @@ export function getScriptedKatReply(
   if (chip) return content.quickPrompts[chip] ?? null;
 
   return matchScriptedFreeText(content.freeText, slug)?.reply ?? null;
+}
+
+/** Ids of the per-patient scripted entries that answer "can I stop/change my medicine?". */
+export const SCRIPTED_MEDICATION_ENTRY_IDS: readonly string[] = ["stop-medication", "medicines"];
+
+/**
+ * The patient's scripted medication-safety reply ("I can't tell you to stop or
+ * change a medicine…" + the documented instruction), used when a message asks
+ * to change, skip, stop, double or make up a dose. Null if the patient has none.
+ */
+export function getScriptedMedicationReply(patientId: PatientId): ScriptedKatReply | null {
+  const content = getScriptedContent(patientId);
+  return content?.freeText.find((e) => SCRIPTED_MEDICATION_ENTRY_IDS.includes(e.id))?.reply ?? null;
 }
 
 /** Canonical example questions Kat can answer in scripted mode for a patient (for UI hints). */

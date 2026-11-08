@@ -23,6 +23,7 @@ import { buildAskKatPrompt } from "@/lib/ai/prompts";
 import { KAT_ACTION_KINDS, KatReplySchema, type KatReply } from "@/lib/ai/schemas";
 import {
   getScriptedKatReply as defaultGetScriptedKatReply,
+  getScriptedMedicationReply as defaultGetScriptedMedicationReply,
   SCRIPTED_UNSUPPORTED,
   type ScriptedKatReply,
 } from "@/lib/ai/scripted";
@@ -49,7 +50,8 @@ import type {
 } from "@/lib/types";
 import { createId } from "@/lib/utils/ids";
 import { isRefVerified, katAction, profileLanguage, scopeKatContext, type KatContext } from "./kat-context";
-import { guardModelOutput } from "./kat-output-guard";
+import { isMedicationChangeDirective } from "./action-plan";
+import { guardModelOutput, OUTPUT_GUARD_STR } from "./kat-output-guard";
 import { runQuickPrompt, type KatDraft } from "./quick-prompts";
 import { locateQuote } from "./source-verification";
 
@@ -84,6 +86,8 @@ export interface AskKatDeps {
     message: string,
     quickPrompt?: KatRequest["quickPrompt"],
   ) => ScriptedKatReply | null;
+  /** The patient's scripted medication-safety reply (stop/change/skip a medicine), if any. */
+  getScriptedMedicationReply: (patientId: string) => ScriptedKatReply | null;
   retrieveEvidence: (input: RetrieveEvidenceInput) => EvidenceMatch[];
   /** Reference index lookup used to filter referenceIds. */
   referenceExists: (id: ReferenceId) => boolean;
@@ -93,9 +97,45 @@ const defaultDeps: AskKatDeps = {
   getAiMode: defaultGetAiMode,
   generateStructured: (req) => defaultGenerateStructured(req),
   getScriptedKatReply: defaultGetScriptedKatReply,
+  getScriptedMedicationReply: defaultGetScriptedMedicationReply,
   retrieveEvidence: (input) => defaultRetrieveEvidence(input),
   referenceExists: (id) => getReference(id) !== undefined,
 };
+
+// ---------------------------------------------------------------------------
+// Medication-change requests (deterministic, before any scripted lookup)
+// ---------------------------------------------------------------------------
+
+const MED_CHANGE_REQUEST_VERB = String.raw`(?:stop(?:ping)?|quit|skip(?:ping)?|double|doubling|halve|cut(?:\s+back(?:\s+on)?)?|change|increase|decrease|reduce|raise|lower|adjust|switch|taper|discontinue|extra|take\s+(?:more|less|two|another)|dejar\s+de|deje\s+de|suspender|suspendo|suspenda|omitir|omito|cambiar|duplicar|doblar|aumentar|disminuir|reducir|tomar\s+(?:m[aá]s|menos|doble|otra))`;
+const MISSED_DOSE_VERB = String.raw`(?:missed|miss|forgot|forget|forgotten|make\s+up(?:\s+for)?|catch\s+up\s+on|olvid[eéoó]\w*|se\s+me\s+olvid[oó])`;
+const MED_FILLER = String.raw`(?:\s+(?:to|take|taking|using|my|the|a|an|this|that|one|of|on|tomar|usar|mi|mis|la|el|las|los|una|un|de|del))*`;
+const MED_OBJECT_WORDS = String.raw`dose|doses|dosage|medications?|medicines?|meds|pills?|tablets?|insulin|prescriptions?|dosis|medicamentos?|medicinas?|pastillas?|insulina`;
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * True when a patient MESSAGE asks to change, skip, stop, double or make up a
+ * medicine dose ("Can I double my metformin?", "I missed my dose, should I
+ * take two?", "¿Puedo dejar de tomar la insulina?"). Unlike
+ * isMedicationChangeDirective (which allows questions to the care team), this
+ * classifies questions too, so Scripted Demo Mode never routes them to an
+ * unrelated keyword answer. Condition-agnostic: generic vocabulary + the
+ * profile's own medication names.
+ */
+export function isMedicationChangeRequest(text: string, medicationNames: readonly string[] = []): boolean {
+  if (!text.trim()) return false;
+  const names = medicationNames
+    .flatMap((n) => [n, ...n.split(/\s+/).filter((w) => w.length >= 5)])
+    .map((n) => n.trim())
+    .filter((n) => n.length > 2)
+    .map((n) => escapeRegExp(n).replace(/\s+/g, "\\s+"));
+  const object = [MED_OBJECT_WORDS, ...names].join("|");
+  const pattern = new RegExp(String.raw`(?:^|[^\p{L}])(?:${MED_CHANGE_REQUEST_VERB}|${MISSED_DOSE_VERB})${MED_FILLER}\s+(?:${object})(?![\p{L}])`, "iu");
+  if (pattern.test(text)) return true;
+  return isMedicationChangeDirective(text, medicationNames);
+}
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -351,6 +391,34 @@ export async function askKat(
 
   // (4a) Scripted Demo Mode.
   if (mode === "scripted_demo") {
+    // Medication-change requests never fall through to keyword matching: they
+    // get the patient's scripted medication-safety reply, else the guard text.
+    if (isMedicationChangeRequest(req.message, ctx.profile.medications.map((m) => m.name))) {
+      const medReply = deps.getScriptedMedicationReply(req.patientId);
+      if (!medReply) {
+        const draft: KatDraft = {
+          content: OUTPUT_GUARD_STR[language].medication,
+          sourceRefs: [],
+          referenceIds: [],
+          actions: [],
+          suggestedQuestions: [],
+        };
+        const message = buildMessage(draft, ctx, req, safety, meta("scripted_demo", language, undefined, true), deps);
+        return { message, safety };
+      }
+      const draft = draftFromReply(
+        {
+          content: medReply.content,
+          referenceIds: medReply.referenceIds,
+          sourceQuotes: medReply.sourceQuotes,
+          actions: (medReply.actions ?? []).map((a) => ({ kind: a.kind, label: a.label, payload: a.payload })),
+        },
+        ctx,
+        language,
+      );
+      const message = buildMessage(draft, ctx, req, safety, meta("scripted_demo", language), deps);
+      return { message, safety };
+    }
     const scripted = deps.getScriptedKatReply(req.patientId, req.message, req.quickPrompt);
     if (!scripted) {
       const draft: KatDraft = {

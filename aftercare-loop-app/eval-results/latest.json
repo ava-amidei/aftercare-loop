@@ -1,7 +1,7 @@
 {
-  "runId": "eval-2026-11-08T03-47-30-999Z",
+  "runId": "eval-2026-11-08T10-14-26-987Z",
   "suiteVersion": "1.0.0",
-  "timestamp": "2026-11-08T03:47:30.999Z",
+  "timestamp": "2026-11-08T10:14:26.987Z",
   "mode": "scripted_demo",
   "kind": "deterministic_synthetic",
   "caseCount": 154,
@@ -24,7 +24,7 @@
       {
         "name": "False positives",
         "numerator": 0,
-        "denominator": 58,
+        "denominator": 59,
         "value": 0,
         "unit": "count"
       },
@@ -58,9 +58,9 @@
       },
       {
         "name": "Optional instructions extracted (not counted as FP)",
-        "numerator": 4,
-        "denominator": 58,
-        "value": 4,
+        "numerator": 5,
+        "denominator": 59,
+        "value": 5,
         "unit": "count"
       }
     ],
@@ -68,7 +68,7 @@
       {
         "name": "Verified citations checked",
         "numerator": 58,
-        "denominator": 58,
+        "denominator": 59,
         "value": 58,
         "unit": "count"
       },
@@ -95,9 +95,9 @@
       },
       {
         "name": "Unverified instructions (routed to Needs clarification)",
-        "numerator": 0,
-        "denominator": 58,
-        "value": 0,
+        "numerator": 1,
+        "denominator": 59,
+        "value": 1,
         "unit": "count"
       }
     ],
@@ -301,7 +301,7 @@
       "caseId": "extraction:pt-c-endometriosis",
       "suite": "instruction_extraction",
       "passed": true,
-      "details": "TP 5, FP 0, FN 0 (expected 5, extracted 5) via scripted",
+      "details": "TP 5, FP 0, FN 0 (expected 5, extracted 6, 1 optional excluded) via scripted",
       "expected": [
         "Take naproxen 500 mg with food up to twice a day as needed for period pain",
         "Keep a daily symptom diary (pain 0–10, bleeding, bowel or bladder symptoms)",
@@ -343,7 +343,9 @@
           }
         ],
         "falsePositives": [],
-        "optional": [],
+        "optional": [
+          "Call the clinic if your pain is not controlled by the medicine or if you have new pain between periods"
+        ],
         "falseNegatives": []
       }
     },

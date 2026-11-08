@@ -1,0 +1,39 @@
+/* Shared styles for demo-video cards (docs/DESIGN.md palette, Montserrat).
+   Cards are 1920x1080; keep key content above y=840 (burned-in captions sit below). */
+:root {
+  --primary: #fba17e;
+  --primary-50: #fff4f0;
+  --primary-100: #fee6dc;
+  --primary-strong: #ee6200;
+  --primary-800: #8b2a04;
+  --secondary: #f7d794;
+  --secondary-100: #fcefd2;
+  --accent: #ff9a00;
+  --gray-0: #ffffff;
+  --gray-5: #f6f4f2;
+  --gray-10: #ece8e4;
+  --gray-60: #696460;
+  --gray-70: #504b46;
+  --gray-90: #25221f;
+  --gray-100: #141414;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; }
+body {
+  font-family: "Montserrat", sans-serif;
+  color: var(--gray-90);
+  background:
+    radial-gradient(1200px 700px at 88% -10%, var(--primary-100) 0%, transparent 60%),
+    radial-gradient(900px 600px at -5% 110%, var(--secondary-100) 0%, transparent 60%),
+    var(--gray-5);
+  -webkit-font-smoothing: antialiased;
+}
+.frame { position: absolute; inset: 0; padding: 88px 120px 0; display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 20px; }
+.brand img { width: 64px; height: 64px; }
+.brand span { font-weight: 700; font-size: 34px; color: var(--gray-100); letter-spacing: -0.01em; }
+.pill { display: inline-flex; align-items: center; border-radius: 9999px; padding: 14px 30px; font-weight: 600; font-size: 30px; }
+.pill.primary { background: var(--primary); color: var(--gray-100); }
+.pill.soft { background: var(--gray-0); color: var(--gray-90); }
+.pill.secondary { background: var(--secondary); color: var(--gray-100); }
+.note { font-weight: 600; font-size: 24px; color: var(--gray-70); }

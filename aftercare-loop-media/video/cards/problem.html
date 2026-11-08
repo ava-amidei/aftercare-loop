@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Aftercare Loop — problem card</title>
+<link rel="stylesheet" href="card.css" />
+<style>
+  /* Every figure below is copied from docs/research/EVIDENCE-BRIEF.md "Top 8 pitch-ready stats"
+     (items 1, 2, 3 and 7). Do not add figures that are not in that list. */
+  h1 { margin-top: 40px; font-weight: 700; font-size: 68px; letter-spacing: -0.02em; color: var(--gray-100); line-height: 1.1; }
+  h1 em { font-style: normal; color: var(--primary-strong); }
+  .tiles { margin-top: 44px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; }
+  .tile { background: var(--gray-0); border-radius: 36px; padding: 36px 34px 32px; display: flex; flex-direction: column; min-height: 330px; }
+  .tile:nth-child(odd) { background: var(--gray-0); }
+  .fig { font-weight: 700; font-size: 84px; line-height: 1; letter-spacing: -0.03em; color: var(--primary-800); }
+  .claim { margin-top: 18px; font-weight: 500; font-size: 25px; line-height: 1.38; color: var(--gray-90); flex: 1; }
+  .ref { margin-top: 18px; display: inline-flex; align-self: flex-start; border-radius: 9999px; background: var(--secondary); color: var(--gray-100); font-weight: 600; font-size: 19px; padding: 6px 16px; }
+  .sources { margin-top: 26px; font-weight: 500; font-size: 15.5px; line-height: 1.5; color: var(--gray-60); }
+  .sources b { color: var(--gray-70); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="brand"><img src="logo.svg" alt="" /><span>Aftercare Loop</span></div>
+  <h1>After the visit, <em>the plan gets lost.</em></h1>
+  <div class="tiles">
+    <div class="tile">
+      <div class="fig">40–80%</div>
+      <p class="claim">of medical information is forgotten immediately, and almost half of what is remembered is wrong.</p>
+      <span class="ref">[1] Kessels 2003</span>
+    </div>
+    <div class="tile">
+      <div class="fig">49%</div>
+      <p class="claim">of recommendations recalled accurately one week after a specialty visit (38% without a high-school diploma vs 65% for college graduates).</p>
+      <span class="ref">[2] Laws et al. 2018</span>
+    </div>
+    <div class="tile">
+      <div class="fig">12%</div>
+      <p class="claim">of US adults have proficient health literacy; 30% of Medicaid recipients are at the lowest level.</p>
+      <span class="ref">[3] Kutner et al. 2006</span>
+    </div>
+    <div class="tile">
+      <div class="fig">&lt;60%</div>
+      <p class="claim">of Medicaid-enrolled women attend a postpartum visit.</p>
+      <span class="ref">[4] Rodin et al. 2019</span>
+    </div>
+  </div>
+  <p class="sources">
+    <b>Sources.</b>
+    [1] Kessels RPC. Patients' memory for medical information. J R Soc Med, 2003 (review). consensus.app/papers/details/aaae7306d73b5c61a95aa1b984797b62 ·
+    [2] Laws MB et al. PLoS ONE, 2018. consensus.app/papers/details/b9624230694b5946a7cec81b117c083c ·
+    [3] Kutner, Greenberg, Jin, Paulsen. The Health Literacy of America's Adults (NAAL 2003). NCES 2006-483. nces.ed.gov/pubs2006/2006483.pdf ·
+    [4] Rodin D et al. J Womens Health, 2019. doi.org/10.1089/jwh.2018.7568
+  </p>
+</div>
+</body>
+</html>

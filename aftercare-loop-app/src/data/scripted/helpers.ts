@@ -46,6 +46,29 @@ export function instructionsFromGroundTruth(
   });
 }
 
+/**
+ * Deliberately unverifiable scripted items → ExtractedInstructions whose claimed
+ * ref points at the anchor sentence's offsets but carries the paraphrased quote,
+ * so `verifySourceRef` rejects it (slice ≠ quote) and validation routes the item
+ * to "Needs clarification" with `unverifiedQuote` = the claimed paraphrase.
+ */
+export function unverifiableInstructions(
+  doc: VisitDocument,
+  items: ScriptedPatientContent["unverifiableInstructions"],
+): ExtractedInstruction[] {
+  return (items ?? []).map((u) => {
+    const anchor = locateFirst(doc, u.anchor);
+    const instruction: ExtractedInstruction = {
+      description: u.description,
+      type: u.type,
+      sourceVerification: "unverified",
+      unverifiedQuote: u.claimedQuote,
+    };
+    if (anchor) instruction.sourceRef = { ...anchor, quote: u.claimedQuote };
+    return instruction;
+  });
+}
+
 /** Assemble a full interpretation (minus meta) from scripted content. */
 export function buildScriptedInterpretation(
   content: ScriptedPatientContent,
@@ -68,7 +91,10 @@ export function buildScriptedInterpretation(
     }),
     whatToKnow: [...i.whatToKnow],
     discussWithProvider: [...i.discussWithProvider],
-    instructions: groundTruth ? instructionsFromGroundTruth(doc, groundTruth) : [],
+    instructions: [
+      ...(groundTruth ? instructionsFromGroundTruth(doc, groundTruth) : []),
+      ...unverifiableInstructions(doc, content.unverifiableInstructions),
+    ],
     unansweredQuestions: [...i.unansweredQuestions],
     limitations: [...i.limitations],
     safetyFlags: i.safetyFlags.map((f) => ({ ...f })),

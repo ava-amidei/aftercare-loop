@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Aftercare Loop — title card</title>
+<link rel="stylesheet" href="card.css" />
+<style>
+  .center { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 210px; text-align: center; }
+  .mark { width: 220px; height: 220px; margin-bottom: 44px; }
+  h1 { font-weight: 700; font-size: 132px; letter-spacing: -0.03em; color: var(--gray-100); line-height: 1; }
+  .sub { margin-top: 30px; font-weight: 500; font-size: 38px; color: var(--gray-70); max-width: 1300px; line-height: 1.35; }
+  .loop { margin-top: 56px; display: flex; align-items: center; gap: 18px; }
+  .arrow { font-weight: 700; font-size: 34px; color: var(--primary-strong); }
+  .corner { position: absolute; right: 120px; top: 96px; }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="center">
+    <img class="mark" src="logo.svg" alt="Aftercare Loop logo" />
+    <h1>Aftercare Loop</h1>
+    <p class="sub">Understand your care. Check your understanding. Follow through.</p>
+    <div class="loop" aria-label="Understand, Ask, Verify, Act, Follow Up">
+      <span class="pill primary">Understand</span><span class="arrow">→</span>
+      <span class="pill soft">Ask</span><span class="arrow">→</span>
+      <span class="pill soft">Verify</span><span class="arrow">→</span>
+      <span class="pill soft">Act</span><span class="arrow">→</span>
+      <span class="pill secondary">Follow Up</span>
+    </div>
+  </div>
+  <p class="note corner">Fictional data. Not medical advice.</p>
+</div>
+</body>
+</html>

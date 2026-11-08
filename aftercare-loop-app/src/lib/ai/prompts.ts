@@ -156,8 +156,11 @@ Explain the patient's visit document and extract clinician-documented next steps
 - whatThisMeans: a plain-language overview of what the document says. Describe only what is documented.
 - terms: medical terms that appear in the document, with plain-language definitions. sourceQuote = the term exactly as written in the document (or null).
 - whatToKnow: general educational points related to documented topics. Phrase them as general information, not claims about this patient.
-- discussWithProvider: questions the patient may want to ask, including anything unclear, missing or possibly conflicting.
-- instructions: ONLY actionable instructions a clinician actually wrote in the document (appointments, tests, referrals, medications as documented, monitoring, self-care the clinician wrote). Do not add your own advice. Each needs sourceQuote: the exact contiguous text from the document that states it. dueDate only if the document gives an explicit calendar date (YYYY-MM-DD), else null. If there are no documented instructions, return an empty list.
+- discussWithProvider: questions the patient may want to ask, including anything unclear, missing or possibly conflicting. Never presume that a service, program, benefit or option exists or is available to this patient; ask whether it is (for example "Is a telehealth visit possible for my follow-up?", not "How do I set up my telehealth visit?").
+- instructions: ONLY actionable instructions a clinician actually wrote in the document (appointments, tests, referrals, medications as documented, monitoring, self-care the clinician wrote). Do not add your own advice. One instruction per item.
+  - sourceQuote: copy-paste the one sentence (or contiguous part of a sentence) from the document that states the instruction, character for character. Leave out list markers such as "- " or "1." at the start of a line. Do not join text from two places, fix typos, change numbers, or shorten words.
+  - description: a plain-language restatement of that sourceQuote only. Do not add details that are not in the quote (no route such as "by mouth", no times, amounts, reasons or tips), and do not merge in other sentences or instructions; give each its own item.
+  - dueDate only if the document gives an explicit calendar date (YYYY-MM-DD), else null. If there are no documented instructions, return an empty list.
 - unansweredQuestions: what the patient might still need to know that the document does not answer.
 - limitations: what the document does not say (for example, no dose given, no date given).
 - safetyFlags: "urgent" only to restate warning signs the document itself lists; "clarify_with_clinician" for unclear or possibly conflicting instructions (never resolve conflicts yourself); "info" for other notes.
@@ -215,7 +218,8 @@ Answer the patient's latest message using only the patient context, the document
 - referenceIds: only ids from the allowed list that support your answer (empty if none).
 - suggestedActions: up to 3 helpful next actions. view_source needs sourceQuote (exact document text); add_question needs questionText; others use null for both. Labels are short and in the patient's language.
 - limitations: what the provided material does not say about this question.
-- An AI suggestion is never an instruction. Only call something an instruction if the clinician documented it.`,
+- An AI suggestion is never an instruction. Only call something an instruction if the clinician documented it.
+- Never presume that a service, program, benefit or coverage exists or is available; if the document mentions one, say what the document says and suggest asking the care team whether it is available.`,
 );
 
 function interpretationBlock(interp?: DocumentInterpretation | null): string | null {
@@ -299,7 +303,8 @@ const TEACH_BACK_SYSTEM = header(
   `# Task: gentle re-explanation (teach-back)
 The patient answered a check-my-understanding question and the answer did not yet match the expected answer. The expected answer comes from a predefined answer key — use it exactly as given; never change it, add to it, or invent a different one. Return JSON matching the schema.
 - misunderstanding: a neutral, one-sentence description of what seems unclear (never say "wrong", "incorrect" or "failed").
-- clarification: start with "Let me explain that another way." (in Spanish: "Permítame explicarlo de otra manera.") then re-explain the documented fact differently and simply, grounded only in the source passage and document. Keep it under 90 words. Do not add new medical information. End with an invitation to try again.`,
+- clarification: start with "Let me explain that another way." (in Spanish: "Permítame explicarlo de otra manera.") then re-explain the documented fact differently and simply, grounded only in the source passage and document. Keep it under 90 words. End with an invitation to try again.
+- Use only facts written in the answer key's sourcePassage or the document. Do not add reasons, effects, examples or conditions that are not written there (for example, do not explain why a rule exists unless the document says why, and do not add "even if you feel fine"). Do not call anything "safe". Do not repeat the patient's answer back as a mistake.`,
 );
 
 export function buildTeachBackClarifyPrompt(ctx: TeachBackClarifyPromptCtx): BuiltPrompt {

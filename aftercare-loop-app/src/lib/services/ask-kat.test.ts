@@ -1,8 +1,16 @@
 // @vitest-environment node
 import { describe, expect, it, vi } from "vitest";
-import { askKat, filterReferenceIds, SCRIPTED_UNSUPPORTED_ES, trimHistory, type AskKatDeps } from "./ask-kat";
+import {
+  askKat,
+  filterReferenceIds,
+  isMedicationChangeRequest,
+  SCRIPTED_UNSUPPORTED_ES,
+  trimHistory,
+  type AskKatDeps,
+} from "./ask-kat";
+import { OUTPUT_GUARD_STR } from "./kat-output-guard";
 import { KatContextError, type KatContext } from "./kat-context";
-import { SCRIPTED_UNSUPPORTED } from "@/lib/ai/scripted";
+import { SCRIPTED_UNSUPPORTED, getScriptedMedicationReply } from "@/lib/ai/scripted";
 import { KatReplySchema, type KatReply } from "@/lib/ai/schemas";
 import { aiFailure } from "@/lib/ai/errors";
 import { getReference } from "@/lib/evidence";
@@ -607,5 +615,80 @@ describe("askKat — profile safety context is shared (safety review)", () => {
     const res = await askKat(req("pt-k-asthma-pregnancy", "I have a fever of 101"), ctxFor("pt-k-asthma-pregnancy"), deps);
     expect(res.safety.level).toBe("emergency");
     expect(res.safety.scenario).toBe("severe_postpartum_warning");
+  });
+});
+
+describe("askKat — medication-change questions are guarded before scripted lookup (judge-panel fix)", () => {
+  const E: PatientId = "pt-e-multi";
+  const medNames = (id: PatientId) => getPatient(id)!.medications.map((m) => m.name);
+
+  it.each([
+    "Can I double my metformin?",
+    "Should I skip my metformin before the fasting test?",
+    "Can I stop taking my metformin?",
+    "I missed my dose yesterday, should I take two today?",
+    "I forgot to take my metformin this morning",
+    "Can I make up for a missed dose?",
+    "Should I take an extra dose?",
+    "Can I lower my dose?",
+  ])("pt-a: %s → the documented medication-safety reply, no keyword answer, no model call", async (msg) => {
+    expect(isMedicationChangeRequest(msg, medNames(A))).toBe(true);
+    const { deps, generateStructured, getScriptedKatReply } = makeDeps();
+    const res = await askKat(req(A, msg), ctxFor(A), deps);
+    expect(getScriptedKatReply).not.toHaveBeenCalled();
+    expect(generateStructured).not.toHaveBeenCalled();
+    expect(res.message.content).toBe(getScriptedMedicationReply(A)!.content);
+    expect(res.message.content).toMatch(/can't tell you to stop or change a medicine/);
+    expect(res.message.meta?.mode).toBe("scripted_demo");
+    expectVerified(docFor(A), res.message.sourceRefs);
+  });
+
+  it.each(["Can I double my furosemide?", "Should I skip my lisinopril?", "Can I stop my insulin glargine?"])(
+    "pt-e: %s → the documented medication-safety reply",
+    async (msg) => {
+      const { deps } = makeDeps();
+      const res = await askKat(req(E, msg), ctxFor(E), deps);
+      expect(res.message.content).toBe(getScriptedMedicationReply(E)!.content);
+      expect(res.message.content).toMatch(/can't tell you to stop, skip, or change a medicine/);
+    },
+  );
+
+  it("Spanish: ¿Puedo dejar de tomar la insulina? → the Spanish medication-safety reply", async () => {
+    expect(isMedicationChangeRequest("¿Puedo dejar de tomar la insulina?")).toBe(true);
+    const { deps } = makeDeps();
+    const res = await askKat(req(ES, "¿Puedo dejar de tomar la insulina?"), ctxFor(ES), deps);
+    expect(res.message.content).toBe(getScriptedMedicationReply(ES)!.content);
+  });
+
+  it("falls back to the deterministic guard text when the patient has no scripted medication entry", async () => {
+    const { deps } = makeDeps({ getScriptedMedicationReply: () => null });
+    const res = await askKat(req(A, "Can I double my metformin?"), ctxFor(A), deps);
+    expect(res.message.content).toBe(OUTPUT_GUARD_STR.en.medication);
+    expect(res.message.meta?.generatedBy).toBe("deterministic");
+  });
+
+  it.each([
+    "Can I drink water before my blood test?",
+    "How do I take my metformin?",
+    "I missed my appointment, what should I do?",
+    "Should I stop eating before the test?",
+    "Can I eat faster?",
+    "Does metformin help with insulin resistance?",
+  ])("benign: %s is not a medication-change request", (msg) => {
+    expect(isMedicationChangeRequest(msg, medNames(A))).toBe(false);
+  });
+
+  it("the Scene 2 sample question still gets its scripted fasting answer", async () => {
+    const { deps, getScriptedKatReply } = makeDeps();
+    getScriptedKatReply.mockReturnValue({ content: "Fasting answer." });
+    const res = await askKat(req(A, "Can I drink water before my blood test?"), ctxFor(A), deps);
+    expect(getScriptedKatReply).toHaveBeenCalled();
+    expect(res.message.content).toBe("Fasting answer.");
+  });
+
+  it("emergency safety still wins over the medication guard", async () => {
+    const { deps } = makeDeps();
+    const res = await askKat(req(A, `${EMERGENCY_MSG} Should I double my metformin?`), ctxFor(A), deps);
+    expect(res.safety.level).toBe("emergency");
   });
 });

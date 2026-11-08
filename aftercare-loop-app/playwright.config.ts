@@ -11,7 +11,10 @@ export default defineConfig({
   },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile", use: { ...devices["iPhone 13"] } },
+    // WebKit trace capture intermittently stalls page.goto ("waiting until load")
+    // on headless macOS (CVDisplayLink errors); the same test passes with tracing
+    // off. Keep traces for the Chromium project only.
+    { name: "mobile", use: { ...devices["iPhone 13"], trace: "off" } },
   ],
   webServer: {
     command: "npm run dev",

@@ -1,0 +1,4 @@
+out/.assemble/
+out/.video-tmp/
+out/.pw-results/
+out/clips/state.json

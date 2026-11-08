@@ -375,3 +375,97 @@ Findings not listed above were verified as fixed in the current tree (for exampl
 "Tengo mucho sangrado y me siento mareada", "Siento una presión muy fuerte en el pecho" and
 "se me durmió la mitad de la cara y hablo raro", and `concerning` for "I don't see the point of any
 of this anymore", which is the downgrade-only behaviour the review suggested).
+
+## 10. Ship phase
+
+Integration gate run on 2026-11-08 over commit `c5108d7` plus the sibling working-tree changes
+listed in `git status` at commit time. All patients are fictional; nothing below is clinical
+validation.
+
+### Provider status
+
+- **Selection** (`src/lib/ai/providers/index.ts`): `AFTERCARE_FORCE_SCRIPTED=true` always wins →
+  Scripted Demo Mode; otherwise `AFTERCARE_PROVIDER=auto|gemini|anthropic|scripted` (auto = Gemini if
+  `GEMINI_API_KEY`, else Claude if `ANTHROPIC_API_KEY`, else scripted). Keys are read server-side only
+  (`providers/gemini.ts`, `providers/anthropic.ts`); `NEXT_PUBLIC` occurrences in `src/`: 0.
+- **Gemini** (`gemini-3.8-flash` default, `interactions.create` per `docs/GEMINI-NOTES.md`): timeouts
+  are now mapped to `aiFailure("api")` (`isTimeoutError` / `mapGeminiError`), so a slow call degrades
+  to the scripted/heuristic fallback; `AFTERCARE_GEMINI_TIMEOUT_MS` (default 120 000) is documented in
+  `.env.example` as 15000. Covered by `gemini.test.ts` and `degrade.test.ts` with mocked responses.
+- **Stage configuration**: the app's `.env.local` (git-ignored) sets `AFTERCARE_PROVIDER=gemini`,
+  `AFTERCARE_FORCE_SCRIPTED=true` and `AFTERCARE_GEMINI_TIMEOUT_MS=15000`, so the stage build is
+  pinned to Scripted Demo Mode. `DEMO-SCRIPT.md` "Before you start" step 2 tells the presenter to
+  confirm this and check for the yellow badge.
+- **Live runs in this gate**: none. `tests/e2e/live-journey.spec.ts` (16 tests) skipped because no
+  provider key was in the test process and the server was scripted. `npm run eval` ran
+  `scripted_demo` / `deterministic_synthetic`; no `model_based` eval run has been archived. The only
+  live measurements on record are the judge panel's `scripts/ai-smoke.mjs` runs
+  (`docs/VALIDATION-REPORT.md` §1: structured call 50–98 s, text call 35 s or HTTP 503).
+
+### Demo video
+
+- Path: `aftercare-loop-media/video/out/aftercare-loop-demo.mp4` (git-ignored, with captions
+  `aftercare-loop-demo.srt`; pipeline in `aftercare-loop-media/README.md`, `video/assemble.mjs`,
+  `video/record.spec.ts`, `video/tts.mjs`).
+- `ffprobe` (this gate): H.264 High 1920×1080 30/1 fps (~955 kb/s) + AAC LC 48 kHz stereo
+  (~184 kb/s); duration 132.733292 s; size 19 044 080 bytes; SHA-256
+  `10b9dd1322d837c8031d3a8a58251a8e1322c39e0b1c5bdd8315b89bc9e93cae`.
+- Stale relative to the script: the file is dated 2026-11-07 23:18. `video/narration.md` was changed
+  afterwards (shot 5 now switches to Priya Shah for the "Needs clarification" beat, ~4 s longer), and
+  the narration notes say the MP4 predates the change. Audio and clips need to be regenerated, and
+  the video trimmed toward 118–120 s (validation fix #11), before upload.
+
+### Security fixes (verifiable in the tree)
+
+- HTTP headers on every route (`src/lib/security/headers.ts`, `next.config.ts`): CSP
+  (`default-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`, `connect-src 'self'`; adds
+  `'unsafe-eval'`/`ws:` in dev only), `X-Frame-Options: DENY`, `nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, COOP `same-origin`, HSTS
+  in production only; `poweredByHeader: false`. Confirmed with `curl -I` against `next start`.
+- Per-route, per-IP fixed-window rate limit, 30 requests/min (`src/app/api/_lib/rate-limit.ts`).
+  Probe: 32 POSTs to `/api/teach-back` returned 30 × 400 (invalid body) and then 2 × 429.
+- Medication-change requests ("double my metformin", missed/forgot/make-up dose, Spanish variants)
+  are caught before any scripted lookup (`isMedicationChangeRequest` in `src/lib/services/ask-kat.ts`).
+  Single-word scripted keywords no longer prefix-match ("fast" ≠ "faster", `tokenMatchesKeyword` in
+  `src/lib/ai/scripted.ts`). Tests are in `ask-kat.test.ts` and `scripted.test.ts`.
+- Prompt rules (`src/lib/ai/prompts.ts`): never presume a service/benefit exists; instruction quotes
+  copied character for character; descriptions restate only the quote; teach-back clarifications
+  use only facts from the answer key's source passage or the document.
+- Key hygiene: before commit, no key-shaped strings (`AIza…`, `sk-ant-…`) in any tracked or
+  to-be-added file, and the only `.env*` file to be committed is `.env.example`.
+
+### Validation scorecard (summary of `docs/VALIDATION-REPORT.md`)
+
+Five-lens judge panel, mean 74/100 (range 69–78): clinician/safety 74, technical 77, business 69,
+UX 73, head judge 78. Status of the top fixes in this tree:
+
+| # | Fix | Status |
+|---|---|---|
+| 1 | Pin stage to Scripted Demo Mode; fast-fail live calls | Done (timeout mapping, `.env.example`, `.env.local`, DEMO-SCRIPT step 2) |
+| 2 | Show verification refusing an instruction | Done: pt-c has one deliberately paraphrased instruction. Eval shows 1 of 59 instructions unverified and routed to Needs clarification; DEMO-SCRIPT Scene 4.3 and narration shot 5 rewritten. |
+| 3 | Medication-change guard + whole-word keyword matching | Done |
+| 11 | Trim video; fix shot 5 | Partial (narration updated; MP4 not re-rendered) |
+| 5, 6, 15 | Teach-back misconception veto; postpartum fever/calf tier; provider-neutral "can't answer" text | Open. `minKeyConceptsForCorrect` path, postpartum `feverNumeric` → emergency (`rules.ts:804–806`) and "Add an ANTHROPIC_API_KEY" text (`errors.ts`, `scripted.ts`, `en/common.ts`, `document-interpreter.ts`) unchanged. |
+| 4, 7–10, 12–14, 16–24 | Remaining items | Not addressed in this phase |
+
+### Check results (this gate, from `aftercare-loop-app/`)
+
+| Check | Result |
+|---|---|
+| `npm run lint` | exit 0, no output |
+| `npm run typecheck` | exit 0 |
+| `npx vitest run` | 76 files, 1458 tests passed |
+| `npm run build` | compiled; 16/16 static pages; routes incl. `/manifest.webmanifest` and 5 API routes |
+| `npm run eval` | run `eval-2026-11-08T10-14-26-987Z`, `scripted_demo` / `deterministic_synthetic`, 154 cases, 0 not passed, 0 errors. Extraction P/R/F1 54/54; citations 58/58 valid (1 of 59 unverified → Needs clarification); safety 48/48 (38/38 emergencies caught, 10/10 non-emergency not escalated); comprehension 36/36 initial, 36/36 after clarification |
+| `npx playwright test` | 2 passed (journey on desktop and iPhone 13), 16 skipped (live journey), three consecutive green runs |
+
+Playwright notes:
+- Run against `AFTERCARE_FORCE_SCRIPTED=true npx next start -p 3100` with
+  `PLAYWRIGHT_BASE_URL=http://localhost:3100`. A `next dev` server from a previous session was
+  still holding :3000 (stopping it was not permitted in this run), and `reuseExistingServer` would
+  otherwise have reused it.
+- Fix in `playwright.config.ts`: WebKit trace capture (`trace: "retain-on-failure"`) intermittently
+  hung `page.goto` ("waiting until load") on headless macOS. With tracing on it stalled in 4 of 6
+  runs; with tracing off it passed 3/3 in 1.4–1.5 s, and a standalone WebKit probe loaded `/`,
+  `/understand` and `/check` in under 0.4 s five times out of five. The mobile project now sets
+  `trace: "off"`; desktop (Chromium) keeps traces.

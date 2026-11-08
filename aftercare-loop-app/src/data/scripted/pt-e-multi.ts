@@ -168,7 +168,25 @@ export const scriptedPtE: ScriptedPatientContent = {
     {
       id: "stop-medication",
       questions: ["can i stop my medication", "can i skip my medicine because of cost", "i cant afford my medicine"],
-      keywords: [["stop", "medic"], ["stop", "taking"], ["quit"], ["skip"], ["stretch"], ["afford"], ["cost"], ["expensive"], ["dose"]],
+      keywords: [
+        ["stop", "medic"],
+        ["stop", "taking"],
+        ["quit"],
+        ["skip"],
+        ["stretch"],
+        ["afford"],
+        ["cost"],
+        ["expensive"],
+        ["dose"],
+        // Missed / doubled doses (judge-panel fix).
+        ["double"],
+        ["missed", "medic"],
+        ["missed", "pill"],
+        ["forgot", "medic"],
+        ["forgot", "pill"],
+        ["extra", "dose"],
+        ["make up"],
+      ],
       reply: {
         content:
           "I can't tell you to stop, skip, or change a medicine — that decision belongs to your care team. Your summary says: “Please tell us before skipping or stretching any medicine because of cost.”\n\nIt also says: “Our clinic pharmacist can review lower-cost options and patient assistance programs with you.” That could be a good next call.",

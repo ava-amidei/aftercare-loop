@@ -34,7 +34,11 @@ import {
 export const GEMINI_DEFAULT_MODEL_ID = "gemini-3.8-flash";
 export const GEMINI_REST_URL = "https://generativelanguage.googleapis.com/v1beta/interactions";
 export const GEMINI_API_REVISION = "2026-05-20";
-/** Free tier can be slow (observed 40–60 s for tiny prompts); bound every call. */
+/**
+ * Free tier can be slow (observed 40–60 s for tiny prompts); bound every call.
+ * Override with AFTERCARE_GEMINI_TIMEOUT_MS (the stage build uses 15000 so a
+ * slow live call degrades to the scripted/heuristic fallback quickly).
+ */
 export const GEMINI_TIMEOUT_MS = 120_000;
 
 export const GEMINI_RATE_LIMIT_MESSAGE =
@@ -45,7 +49,7 @@ export function geminiModelId(): string {
   return configured ? configured : GEMINI_DEFAULT_MODEL_ID;
 }
 
-function timeoutMs(): number {
+export function timeoutMs(): number {
   const n = Number(process.env.AFTERCARE_GEMINI_TIMEOUT_MS);
   return Number.isFinite(n) && n > 0 ? n : GEMINI_TIMEOUT_MS;
 }
@@ -248,8 +252,24 @@ function usageOf(total: AiUsage | undefined, interaction: GeminiInteraction): Ai
   return sumUsage(total, u.total_input_tokens ?? 0, u.total_output_tokens ?? 0);
 }
 
-/** 401/403 → auth, 429 → rate_limit, else api (status only; never the body). */
+/** Error names raised when a call is cut off by AbortSignal.timeout / the SDK's timeout_ms. */
+const TIMEOUT_ERROR_NAMES = new Set(["TimeoutError", "AbortError", "RequestTimeoutError", "RequestAbortedError"]);
+
+/** True when the error (or its cause chain) is a request timeout/abort. */
+export function isTimeoutError(err: unknown, depth = 0): boolean {
+  if (!err || typeof err !== "object" || depth > 4) return false;
+  const e = err as { name?: unknown; cause?: unknown };
+  if (typeof e.name === "string" && TIMEOUT_ERROR_NAMES.has(e.name)) return true;
+  return e.cause !== undefined && e.cause !== err ? isTimeoutError(e.cause, depth + 1) : false;
+}
+
+/**
+ * Timeouts → api (so services fall back to Scripted Demo Mode / heuristics
+ * instead of stalling), 401/403 → auth, 429 → rate_limit, else api (status
+ * only; never the body).
+ */
 export function mapGeminiError(err: unknown): AiFailure {
+  if (isTimeoutError(err)) return aiFailure("api", `${AI_ERROR_MESSAGES.api} (timed out)`);
   const status = errorStatus(err);
   if (status === 401 || status === 403) return aiFailure("auth");
   if (status === 429) return aiFailure("rate_limit", GEMINI_RATE_LIMIT_MESSAGE);

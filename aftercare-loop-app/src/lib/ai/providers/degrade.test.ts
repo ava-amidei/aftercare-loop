@@ -89,6 +89,14 @@ describe("services on the Gemini provider", () => {
     expect(out.limitations.join(" ")).toMatch(/Live AI unavailable/);
   });
 
+  it("interpretation: a timed-out live call degrades to Scripted Demo Mode content", async () => {
+    sdk.create.mockRejectedValue(Object.assign(new Error("Request timed out"), { name: "RequestTimeoutError" }));
+    const out = await interpretDocument({ profile: fixture.profile, document: fixture.document, evidence: [] });
+    expect(out.meta.mode).toBe("scripted_demo");
+    expect(out.instructions.length).toBeGreaterThan(0);
+    expect(sdk.create).toHaveBeenCalledTimes(1);
+  });
+
   it("teach-back clarify: 429 falls back to the deterministic template with the friendly error", async () => {
     sdk.create.mockRejectedValue(new sdk.FakeApiError(429));
     const q = groundTruths.flatMap((g) => g.teachBackQuestions)[0];

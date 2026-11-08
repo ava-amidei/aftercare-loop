@@ -65,8 +65,10 @@ import {
   GEMINI_REST_URL,
   buildInteractionBody,
   extractOutputText,
+  isTimeoutError,
   mapGeminiError,
   thinkingLevelFor,
+  timeoutMs,
   toGeminiInput,
   toGeminiSchema,
 } from "./gemini";
@@ -291,6 +293,30 @@ describe("generateStructured via Gemini", () => {
 
   it("maps network errors without status to api", () => {
     expect(mapGeminiError(new TypeError("fetch failed"))).toEqual({ ok: false, kind: "api", error: AI_ERROR_MESSAGES.api });
+  });
+
+  it("maps timeouts (AbortSignal.timeout, SDK RequestTimeoutError, nested cause) to api so callers degrade", () => {
+    const abortTimeout = new DOMException("The operation was aborted due to timeout", "TimeoutError");
+    expect(isTimeoutError(abortTimeout)).toBe(true);
+    expect(mapGeminiError(abortTimeout)).toEqual({ ok: false, kind: "api", error: `${AI_ERROR_MESSAGES.api} (timed out)` });
+    const sdkTimeout = Object.assign(new Error("Request timed out"), { name: "RequestTimeoutError" });
+    expect(mapGeminiError(sdkTimeout).kind).toBe("api");
+    const wrapped = new TypeError("fetch failed", { cause: abortTimeout });
+    expect(isTimeoutError(wrapped)).toBe(true);
+    expect(isTimeoutError(new TypeError("fetch failed"))).toBe(false);
+  });
+
+  it("a timed-out SDK call fails fast as api without a REST retry; AFTERCARE_GEMINI_TIMEOUT_MS bounds the call", async () => {
+    vi.stubEnv("AFTERCARE_GEMINI_TIMEOUT_MS", "15000");
+    expect(timeoutMs()).toBe(15000);
+    sdk.create.mockRejectedValueOnce(Object.assign(new Error("Request timed out"), { name: "RequestTimeoutError" }));
+    const res = await generateStructured({ system: "s", user: "u", schema: Schema, effort: "medium" });
+    expect(res).toEqual({ ok: false, kind: "api", error: `${AI_ERROR_MESSAGES.api} (timed out)` });
+    expect(sdk.create).toHaveBeenCalledTimes(1);
+    expect(sdk.create.mock.calls[0][1]).toMatchObject({ timeout_ms: 15000 });
+    expect(fetchMock).not.toHaveBeenCalled();
+    vi.stubEnv("AFTERCARE_GEMINI_TIMEOUT_MS", "not-a-number");
+    expect(timeoutMs()).toBe(120_000);
   });
 
   it("falls back to REST on SDK 404/400 with the documented headers", async () => {

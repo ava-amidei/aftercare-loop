@@ -13,9 +13,14 @@ import {
   getScriptedKatReply,
   getScriptedSuggestedQuestions,
   slugifyQuestion,
+  tokenMatchesKeyword,
   type ScriptedKatReply,
 } from "@/lib/ai/scripted";
 import { SCRIPTED_PRIMARY_PATIENT_IDS, getScriptedContent, locateFirst, scriptedContent } from "@/data/scripted";
+import { buildActionPlan } from "@/lib/services/action-plan";
+import { interpretDocument } from "@/lib/services/document-interpreter";
+import { validateInstructions } from "@/lib/services/instruction-extraction";
+import { locateQuote, verifySourceRef } from "@/lib/services/source-verification";
 
 const QUICK_PROMPTS: QuickPromptId[] = [
   "what_should_i_ask",
@@ -168,8 +173,9 @@ describe("getScriptedInterpretation", () => {
     const doc = docFor(id);
     const gt = getGroundTruth(id)!;
     const interp = getScriptedInterpretation(id, doc.id)!;
-    expect(interp.instructions).toHaveLength(gt.expectedInstructions.length);
-    interp.instructions.forEach((ins, i) => {
+    const demoUnverifiable = getScriptedContent(id)!.unverifiableInstructions?.length ?? 0;
+    expect(interp.instructions).toHaveLength(gt.expectedInstructions.length + demoUnverifiable);
+    interp.instructions.slice(0, gt.expectedInstructions.length).forEach((ins, i) => {
       const expected = gt.expectedInstructions[i];
       expect(ins.description).toBe(expected.description);
       expect(ins.type).toBe(expected.type);
@@ -443,5 +449,104 @@ describe("slugifyQuestion", () => {
   it("lowercases, strips punctuation and accents, collapses spaces", () => {
     expect(slugifyQuestion("  What's my   Follow-up?! ")).toBe("whats my followup");
     expect(slugifyQuestion("¿Qué debo preguntarle a mi médico?")).toBe("que debo preguntarle a mi medico");
+  });
+});
+
+describe("scripted refusal demo: a paraphrased instruction is not verified (DEMO-SCRIPT Scene 4)", () => {
+  const id = "pt-c-endometriosis";
+
+  it("pt-c carries exactly one deliberately unverifiable item whose anchor is a ground-truth optional quote", () => {
+    const doc = docFor(id);
+    const items = getScriptedContent(id)!.unverifiableInstructions ?? [];
+    expect(items).toHaveLength(1);
+    const gt = getGroundTruth(id)!;
+    for (const u of items) {
+      expect(doc.text.includes(u.claimedQuote)).toBe(false);
+      expect(locateQuote(doc, u.claimedQuote)).toBeNull();
+      expect(doc.text.includes(u.anchor)).toBe(true);
+      expect(gt.optionalInstructionQuotes ?? []).toContain(u.anchor);
+      expect(gt.expectedInstructions.some((e) => e.quote === u.anchor)).toBe(false);
+    }
+  });
+
+  it("verifySourceRef rejects the claimed ref and the item lands in Needs clarification, not My Care Plan", async () => {
+    const doc = docFor(id);
+    const interp = getScriptedInterpretation(id, doc.id)!;
+    const claimed = interp.instructions.find((i) => i.sourceVerification === "unverified")!;
+    expect(claimed).toBeDefined();
+    expect(verifySourceRef(doc, claimed.sourceRef)).toBe("unverified");
+
+    const profile = getPatient(id)!;
+    const validated = validateInstructions(doc, interp.instructions);
+    const refused = validated.filter((i) => i.sourceVerification === "unverified");
+    expect(refused).toHaveLength(1);
+    expect(refused[0].sourceRef).toBeUndefined();
+    expect(refused[0].unverifiedQuote).toBe(claimed.unverifiedQuote);
+
+    const full = await interpretDocument({ profile, document: doc, evidence: [] }, { mode: "scripted_demo" });
+    const plan = buildActionPlan({ profile, interpretation: full, document: doc, existing: [] });
+    const careplan = plan.filter((a) => a.origin === "clinician_documented");
+    expect(careplan.every((a) => a.sourceVerification === "verified")).toBe(true);
+    expect(careplan.some((a) => a.description === refused[0].description)).toBe(false);
+    expect(plan.some((a) => a.sourceVerification === "unverified")).toBe(true);
+  });
+
+  it("other scripted patients have no deliberately unverifiable items", () => {
+    for (const pid of ALL_IDS.filter((p) => p !== id)) {
+      const doc = docFor(pid);
+      expect(getScriptedInterpretation(pid, doc.id)!.instructions.every((i) => i.sourceVerification === "verified")).toBe(true);
+    }
+  });
+});
+
+describe("scripted keyword matching is whole-word for short keywords (judge-panel fix)", () => {
+  it("short keywords match inflections only, never a longer different word", () => {
+    expect(tokenMatchesKeyword("fast", "fast")).toBe(true);
+    expect(tokenMatchesKeyword("fasting", "fast")).toBe(true);
+    expect(tokenMatchesKeyword("faster", "fast")).toBe(false);
+    expect(tokenMatchesKeyword("fastest", "fast")).toBe(false);
+    expect(tokenMatchesKeyword("office", "off")).toBe(false);
+    expect(tokenMatchesKeyword("testosterone", "test")).toBe(false);
+    expect(tokenMatchesKeyword("tests", "test")).toBe(true);
+    expect(tokenMatchesKeyword("stopped", "stop")).toBe(true);
+    expect(tokenMatchesKeyword("stopping", "stop")).toBe(true);
+    expect(tokenMatchesKeyword("dosing", "dose")).toBe(true);
+    expect(tokenMatchesKeyword("worries", "worry")).toBe(true);
+    expect(tokenMatchesKeyword("tomar", "tom")).toBe(true);
+    expect(tokenMatchesKeyword("ayunas", "ayun")).toBe(true);
+  });
+
+  it("5+ letter keywords stay stems", () => {
+    expect(tokenMatchesKeyword("medication", "medic")).toBe(true);
+    expect(tokenMatchesKeyword("pregnancy", "pregnan")).toBe(true);
+    expect(tokenMatchesKeyword("transportation", "transport")).toBe(true);
+  });
+
+  it("'Can I eat faster?' no longer matches pt-a's fasting entry", () => {
+    expect(getScriptedKatReply("pt-a-pcos", "Can I eat faster?")).toBeNull();
+    expect(getScriptedKatReply("pt-a-pcos", "Do I need to fast?")).not.toBeNull();
+  });
+
+  it("every canonical question still routes to its own entry", () => {
+    for (const c of scriptedContent) {
+      for (const e of c.freeText) {
+        for (const q of e.questions) expect(getScriptedKatReply(c.patientId, q)).toBe(e.reply);
+      }
+    }
+  });
+
+  it.each([
+    ["pt-a-pcos", "Can I double my metformin?"],
+    ["pt-a-pcos", "I missed a dose of metformin"],
+    ["pt-a-pcos", "I forgot my metformin dose"],
+    ["pt-a-pcos", "Should I take an extra dose of metformin?"],
+    ["pt-a-pcos", "How do I make up a missed dose?"],
+    ["pt-e-multi", "Can I double my water pill?"],
+    ["pt-e-multi", "I missed my medicine yesterday"],
+    ["pt-e-multi", "I forgot my pills"],
+    ["pt-e-multi", "Should I make up the dose I skipped?"],
+  ])("%s: '%s' → stop-medication entry", (id, q) => {
+    const entry = getScriptedContent(id)!.freeText.find((e) => e.id === "stop-medication")!;
+    expect(getScriptedKatReply(id, q)).toBe(entry.reply);
   });
 });
