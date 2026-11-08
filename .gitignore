@@ -26,3 +26,5 @@ aftercare-loop-media/**/*.webm
 /.next/
 aftercare-loop-app/.vercel/
 node_modules/
+firebase-debug.log
+*.log
