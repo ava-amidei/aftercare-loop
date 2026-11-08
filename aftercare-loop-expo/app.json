@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Aftercare Loop",
+    "slug": "aftercare-loop",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": { "backgroundColor": "#FBA17E", "resizeMode": "contain", "image": "./assets/icon.png" },
+    "ios": { "supportsTablet": false, "bundleIdentifier": "com.aftercareloop.app" },
+    "android": {
+      "package": "com.aftercareloop.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FBA17E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": { "favicon": "./assets/favicon.png" },
+    "plugins": ["expo-status-bar"]
+  }
+}
