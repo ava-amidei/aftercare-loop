@@ -6,6 +6,6 @@
     "url": "https://aftercare-loop.vercel.app",
     "cleartext": false
   },
-  "ios": { "contentInset": "automatic", "backgroundColor": "#f5f5f4" },
+  "ios": { "contentInset": "automatic", "backgroundColor": "#FBA17E" },
   "android": { "backgroundColor": "#f5f5f4" }
 }
