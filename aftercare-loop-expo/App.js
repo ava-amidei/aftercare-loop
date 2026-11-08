@@ -3,10 +3,10 @@ import { ActivityIndicator, Platform, SafeAreaView, StyleSheet, Text, View } fro
 import { StatusBar } from "expo-status-bar";
 import { WebView } from "react-native-webview";
 
-// Where the Aftercare Loop web app is served. Default: the Mac running
-// `next start -H 0.0.0.0 -p 3000` on the same Wi-Fi. Override at start time:
+// Where the Aftercare Loop web app is served. Default: the live Vercel site.
+// For a Mac on the same Wi-Fi use e.g. EXPO_PUBLIC_APP_URL=http://<mac-ip>:3000. Override at start time:
 //   EXPO_PUBLIC_APP_URL=https://your-live-url npx expo start
-const APP_URL = process.env.EXPO_PUBLIC_APP_URL ?? "http://100.64.57.125:3000";
+const APP_URL = process.env.EXPO_PUBLIC_APP_URL ?? "https://aftercare-loop.vercel.app";
 
 export default function App() {
   const webref = useRef(null);

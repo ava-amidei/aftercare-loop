@@ -4,7 +4,7 @@ Wraps the live Aftercare Loop web app in a native iOS/Android shell so the team 
 
 ```bash
 npm install
-# point the shell at the live site (defaults to https://aftercare-loop.vercel.app)
+# point the shell at the live site (the live site, https://aftercare-loop.vercel.app, is the default)
 # edit server.url in capacitor.config.json to your deployment, then:
 npx cap sync
 npx cap open ios        # opens Xcode → select your iPhone → Run

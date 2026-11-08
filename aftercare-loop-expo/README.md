@@ -11,10 +11,10 @@ npx expo start --lan
 # 3. open Expo Go on the phone and scan the QR code (or type the exp:// URL it prints)
 ```
 
-The WebView URL defaults to the Mac's LAN address in `App.js`. Point it at the live deployment with:
+The WebView opens the live site https://aftercare-loop.vercel.app by default. To point it at a Mac on the same Wi-Fi instead:
 
 ```bash
-EXPO_PUBLIC_APP_URL=https://<live-url> npx expo start --lan
+EXPO_PUBLIC_APP_URL=http://<mac-lan-ip>:3000 npx expo start --lan
 ```
 
 The web app is also an installable PWA; opening the same URL in Safari/Chrome and choosing
