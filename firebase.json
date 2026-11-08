@@ -1,0 +1,15 @@
+{
+  "apphosting": {
+    "backendId": "aftercare-loop",
+    "rootDir": "aftercare-loop-app",
+    "ignore": [
+      "node_modules",
+      ".git",
+      ".next",
+      "test-results",
+      "playwright-report",
+      "coverage"
+    ],
+    "alwaysDeployFromSource": true
+  }
+}

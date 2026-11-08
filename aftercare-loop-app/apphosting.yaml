@@ -1,0 +1,32 @@
+# Firebase App Hosting configuration for the Aftercare Loop web app.
+# Deployed from the repo root with `firebase deploy --only apphosting` (see docs/DEPLOY.md).
+runConfig:
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 1024
+
+env:
+  # The public demo runs in Scripted Demo Mode: deterministic, clearly labeled
+  # responses for the fictional patients, no model calls, no key needed.
+  - variable: AFTERCARE_PROVIDER
+    value: gemini
+    availability: [BUILD, RUNTIME]
+  - variable: AFTERCARE_FORCE_SCRIPTED
+    value: "true"
+    availability: [BUILD, RUNTIME]
+  - variable: AFTERCARE_GEMINI_MODEL
+    value: gemini-3.8-flash
+    availability: [RUNTIME]
+  - variable: AFTERCARE_GEMINI_TIMEOUT_MS
+    value: "15000"
+    availability: [RUNTIME]
+
+  # To enable live Gemini responses on the deployed site:
+  #   1. firebase apphosting:secrets:set GEMINI_API_KEY   (paste the key when prompted)
+  #   2. uncomment the block below and set AFTERCARE_FORCE_SCRIPTED to "false"
+  #   3. redeploy
+  # - variable: GEMINI_API_KEY
+  #   secret: GEMINI_API_KEY
+  #   availability: [RUNTIME]
